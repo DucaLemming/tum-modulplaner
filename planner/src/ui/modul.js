@@ -135,7 +135,6 @@ uiScreens.modul = {
     const S = m.state, root = h('div', { class: 'ui-modul' });
     [
       h('div', { class: 'ui-mhead' },
-        h('div', { class: 'ui-meta', text: m.code }),
         h('h2', { class: 'ui-mname', text: m.name }),
         h('div', { class: 'ui-row ui-mchips' },
           h('span', { class: 'ui-tag', text: m.ects + ' ECTS' }),
