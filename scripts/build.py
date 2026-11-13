@@ -8,6 +8,9 @@ Blocks, in this fixed order:
   <script id="uiApi">   planner/src/api.js (the facade PL)
   <script id="uiApp">   planner/src/ui/*.js, then the line uiBoot();
 
+Plus, before </head>: <style id="uiPre">, which hides the old markup and shows "Modulplaner lädt …" until uiBoot()
+has run (without it the old page flashes up while the 7 MB of module data loads). Not written with --no-ui.
+
 Every existing block with one of these ids is removed first, so running the build twice gives the
 same file. The module data (const DATA=...), the engine scripts and the updater stay untouched.
 
@@ -21,7 +24,10 @@ SRC = ROOT / "planner" / "src"
 CSS = ["tokens", "base", "nav", "sheets", "uebersicht", "module", "modul", "plan", "woche", "pruefungen"]
 UI = ["h", "boot", "router", "sheet", "nav", "uebersicht", "module", "modul", "plan", "woche", "event-sheet",
       "pruefungen", "menu", "help"]
-IDS = ["uiCss", "tumQr", "tumSync", "uiApi", "uiApp"]
+IDS = ["uiPre", "uiCss", "tumQr", "tumSync", "uiApi", "uiApp"]
+PRE = ('body:not([data-ui])>*:not(script):not(style){display:none!important}'
+       'body:not([data-ui])::before{content:"Modulplaner l\\0000E4dt \\2026";display:block;padding-top:40vh;text-align:center;'
+       'font:16px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#5d6b78}')
 BLOCK_RE = re.compile(r'<(script|style) id="(%s)">.*?</\1>\n?' % "|".join(IDS), re.S)
 
 
@@ -57,6 +63,10 @@ def main(path=None, ui=True, quiet=False):
     assert h.count("</body>") == 1, "expected exactly one </body>"
     add = "".join(f'<{tag} id="{bid}">\n{body}\n</{tag}>\n' for tag, bid, body in blocks(ui))
     h = h.replace("</body>", add + "</body>")
+    if ui:
+        i = h.find("</head>")
+        assert 0 < i < h.find("const DATA="), "expected </head> before the module data"
+        h = h[:i] + '<style id="uiPre">' + PRE + "</style>\n" + h[i:]
     path.write_text(h, encoding="utf-8")
     for tag, bid, body in ([] if quiet else blocks(ui)):
         print(f"{bid}: {len(body):,} chars")

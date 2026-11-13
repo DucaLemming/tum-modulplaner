@@ -14,6 +14,7 @@ import build
 
 
 def engine_part(h):
+    h = build.strip(h)
     i = [x for x in (h.find('<script id="tumQr">'), h.find('<style id="uiCss">')) if x >= 0]
     return h[:min(i)] if i else h[:h.rfind('</body>')]
 
@@ -36,6 +37,7 @@ def main():
     with sync_playwright() as p:
         print("2. boot: legacy wrapper and new container")
         br, pg = open_planner(p, "desktop", built=a)
+        check(pg.evaluate("getComputedStyle(document.body, '::before').content") in ("none", "normal", ""), "loading text gone after boot")
         check(pg.evaluate("['plan','sem','garea'].every(i => document.querySelector('#legacy #' + i))"), "#legacy contains #plan, #sem, #garea")
         check(pg.evaluate("!!document.getElementById('ui')"), "#ui exists")
         check(pg.evaluate("document.body.dataset.ui") == "new" and not pg.locator("#legacy").is_visible(), "default mode new, #legacy hidden")
@@ -43,9 +45,8 @@ def main():
         pg.evaluate("localStorage.setItem('tum-ui-mode', 'old')")
         reload(pg)
         check(pg.evaluate("document.body.dataset.ui") == "new" and pg.locator("#ui").is_visible() and not pg.locator("#legacy").is_visible(), "a stored old mode is ignored, #legacy stays hidden")
-        pg.locator("#ui .ui-top-more").click(); pg.wait_for_timeout(100)
-        check(pg.locator(".ui-backbtn").count() == 0 and "Alte Ansicht" not in pg.locator(".ui-sheet-root").inner_text(), "no switch to the old view in the menu")
-        pg.keyboard.press("Escape")
+        pg.evaluate("uiNav('einstellungen')"); pg.wait_for_timeout(150)
+        check(pg.locator(".ui-backbtn").count() == 0 and "Alte Ansicht" not in pg.locator("#ui").inner_text(), "no switch to the old view")
         check(not pg.errs, "no page errors " + "; ".join(pg.errs[:3]))
         print("4. sync connect link still reaches sync.js")
         br2, pg2 = open_planner(p, "desktop", built=a, hash="#/connect/a%2Fb/tok", browser=br)

@@ -16,8 +16,7 @@ function uiShellInit(ui) {
     h('button', { class: 'ui-iconbtn ui-top-searchbtn', type: 'button', 'aria-label': 'Suchen', onclick: () => { uiNav('module'); setTimeout(() => { const f = document.querySelector('#ui .ui-module-q'); if (f) f.focus(); }, 30); } }, uiIcon('search')),
     h('button', { class: 'ui-iconbtn ui-top-help', type: 'button', 'aria-label': 'Zeichen und Farben erklären', title: 'Zeichen und Farben', onclick: e => uiLegend(e.currentTarget) }, h('span', { class: 'ui-qmark', text: '?' })),
     h('button', { class: 'ui-iconbtn ui-top-settings', type: 'button', 'aria-label': 'Einstellungen', onclick: () => uiNav('einstellungen') }, uiIcon('einstellungen')),
-    h('div', { class: 'ui-top-sync' }),
-    h('button', { class: 'ui-iconbtn ui-top-more', type: 'button', 'aria-label': 'Menü', onclick: e => uiOpenMenu(e.currentTarget) }, uiIcon('more')));
+    h('div', { class: 'ui-top-sync' }));
   const screen = h('div', { class: 'ui-screen', tabindex: '-1' });
   const panel = h('aside', { class: 'ui-panel', 'aria-label': 'Modul', hidden: true });
   const dim = h('div', { class: 'ui-panel-dim', onclick: () => uiCloseModule() });
@@ -30,10 +29,6 @@ function uiShellInit(ui) {
   uiRender();
 }
 function uiWidthClass() { const w = window.innerWidth; return w < 720 ? 'phone' : w < 1200 ? 'tablet' : 'desktop'; }
-function uiOpenMenu(anchor) {
-  if (typeof uiMenuOpen === 'function') return uiMenuOpen(anchor);
-  uiMenuSheet('Menü', [['Sync', () => PL.openSync()]], anchor);
-}
 let uiSearchTimer = null;
 function uiGlobalSearch(v) {
   clearTimeout(uiSearchTimer);

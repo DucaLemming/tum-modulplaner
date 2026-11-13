@@ -1,16 +1,6 @@
-/* UI rework: Menü (⋯): Sync, export, import, data update, settings, help, old view. Sync status icon, first-open disclaimer. */
+/* UI rework: Einstellungen (sync and devices, plan file, module data, semester, work, travel, own appointments, help), sync status icon, first-open disclaimer. */
 const UI_DISC = 'Ohne Gewähr: Alle Angaben können falsch oder veraltet sein. Prüfe alles selbst in TUMonline und in der SPO.';
 const UI_SYNC_TXT = { off: 'Sync aus', ok: 'synchronisiert', busy: 'synchronisiert gerade', pending: 'Änderungen warten', err: 'Sync-Fehler', choose: 'Sync: Auswahl nötig' };
-function uiMenuOpen(anchor) {
-  const d = PL.dataDate();
-  uiMenuSheet('Menü', [
-    ['Sync', () => PL.openSync()],
-    ['Plan exportieren', () => uiExport()],
-    ['Plan importieren', () => uiImportPick()],
-    ['Moduldaten aktualisieren' + (d ? ' (Stand: ' + uiFmt.dateY(d) + ')' : ''), () => PL.openUpdate()],
-    ['Hilfe', () => uiHelpSheet()]
-  ], anchor);
-}
 async function uiExport() {
   const t = await PL.exportText(); if (!t) return;
   const a = h('a', { href: URL.createObjectURL(new Blob([t.replace(/\r?\n/g, '\r\n')], { type: 'text/plain;charset=utf-8' })), download: 'Modulplan.txt' });
@@ -41,8 +31,16 @@ uiScreens.einstellungen = {
     const body = h('div', { class: 'ui-settings' }), draw = () => uiRender(true);
     const S = PL.settings();
     const year = h('input', { type: 'number', min: '2020', max: '2040', value: String(S.startYear), 'aria-label': 'Jahr', onchange: e => { PL.setStart(null, +e.target.value); draw(); } });
+    const d = PL.dataDate();
     body.append(
       uiDeviceLink(),
+      h('h3', { class: 'ui-h3', text: 'Plan als Datei' }),
+      h('p', { class: 'ui-meta', text: 'Textdatei (Modulplan.txt) zum Sichern oder Weitergeben. Beim Importieren siehst du vorher, was sich ändert.' }),
+      h('div', { class: 'ui-row' }, h('button', { class: 'ui-btn ui-set-export', type: 'button', onclick: () => uiExport() }, 'Plan exportieren'),
+        h('button', { class: 'ui-btn ui-set-import', type: 'button', onclick: () => uiImportPick() }, 'Plan importieren')),
+      h('h3', { class: 'ui-h3', text: 'Moduldaten' }),
+      h('p', { class: 'ui-meta', text: (d ? 'Stand: ' + uiFmt.dateY(d) + '. ' : '') + 'Werden jede Nacht automatisch aus TUMonline aktualisiert.' }),
+      h('div', { class: 'ui-row' }, h('button', { class: 'ui-btn ui-set-update', type: 'button', onclick: () => PL.openUpdate() }, 'Moduldaten aktualisieren')),
       h('h3', { class: 'ui-h3', text: 'Startsemester' }),
       h('div', { class: 'ui-row' }, h('select', { 'aria-label': 'Startsemester', onchange: e => { PL.setStart(e.target.value, null); draw(); } },
         [['W', 'Wintersemester'], ['S', 'Sommersemester']].map(([v, l]) => h('option', { value: v, selected: S.startSem === v }, l))), year),
@@ -57,7 +55,11 @@ uiScreens.einstellungen = {
         h('span', { class: 'ui-row' }, h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(b.i); } }, 'Bearbeiten'),
           h('button', { class: 'ui-btn ui-btn-danger', type: 'button', onclick: async () => { if (await uiConfirm('Termin „' + b.l + '“ löschen?', 'Löschen')) { PL.removeBlock(b.i); draw(); } } }, 'Löschen')))))
         : h('p', { class: 'ui-meta', text: 'Keine eigenen Termine.' }),
-      h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(null); } }, '＋ Termin'));
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(null); } }, '＋ Termin'),
+      h('h3', { class: 'ui-h3', text: 'Hilfe' }),
+      h('div', { class: 'ui-row' }, h('button', { class: 'ui-btn ui-set-help', type: 'button', onclick: () => uiHelpSheet() }, 'Hilfe und Kürzel'),
+        h('button', { class: 'ui-btn', type: 'button', onclick: () => uiLegend(null) }, 'Zeichen und Farben')),
+      h('p', { class: 'ui-meta', text: UI_DISC }));
     c.append(uiHead('Einstellungen'), body);
   }
 };
@@ -86,7 +88,7 @@ function uiAfterRender() { uiSyncPaint(); }
 
 /* Einstellungen > Weiteres Gerät verbinden: QR code and link with the token (as in Hydro Garden) */
 function uiDeviceLink() {
-  const box = h('div', { class: 'ui-devlink' }, h('h3', { class: 'ui-h3', text: 'Weiteres Gerät verbinden' }));
+  const box = h('div', { class: 'ui-devlink' }, h('h3', { class: 'ui-h3', text: 'Sync und weitere Geräte' }), h('p', { class: 'ui-meta', text: 'Status: ' + (UI_SYNC_TXT[PL.syncStatus()] || PL.syncStatus()) }));
   const st = PL.syncStatus(), link = PL.syncLink();
   if (st === 'off' || (!link && PL.syncWeb())) {
     box.append(h('p', { class: 'ui-meta', text: 'Sync ist auf diesem Gerät noch nicht eingerichtet. Richte ihn einmal ein, dann erscheint hier ein QR-Code für deine anderen Geräte.' }),
@@ -94,7 +96,8 @@ function uiDeviceLink() {
     return box;
   }
   if (!link) {
-    box.append(h('p', { class: 'ui-meta', text: 'Der Link mit QR-Code funktioniert nur, wenn der Planer über eine Webadresse geöffnet ist (https://ducalemming.github.io/tum-modulplaner/). Diese Datei ist lokal geöffnet.' }));
+    box.append(h('p', { class: 'ui-meta', text: 'Der Link mit QR-Code funktioniert nur, wenn der Planer über eine Webadresse geöffnet ist (https://ducalemming.github.io/tum-modulplaner/). Diese Datei ist lokal geöffnet.' }),
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => PL.openSync() }, 'Sync-Einstellungen'));
     return box;
   }
   const msg = h('span', { class: 'ui-meta' });

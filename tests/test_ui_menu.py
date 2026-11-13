@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Menü: entries, export, import through the file chooser, Arbeitsziel, Sync dialog, update dialog, disclaimer.
+"""Einstellungen (everything of the former ⋯ menu): sections, export, import through the file chooser, Arbeitsziel, Sync dialog, update dialog, disclaimer.
 
 Usage: python tests/test_ui_menu.py [--shots DIR]
 """
@@ -10,13 +10,14 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from helpers import check, finish, open_planner, reload, example_plan, import_plan, export_text, no_hscroll, shot
 
-ENTRIES = ["Sync", "Plan exportieren", "Plan importieren", "Moduldaten aktualisieren", "Hilfe"]
+SECTIONS = ["Sync und weitere Geräte", "Plan als Datei", "Moduldaten", "Startsemester", "Arbeitsziel", "Fahrzeiten", "Eigene Termine", "Hilfe"]
+BTN = {"Sync": ".ui-devlink .ui-btn", "Plan exportieren": ".ui-set-export", "Plan importieren": ".ui-set-import", "Moduldaten aktualisieren": ".ui-set-update", "Hilfe": ".ui-set-help"}
 
 
 def menu(pg, entry=None):
-    pg.locator("#ui .ui-top-more").click(); pg.wait_for_timeout(100)
+    pg.evaluate("uiNav('einstellungen')"); pg.wait_for_timeout(150)
     if entry:
-        pg.locator(".ui-sheet-root .ui-menu-item", has_text=entry).first.click(); pg.wait_for_timeout(200)
+        pg.locator("#ui .ui-s-einstellungen " + BTN[entry]).first.click(); pg.wait_for_timeout(200)
 
 
 def main():
@@ -31,9 +32,9 @@ def main():
             check(pg.locator("#ui .ui-disc").count() == 0, "disclaimer not shown after dismiss and reload")
             text = example_plan(pg)
             menu(pg)
-            labels = [t.split(" (")[0] for t in pg.locator(".ui-sheet-root .ui-menu-item").all_inner_texts()]
-            check(labels == ENTRIES, "menu entries in order: " + ", ".join(labels))
-            pg.keyboard.press("Escape")
+            labels = pg.locator("#ui .ui-settings > .ui-h3, #ui .ui-settings > .ui-devlink > .ui-h3").all_inner_texts()
+            check(labels == SECTIONS, "Einstellungen sections in order: " + ", ".join(labels))
+            check(pg.locator("#ui .ui-top-more").count() == 0, "no ⋯ menu")
             f = pathlib.Path(tempfile.mkdtemp()) / "Modulplan.txt"; f.write_text(text, encoding="utf-8")
             with pg.expect_file_chooser() as fc:
                 menu(pg, "Plan importieren")

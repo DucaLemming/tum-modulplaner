@@ -476,7 +476,8 @@ i.es{background:#2b6cb0}i.eu{background:repeating-linear-gradient(45deg,#d69e2e 
 .wkev .wkk{display:block;width:fit-content;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10.5px;font-weight:800;line-height:1.3;color:#1a202c;background:rgba(255,255,255,.75);border-radius:3px;padding:0 3px;margin-bottom:1px}
 .wkue .wkk{display:block;width:fit-content;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10.5px;font-weight:800;line-height:1.3;color:#1a202c;background:rgba(255,255,255,.75);border-radius:3px;padding:0 3px;margin-bottom:1px}.wkue .nb{display:inline-block;font-size:9px;font-weight:700;color:#fff;border-radius:3px;padding:0 4px;margin:0 0 1px}.wkue .nb.nopt{background:#718096}.wkue.wkopt2{border-style:dashed!important;border-width:2px!important;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.6) 0 5px,transparent 5px 10px)!important}
 #updDlg .exrow{margin:4px 0;font-size:12.5px}#updDlg .exrow a{color:var(--accent)}
-</style></head><body>
+</style><style id="uiPre">body:not([data-ui])>*:not(script):not(style){display:none!important}body:not([data-ui])::before{content:"Modulplaner l\0000E4dt \2026";display:block;padding-top:40vh;text-align:center;font:16px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#5d6b78}</style>
+</head><body>
 <header><h1>Maschinenwesen M.Sc.<small>Modulplaner · 120 ECTS · TUM · Stand WiSe 2026/27</small></h1><div class="disc" title="Daten aus TUMonline und dem Modulhandbuch, automatisch gesammelt und ausgewertet. Termine, Plätze, Turnus, Standorte und SPO-Regeln können fehlen, veraltet oder falsch interpretiert sein.">⚠ <b>Ohne Gewähr:</b> Alle Angaben können falsch oder veraltet sein. Prüfe alles selbst in TUMonline und in der SPO.</div>
 <button class="btn ghost" id="infoBtn" title="Erklärung der Kürzel der Veranstaltungsarten (VO, UE, VI, SE, PR, ...)">ℹ Kürzel</button><button class="btn ghost" id="wkBtn" title="Wochenansicht öffnen oder schließen (zuletzt gezeigtes Semester)">🗓 Wochenansicht</button><button class="btn ghost" id="exBtn" title="Prüfungstermine je Semester als Wochenseiten über den Prüfungszeitraum">📝 Prüfungen</button><button class="btn" id="limBtn" hidden title="Module im Plan mit begrenzter Teilnehmerzahl (TUMonline): zeigt die Liste links">🔒 begrenzt</button><button class="btn ghost" id="semBtn">Semesterplan</button>
 <div class="search"><input id="q" placeholder="Modul, Lehrveranstaltung, Inhalt suchen (Deutsch und Englisch)…" autocomplete="off"><div class="results" id="results"></div></div></header>
@@ -7255,8 +7256,7 @@ function uiShellInit(ui) {
     h('button', { class: 'ui-iconbtn ui-top-searchbtn', type: 'button', 'aria-label': 'Suchen', onclick: () => { uiNav('module'); setTimeout(() => { const f = document.querySelector('#ui .ui-module-q'); if (f) f.focus(); }, 30); } }, uiIcon('search')),
     h('button', { class: 'ui-iconbtn ui-top-help', type: 'button', 'aria-label': 'Zeichen und Farben erklären', title: 'Zeichen und Farben', onclick: e => uiLegend(e.currentTarget) }, h('span', { class: 'ui-qmark', text: '?' })),
     h('button', { class: 'ui-iconbtn ui-top-settings', type: 'button', 'aria-label': 'Einstellungen', onclick: () => uiNav('einstellungen') }, uiIcon('einstellungen')),
-    h('div', { class: 'ui-top-sync' }),
-    h('button', { class: 'ui-iconbtn ui-top-more', type: 'button', 'aria-label': 'Menü', onclick: e => uiOpenMenu(e.currentTarget) }, uiIcon('more')));
+    h('div', { class: 'ui-top-sync' }));
   const screen = h('div', { class: 'ui-screen', tabindex: '-1' });
   const panel = h('aside', { class: 'ui-panel', 'aria-label': 'Modul', hidden: true });
   const dim = h('div', { class: 'ui-panel-dim', onclick: () => uiCloseModule() });
@@ -7269,10 +7269,6 @@ function uiShellInit(ui) {
   uiRender();
 }
 function uiWidthClass() { const w = window.innerWidth; return w < 720 ? 'phone' : w < 1200 ? 'tablet' : 'desktop'; }
-function uiOpenMenu(anchor) {
-  if (typeof uiMenuOpen === 'function') return uiMenuOpen(anchor);
-  uiMenuSheet('Menü', [['Sync', () => PL.openSync()]], anchor);
-}
 let uiSearchTimer = null;
 function uiGlobalSearch(v) {
   clearTimeout(uiSearchTimer);
@@ -8057,19 +8053,9 @@ uiScreens.pruefungen = {
       X.undated.map(u => h('button', { class: 'ui-exl-row ui-exl-open', type: 'button', onclick: () => uiExOpen(u.code) }, h('span', { class: 'ui-exl-m' }, h('span', { class: 'ui-meta', text: u.code }), h('span', { class: 'ui-exl-n', text: u.name }), u.known ? h('span', { class: 'ui-meta', text: u.known }) : null)))));
   }
 };
-/* UI rework: Menü (⋯): Sync, export, import, data update, settings, help, old view. Sync status icon, first-open disclaimer. */
+/* UI rework: Einstellungen (sync and devices, plan file, module data, semester, work, travel, own appointments, help), sync status icon, first-open disclaimer. */
 const UI_DISC = 'Ohne Gewähr: Alle Angaben können falsch oder veraltet sein. Prüfe alles selbst in TUMonline und in der SPO.';
 const UI_SYNC_TXT = { off: 'Sync aus', ok: 'synchronisiert', busy: 'synchronisiert gerade', pending: 'Änderungen warten', err: 'Sync-Fehler', choose: 'Sync: Auswahl nötig' };
-function uiMenuOpen(anchor) {
-  const d = PL.dataDate();
-  uiMenuSheet('Menü', [
-    ['Sync', () => PL.openSync()],
-    ['Plan exportieren', () => uiExport()],
-    ['Plan importieren', () => uiImportPick()],
-    ['Moduldaten aktualisieren' + (d ? ' (Stand: ' + uiFmt.dateY(d) + ')' : ''), () => PL.openUpdate()],
-    ['Hilfe', () => uiHelpSheet()]
-  ], anchor);
-}
 async function uiExport() {
   const t = await PL.exportText(); if (!t) return;
   const a = h('a', { href: URL.createObjectURL(new Blob([t.replace(/\r?\n/g, '\r\n')], { type: 'text/plain;charset=utf-8' })), download: 'Modulplan.txt' });
@@ -8100,8 +8086,16 @@ uiScreens.einstellungen = {
     const body = h('div', { class: 'ui-settings' }), draw = () => uiRender(true);
     const S = PL.settings();
     const year = h('input', { type: 'number', min: '2020', max: '2040', value: String(S.startYear), 'aria-label': 'Jahr', onchange: e => { PL.setStart(null, +e.target.value); draw(); } });
+    const d = PL.dataDate();
     body.append(
       uiDeviceLink(),
+      h('h3', { class: 'ui-h3', text: 'Plan als Datei' }),
+      h('p', { class: 'ui-meta', text: 'Textdatei (Modulplan.txt) zum Sichern oder Weitergeben. Beim Importieren siehst du vorher, was sich ändert.' }),
+      h('div', { class: 'ui-row' }, h('button', { class: 'ui-btn ui-set-export', type: 'button', onclick: () => uiExport() }, 'Plan exportieren'),
+        h('button', { class: 'ui-btn ui-set-import', type: 'button', onclick: () => uiImportPick() }, 'Plan importieren')),
+      h('h3', { class: 'ui-h3', text: 'Moduldaten' }),
+      h('p', { class: 'ui-meta', text: (d ? 'Stand: ' + uiFmt.dateY(d) + '. ' : '') + 'Werden jede Nacht automatisch aus TUMonline aktualisiert.' }),
+      h('div', { class: 'ui-row' }, h('button', { class: 'ui-btn ui-set-update', type: 'button', onclick: () => PL.openUpdate() }, 'Moduldaten aktualisieren')),
       h('h3', { class: 'ui-h3', text: 'Startsemester' }),
       h('div', { class: 'ui-row' }, h('select', { 'aria-label': 'Startsemester', onchange: e => { PL.setStart(e.target.value, null); draw(); } },
         [['W', 'Wintersemester'], ['S', 'Sommersemester']].map(([v, l]) => h('option', { value: v, selected: S.startSem === v }, l))), year),
@@ -8116,7 +8110,11 @@ uiScreens.einstellungen = {
         h('span', { class: 'ui-row' }, h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(b.i); } }, 'Bearbeiten'),
           h('button', { class: 'ui-btn ui-btn-danger', type: 'button', onclick: async () => { if (await uiConfirm('Termin „' + b.l + '“ löschen?', 'Löschen')) { PL.removeBlock(b.i); draw(); } } }, 'Löschen')))))
         : h('p', { class: 'ui-meta', text: 'Keine eigenen Termine.' }),
-      h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(null); } }, '＋ Termin'));
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(null); } }, '＋ Termin'),
+      h('h3', { class: 'ui-h3', text: 'Hilfe' }),
+      h('div', { class: 'ui-row' }, h('button', { class: 'ui-btn ui-set-help', type: 'button', onclick: () => uiHelpSheet() }, 'Hilfe und Kürzel'),
+        h('button', { class: 'ui-btn', type: 'button', onclick: () => uiLegend(null) }, 'Zeichen und Farben')),
+      h('p', { class: 'ui-meta', text: UI_DISC }));
     c.append(uiHead('Einstellungen'), body);
   }
 };
@@ -8145,7 +8143,7 @@ function uiAfterRender() { uiSyncPaint(); }
 
 /* Einstellungen > Weiteres Gerät verbinden: QR code and link with the token (as in Hydro Garden) */
 function uiDeviceLink() {
-  const box = h('div', { class: 'ui-devlink' }, h('h3', { class: 'ui-h3', text: 'Weiteres Gerät verbinden' }));
+  const box = h('div', { class: 'ui-devlink' }, h('h3', { class: 'ui-h3', text: 'Sync und weitere Geräte' }), h('p', { class: 'ui-meta', text: 'Status: ' + (UI_SYNC_TXT[PL.syncStatus()] || PL.syncStatus()) }));
   const st = PL.syncStatus(), link = PL.syncLink();
   if (st === 'off' || (!link && PL.syncWeb())) {
     box.append(h('p', { class: 'ui-meta', text: 'Sync ist auf diesem Gerät noch nicht eingerichtet. Richte ihn einmal ein, dann erscheint hier ein QR-Code für deine anderen Geräte.' }),
@@ -8153,7 +8151,8 @@ function uiDeviceLink() {
     return box;
   }
   if (!link) {
-    box.append(h('p', { class: 'ui-meta', text: 'Der Link mit QR-Code funktioniert nur, wenn der Planer über eine Webadresse geöffnet ist (https://ducalemming.github.io/tum-modulplaner/). Diese Datei ist lokal geöffnet.' }));
+    box.append(h('p', { class: 'ui-meta', text: 'Der Link mit QR-Code funktioniert nur, wenn der Planer über eine Webadresse geöffnet ist (https://ducalemming.github.io/tum-modulplaner/). Diese Datei ist lokal geöffnet.' }),
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => PL.openSync() }, 'Sync-Einstellungen'));
     return box;
   }
   const msg = h('span', { class: 'ui-meta' });
