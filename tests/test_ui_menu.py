@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from helpers import check, finish, open_planner, reload, example_plan, import_plan, export_text, no_hscroll, shot
 
-ENTRIES = ["Sync", "Plan exportieren", "Plan importieren", "Moduldaten aktualisieren", "Hilfe", "Alte Ansicht"]
+ENTRIES = ["Sync", "Plan exportieren", "Plan importieren", "Moduldaten aktualisieren", "Hilfe"]
 
 
 def menu(pg, entry=None):
@@ -71,8 +71,6 @@ def main():
             check(pg.locator("#ui .ui-qr svg").count() == 1 and "#/connect/a%2Fb/tok" in url, "Einstellungen: QR code and connect link")
             pg.keyboard.press("Escape")
             pg.evaluate("localStorage.removeItem('tum-sync')")
-            menu(pg, "Alte Ansicht")
-            check(pg.evaluate("document.body.dataset.ui") == "old", "Alte Ansicht switches to the old view")
             check(not pg.errs, "no page errors " + "; ".join(pg.errs[:3]))
             pg.context.close()
         br.close()

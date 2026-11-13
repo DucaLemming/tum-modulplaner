@@ -8,8 +8,7 @@ function uiMenuOpen(anchor) {
     ['Plan exportieren', () => uiExport()],
     ['Plan importieren', () => uiImportPick()],
     ['Moduldaten aktualisieren' + (d ? ' (Stand: ' + uiFmt.dateY(d) + ')' : ''), () => PL.openUpdate()],
-    ['Hilfe', () => uiHelpSheet()],
-    ['Alte Ansicht', () => uiSetMode('old')]
+    ['Hilfe', () => uiHelpSheet()]
   ], anchor);
 }
 async function uiExport() {

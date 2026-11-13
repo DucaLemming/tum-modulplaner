@@ -32,7 +32,7 @@ function uiShellInit(ui) {
 function uiWidthClass() { const w = window.innerWidth; return w < 720 ? 'phone' : w < 1200 ? 'tablet' : 'desktop'; }
 function uiOpenMenu(anchor) {
   if (typeof uiMenuOpen === 'function') return uiMenuOpen(anchor);
-  uiMenuSheet('Menü', [['Alte Ansicht', () => uiSetMode('old')]], anchor);
+  uiMenuSheet('Menü', [['Sync', () => PL.openSync()]], anchor);
 }
 let uiSearchTimer = null;
 function uiGlobalSearch(v) {

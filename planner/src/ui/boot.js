@@ -1,4 +1,4 @@
-/* UI rework: boot. Moves the old page into #legacy, creates #ui and switches between old and new view. */
+/* UI rework: boot. Moves the old page into #legacy (hidden; the engine still renders into it) and creates #ui. */
 const UI_MODE_KEY = 'tum-ui-mode';
 function uiSheetRoot() {
   let r = document.querySelector('.ui-sheet-root');
@@ -18,23 +18,18 @@ function uiBoot() {
   }
   let ui = document.getElementById('ui');
   if (!ui) { ui = document.createElement('div'); ui.id = 'ui'; b.insertBefore(ui, lg.nextSibling); }
-  const root = uiSheetRoot();
-  if (!root.querySelector('.ui-backbtn')) {
-    root.appendChild(h('button', { class: 'ui-backbtn', type: 'button', onclick: () => uiSetMode('new') }, 'Neue Ansicht'));
-  }
-  let m = 'new';
-  try { m = localStorage.getItem(UI_MODE_KEY) === 'old' ? 'old' : 'new'; } catch (e) {}
-  b.dataset.ui = m;
+  uiSheetRoot();
+  try { localStorage.removeItem(UI_MODE_KEY); } catch (e) {}
+  b.dataset.ui = 'new';
   if (typeof uiShellInit === 'function') {
     try { uiShellInit(ui); } catch (e) { console.error('UI', e); }
   }
 }
+/* The old view is gone from the UI (v87). The engine still renders into the hidden #legacy container;
+   uiSetMode('old') only lays it out for the oracle tests and is not stored. */
 function uiSetMode(m) {
   m = m === 'old' ? 'old' : 'new';
-  try { localStorage.setItem(UI_MODE_KEY, m); } catch (e) {}
   document.body.dataset.ui = m;
-  if (m === 'old') {
-    try { renderPlan(); } catch (e) {}
-    try { window.dispatchEvent(new Event('resize')); } catch (e) {}
-  } else if (typeof uiRender === 'function') uiRender();
+  if (m === 'old') { try { renderPlan(); } catch (e) {} }
+  else if (typeof uiRender === 'function') uiRender();
 }

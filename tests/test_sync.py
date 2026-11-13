@@ -73,7 +73,6 @@ def device(browser, repo, name):
     ctx = browser.new_context(viewport={"width": 1700, "height": 1000}, locale="de-DE")
     ctx.route("https://planner.test/**", lambda r: r.fulfill(status=200, content_type="text/html; charset=utf-8", body=PLANNER))
     ctx.route("https://api.github.com/**", repo.handle)
-    ctx.add_init_script("try { localStorage.setItem('tum-ui-mode', 'old'); } catch (e) {}")   # the dialog is tested through the old header button
     pg = ctx.new_page()
     pg.errs = []
     pg.on("pageerror", lambda e: pg.errs.append(f"{name}: {e}"))
@@ -104,14 +103,14 @@ def main():
         A = device(br, repo, "A")
         A.goto(URL); A.wait_for_timeout(1500)
         check(A.evaluate("TUMSYNC.status()") == "off" and not repo.log, "status off, 0 API calls")
-        check(A.locator("#syncBtn").inner_text() == "☁ Sync", "header button present")
+        check(A.locator("#ui .ui-sync").count() >= 1, "sync status button present")
 
         print("2. device A: import the real plan, connect through the dialog, first upload")
         plan = PLAN or "Startsemester: WiSe 2026\n" + "\n".join(A.evaluate("Object.keys(M).filter(c => M[c].ects > 0).slice(0, 12)"))
         A.evaluate("t => { const R = parsePlanText(t); applyImport(R, 'replace'); }", plan)
         nA = n_marked(A)
         check(nA >= 10, f"plan imported ({nA} modules)")
-        A.locator("#syncBtn").click()
+        A.evaluate("PL.openSync()")
         A.locator("#syTok").fill("wrong")
         A.locator("#syConn").click(); wait_status(A, "err")
         check("401" in A.locator("#syDlg .syerr").inner_text() and A.evaluate("localStorage.getItem('tum-sync')") is None, "wrong token: error shown, token not kept")
@@ -185,7 +184,7 @@ def main():
         C = device(br, repo, "C")
         C.goto(URL); C.wait_for_timeout(1200)
         C.evaluate("() => { mark(Object.keys(M)[5], M[Object.keys(M)[5]].primary); }")
-        C.locator("#syncBtn").click(); C.locator("#syTok").fill(TOKEN); C.locator("#syConn").click()
+        C.evaluate("PL.openSync()"); C.locator("#syTok").fill(TOKEN); C.locator("#syConn").click()
         wait_status(C, "choose")
         puts = sum(1 for m, _, _ in repo.log if m == "PUT")
         check(C.locator("#syUseR").count() == 1 and C.locator("#syUseL").count() == 1, "choice dialog shown, nothing overwritten yet")
@@ -195,7 +194,7 @@ def main():
         check(n_marked(C) == n_marked(B) and sum(1 for m, _, _ in repo.log if m == "PUT") == puts, "C took the GitHub plan, no write")
 
         print("9. disconnect")
-        C.locator("#syncBtn").click(); C.locator("#syOff").click()
+        C.evaluate("PL.openSync()"); C.locator("#syOff").click()
         check(C.evaluate("localStorage.getItem('tum-sync')") is None and C.evaluate("TUMSYNC.status()") == "off", "token removed from the device")
 
         errs = [e for pg in (A, B, C) for e in pg.errs]

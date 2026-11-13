@@ -139,5 +139,5 @@ python tests/test_build.py         # and every other test file below; each print
 | `tests/test_api.py` | `PL` against the old UI (oracle) and the stored `tum_*` keys. |
 | `tests/test_ui_*.py` | One per screen, phone (390 px) and desktop (1440 px); `--shots DIR` saves screenshots. |
 
-Rules: the stored plan format (`tum_*` keys) does not change; device-only settings of the new UI use keys starting with `tum-ui` (not synced). The old view stays reachable through Menü > `Alte Ansicht` until it is removed on request. Tests need Playwright with Chromium (`pip install playwright && python -m playwright install chromium`) and pass without `plan/Modulplan.txt`.
+Rules: the stored plan format (`tum_*` keys) does not change; device-only settings of the new UI use keys starting with `tum-ui` (not synced). The old view was removed from the UI on request; its markup stays hidden in `#legacy` because the engine still renders into it, and `tests/test_api.py` uses it as the oracle. Deleting that code from the HTML is a separate step (Task 13 of the plan). Tests need Playwright with Chromium (`pip install playwright && python -m playwright install chromium`) and pass without `plan/Modulplan.txt`.
 
