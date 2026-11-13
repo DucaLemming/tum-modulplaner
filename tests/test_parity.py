@@ -29,7 +29,7 @@ SERIES_ENGINE = """async () => {
   delete opt[c13]; delete done[c13]; saveOpt(); savePst(); if (typeof eoEnforce === 'function') eoEnforce(); afterChange(c13);
   const tm = sem[c13] ? termOf(sem[c13]) : wantTerm(c13), e = lvFor(c13, tm).list[0]; if (e) setStatus(c13, [ekeyG(e)], 'onl');
   eoLink(c1, c2); afterChange(c1); eoMove(c2, -1); afterChange(c2);
-  blocks.push({ l: 'Arbeit', wd: 1, v: '08:00', b: '12:00' }); saveBlocks(); renderSem();
+  blocks.push({ l: 'Arbeit', wd: 1, v: '08:00', b: '12:00', sems: [], loc: 'Arbeit' }); saveBlocks(); renderSem();
   const cf = computeConflicts(); let done1 = false;
   [1, 2, 3, 4].forEach(s => cf[s].forEach(w => { if (done1 || w.k === 'EO') return; hideW[wKey(s, w)] = 1; done1 = true; }));
   saveHideW(); renderPlan();
@@ -66,6 +66,12 @@ def main():
                 ka, kb = A.evaluate(keys), B.evaluate(keys)
                 diff = sorted(k for k in set(ka) | set(kb) if ka.get(k) != kb.get(k))
                 check(not diff, "stored tum_* keys identical" + (": " + ", ".join(diff) if diff else ""))
+            if name == "example":
+                # Platz offen: no stored status and 'u' must give the same result (spec 10, plan Task 3)
+                seat = """async (u) => { const c = Object.keys(M).find(c => !marked[c] && isLimMod(c) && M[c].ects > 0); mark(c); setSem(c, 2);
+                  if (u) pst[c] = 'u'; else delete pst[c]; savePst(); afterChange(c); }"""
+                A.evaluate(seat, True); B.evaluate(seat, False)
+                check(export_text(A) == export_text(B), "seat open: missing status and 'u' give the same export")
             check(not A.errs and not B.errs, "no page errors " + "; ".join((A.errs + B.errs)[:3]))
             A.context.close(); B.context.close()
         br.close()

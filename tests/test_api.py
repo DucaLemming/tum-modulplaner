@@ -16,6 +16,60 @@ ALL_READS = """() => { const r = {}; r.totals = PL.totals(); r.brackets = PL.bra
   r.module = PL.module(Object.keys(M)[0]); return r; }"""
 
 
+
+ACTIONS = r"""() => {
+  const cs = Object.keys(M).filter(c => M[c].ects > 0), plan = Object.keys(marked);
+  const free = cs.find(c => !marked[c] && !isLimMod(c) && (M[c].brackets || []).length > 1 && (M[c].lv || []).some(e => e.d && e.v)) || cs.find(c => !marked[c]);
+  const lim = Object.keys(M).find(c => !marked[c] && isLimMod(c) && M[c].ects > 0);
+  const out = []; let n = 0; const off = PL.on(() => n++);
+  const t = (name, f, cond, key) => { n = 0; const before = key ? localStorage.getItem(key) : null; let err = '';
+    try { f(); } catch (e) { err = e.message; }
+    let ok = false; try { ok = !!cond(); } catch (e) { err = err || e.message; }
+    const kch = key ? localStorage.getItem(key) !== before : true;
+    out.push([name, ok && kch && n === 1 && !err, `cond=${ok} key=${kch} events=${n} ${err}`]); };
+  t('setInPlan on', () => PL.setInPlan(free, true), () => PL.module(free).state.inPlan, 'tum_plan');
+  const b2 = M[free].brackets.find(b => b !== marked[free]);
+  if (b2) t('setBracket', () => PL.setBracket(free, b2), () => PL.module(free).state.bracket === b2, 'tum_plan');
+  t('setSemester', () => PL.setSemester(free, 2), () => PL.module(free).state.sem === 2, 'tum_sem');
+  t('setStatus optional', () => PL.setStatus(free, 'optional'), () => PL.module(free).state.result === 'Zählt nicht (optional).', 'tum_opt');
+  t('setStatus done', () => PL.setStatus(free, 'done'), () => PL.module(free).state.status === 'done', 'tum_pst');
+  t('setStatus count', () => PL.setStatus(free, 'count'), () => PL.module(free).state.result === 'Zählt mit ' + M[free].ects + ' ECTS.', 'tum_pst');
+  t('setEasy', () => PL.setEasy(free, true), () => PL.module(free).state.easy, 'tum_free');
+  const ev = PL.module(free).events.find(e => e.wd);
+  if (ev) {
+    t('setAttendance onl', () => PL.setAttendance(free, ev.key, 'onl'), () => PL.module(free).events.find(e => e.key === ev.key).status === 'onl', 'tum_att');
+    t('setAttendance reset', () => PL.setAttendance(free, ev.key, null), () => PL.module(free).events.find(e => e.key === ev.key).status === ev.def, 'tum_att');
+    t('toggleMandatory', () => PL.toggleMandatory(free, ev.key), () => PL.module(free).events.find(e => e.key === ev.key).mand, 'tum_mand');
+    t('setOverride', () => PL.setOverride(free, ev.key, { v: '07:00', b: '08:00' }), () => PL.module(free).events.find(e => e.key === ev.key).ovr, 'tum_ovr');
+    t('setOverride reset', () => PL.setOverride(free, PL.module(free).events.find(e => e.ovr).key, null), () => !PL.module(free).events.some(e => e.ovr), 'tum_ovr');
+  }
+  t('exclude', () => PL.exclude(cs[40], true, 'Test'), () => PL.module(cs[40]).state.nogo, 'tum_nogo');
+  t('exclude off', () => PL.exclude(cs[40], false), () => !PL.module(cs[40]).state.nogo, 'tum_nogo');
+  t('linkAlternative', () => PL.linkAlternative(plan[4], plan[5]), () => PL.issues().some(i => i.type === 'Entscheidung'), 'tum_either');
+  t('rankAlternative', () => PL.rankAlternative(PL.module(plan[4]).alt.codes[1], -1), () => PL.module(plan[4]).alt.rank === 1 || PL.module(plan[5]).alt.rank === 1, 'tum_either');
+  t('unlinkAlternative', () => PL.unlinkAlternative(plan[4]), () => !PL.issues().some(i => i.type === 'Entscheidung'), 'tum_either');
+  const w = PL.issues().find(i => i.kind);
+  if (w) { t('hideIssue', () => PL.hideIssue(w.id, true), () => PL.issues().find(i => i.id === w.id).hidden, 'tum_hidew');
+           t('hideIssue off', () => PL.hideIssue(w.id, false), () => !PL.issues().find(i => i.id === w.id).hidden, 'tum_hidew'); }
+  t('setCheck off', () => PL.setCheck(4, false), () => PL.checks()[3] === false, 'tum_colloff');
+  t('setCheck on', () => PL.setCheck(4, true), () => PL.checks()[3] === true, 'tum_colloff');
+  t('addBlock', () => PL.addBlock({ l: 'Arbeit', wd: 1, v: '08:00', b: '12:00' }), () => PL.settings().blocks.length === 1, 'tum_blocks');
+  t('editBlock', () => PL.editBlock(0, { l: 'Arbeit', wd: 2, v: '08:00', b: '12:00' }), () => PL.settings().blocks[0].wd === 2, 'tum_blocks');
+  t('removeBlock', () => PL.removeBlock(0), () => PL.settings().blocks.length === 0, 'tum_blocks');
+  const tp = PL.settings().travel[0];
+  t('setTravel', () => PL.setTravel(tp.a, tp.b, 33), () => PL.settings().travel[0].min === 33, 'tum_travel');
+  t('setWorkGoal', () => PL.setWorkGoal(15), () => PL.settings().workGoal === 15, 'tum_workgoal');
+  t('setStart', () => PL.setStart('S', 2027), () => PL.settings().startSem === 'S' && PL.settings().startYear === 2027, 'tum_start');
+  t('setStart back', () => PL.setStart('W', 2026), () => PL.settings().startSem === 'W', 'tum_start');
+  if (lim) {
+    t('limited module in plan', () => { PL.setInPlan(lim, true); }, () => PL.module(lim).state.seat === 'open', 'tum_plan');
+    t('setSeat got', () => PL.setSeat(lim, 'got'), () => PL.module(lim).state.seat === 'got' && PL.module(lim).state.result.startsWith('Zählt mit'), 'tum_pst');
+    t('setSeat open', () => PL.setSeat(lim, 'open'), () => PL.module(lim).state.seat === 'open', 'tum_pst');
+  }
+  t('setInPlan off', () => PL.setInPlan(free, false), () => !PL.module(free).state.inPlan, 'tum_plan');
+  off(); return out; }"""
+
+
 def oracle(pg, label):
     print(f"-- oracle checks ({label})")
     pg.evaluate("uiSetMode('old')")
@@ -85,9 +139,12 @@ def main():
           catch (e) {{ return 'ERR ' + e.message; }} finally {{ delete marked['XX0000']; delete sem['XX0000']; }} }})()""")
         check(r == "ok", f"read models skip XX0000 ({r})")
 
+        print("4. actions: read model, stored key and one change event each")
+        for name, ok, info in pg.evaluate(ACTIONS):
+            check(ok, f"{name} ({info})")
         pp = personal_plan()
         if pp:
-            print("4. personal plan")
+            print("5. personal plan")
             import_plan(pg, pp)
             oracle(pg, "personal")
         check(not pg.errs, "no page errors " + "; ".join(pg.errs[:3]))

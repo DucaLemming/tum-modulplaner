@@ -6461,10 +6461,86 @@ var qrcode = function() {
     });
   }
 
+
+  /* ---------- actions: same engine calls as the old handlers, then one notification ---------- */
+  const act = f => function () { const a = arguments; let r; depth++; try { r = f.apply(null, a); } finally { depth--; pending = false; } notify(); return r; };
+  const rer = c => { proposal = null; try { renderPlan(); } catch (e) { console.error(e); } try { renderSemIfOpen(); } catch (e) {} try { if (wkSem) renderWeek(); } catch (e) {} if (c) { try { syncDrawer(c); } catch (e) {} try { syncNode(c); } catch (e) {} } };
+  const setInPlan = act((c, on) => { if (!M[c]) return; if (on) { if (!marked[c]) mark(c); } else if (marked[c]) { if (eoOf(c)) eoUnlink(c); unmark(c); } });
+  const setBracket = act((c, b) => { if (!M[c] || !marked[c] || !(M[c].brackets || []).includes(b)) return; marked[c] = b; save(); afterChange(c); });
+  const setSemester = act((c, s) => {
+    s = +s || 0; if (!marked[c]) return;
+    if (s && optsL[c] && optsL[c].length) { optsApply(c, [{ s, v: optV0(c) }, ...optsOf(c).slice(1).filter(o => o.s !== s)]); afterChange(c); }
+    else setSem(c, s);
+  });
+  const setStatus = act((c, st) => {
+    if (!marked[c]) return false;
+    if (st === 'count' && semCat(c) === 'x') return false;
+    if (st === 'optional') { opt[c] = 1; delete done[c]; }
+    else if (st === 'done') { done[c] = 1; delete opt[c]; }
+    else { delete opt[c]; delete done[c]; }
+    saveOpt(); savePst(); if (typeof eoEnforce === 'function') eoEnforce(); afterChange(c); return true;
+  });
+  const setSeat = act((c, st) => { if (!marked[c]) return; if (st === 'got') pst[c] = 'z'; else delete pst[c]; savePst(); afterChange(c); });
+  const setEasy = act((c, on) => { if (on) frei[c] = 1; else delete frei[c]; saveFrei(); proposal = null; renderSem(); renderPlan(); try { syncDrawer(c); } catch (e) {} });
+  const setAttendance = act((c, key, st) => setStatus_(c, [key], st == null ? keyDefault(c, key) : st));
+  const setStatus_ = (c, keys, st) => window.setStatus(c, keys, st);
+  const setGroup = act((c, gk, names) => { grpSel[c + '|' + gk] = names; saveGroups(); afterChange(c); });
+  const setVariant = act((c, v, t) => {
+    const term = sem[c] ? termOf(sem[c]) : wantTerm(c), T = t ? [t] : Object.keys(varKinds(lvFor(c, term).list));
+    const o = varSel[c] || (varSel[c] = {}); T.forEach(k => { if (v) o[k] = v; else delete o[k]; }); if (!Object.keys(o).length) delete varSel[c];
+    saveVar(); rer(c);
+  });
+  const toggleMandatory = act((c, key) => toggleMand(c, key));
+  const toggleMandatoryDate = act((c, key, iso) => toggleMandDate(c, key, iso));
+  const toggleCancelled = act((c, key, iso) => toggleAusf(c, key, iso));
+  const setOverride = act((c, key, o) => ovrSet(c, key, o || null));
+  const linkAlternative = act((a, b) => { eoLink(a, b); afterChange(a); });
+  const unlinkAlternative = act(c => { eoUnlink(c); afterChange(c); });
+  const rankAlternative = act((c, d) => { eoMove(c, d); afterChange(c); });
+  const decide = act(c => {
+    const g = eoOf(c); if (!g) return false; const rest = g.codes.filter(x => x !== c);
+    if (g.auto.includes(c)) delete opt[c]; saveOpt(); eoList = eoList.filter(y => y !== g); saveEo(); rest.forEach(x => unmark(x)); afterChange(c); return true;
+  });
+  const setFallbacks = act((c, list) => { if (!sem[c]) return; optsApply(c, [{ s: sem[c], v: optV0(c) }, ...(list || []).filter(s => s !== sem[c]).map(s => ({ s, v: null }))]); afterChange(c); });
+  const hideIssue = act((id, on) => { if (on) hideW[id] = 1; else delete hideW[id]; saveHideW(); renderPlan(); });
+  const ackUpdateNotes = act(() => { recNotes = []; saveRecNotes(); renderPlan(); });
+  const setCheck = act((s, on) => { if (on) collOff.delete(s); else collOff.add(s); saveColl(); collRefresh(); });
+  const normBlock = o => { const nb = { l: (o.l || '').trim() || 'Eigener Termin', wd: +o.wd, v: o.v, b: o.b, sems: o.sems || [], loc: o.loc || blockLoc({ l: o.l || '' }) }; if (o.from) nb.from = o.from; if (o.to) nb.to = o.to; return nb; };
+  const addBlock = act(o => { blocks.push(normBlock(o)); saveBlocks(); renderSem(); rer(); return blocks.length - 1; });
+  const editBlock = act((i, o) => { if (!blocks[i]) return; blocks[i] = normBlock(o); saveBlocks(); renderSem(); rer(); });
+  const removeBlock = act(i => { if (!blocks[i]) return; blocks.splice(i, 1); saveBlocks(); renderSem(); rer(); });
+  const setTravel = act((a, b, min) => { const k = tKey(a, b); if (min === '' || min == null) delete travel.pairs[k]; else travel.pairs[k] = +min; saveTravel(); renderSem(); rer(); });
+  const setWorkGoal = act(hh => { WORK_GOAL = Math.max(0, +hh || 0); saveWorkGoal(); renderSem(); rer(); });
+  const setStart = act((letter, year) => {
+    if (letter === 'W' || letter === 'S') { startSem = letter; saveStart(); }
+    year = +year; if (year > 2000 && year < 2100) { startYear = year; saveStartYear(); }
+    renderSem(); renderPlan();
+  });
+  const exclude = act((c, on, reason) => setNogo(c, on, reason));
+  const setExam = act((c, k, o) => exoSet(c, k, o || null));
+  function importPreview(text) {
+    const R = parsePlanText(text), cs = Object.keys(R.marked).filter(c => M[c]), perSem = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
+    cs.forEach(c => perSem[R.sem[c] || 0]++);
+    return { modules: cs.length, ects: cs.reduce((a, c) => a + (R.opt[c] ? 0 : (M[c].ects || 0)), 0), perSem, notes: R.warn.slice(), unknown: R.unknown.slice() };
+  }
+  const importApply = act((text, how) => { applyImport(parsePlanText(text), how === 'merge' ? 'merge' : 'replace'); try { renderPlan(); renderSem(); } catch (e) {} });
+  const addExtra = act((raw, code) => {
+    const id = extraParse(raw), cd = String(code || '').trim().toUpperCase();
+    if (!id) return { ok: false, msg: 'Kein TUMonline-Modul-Link und keine ID erkannt.' };
+    const L = extraLoadedIds(); if (L[id]) return { ok: false, msg: L[id] + ' ist schon im Planer.' };
+    if (cd && M[cd]) return { ok: false, msg: cd + ' ist schon im Planer.' };
+    extraList[id] = { c: cd, at: new Date().toISOString().slice(0, 10) }; saveExtra();
+    return { ok: true, msg: 'Vorgemerkt: wird beim nächsten Datenupdate geholt.' };
+  });
+
   window.PL = {
     on(f) { subs.add(f); return () => subs.delete(f); },
     _notify: notify, _known: known, _batch(f) { depth++; try { return f(); } finally { depth--; if (!depth && pending) { pending = false; notify(); } } },
     totals, brackets, rules, issues, checks, modules, search, filters, module, semesters, week, exams, settings, exportText,
+    setInPlan, setBracket, setSemester, setStatus, setSeat, setEasy, setAttendance, setGroup, setVariant, toggleMandatory, toggleMandatoryDate,
+    toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
+    addBlock, editBlock, removeBlock, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
+    openExtra: () => { try { openExtra(); } catch (e) { console.error(e); } },
     label, color, dataDate: () => (DATA.terms && DATA.terms.at) || ''
   };
 })();
