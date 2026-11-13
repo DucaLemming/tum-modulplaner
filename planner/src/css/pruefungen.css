@@ -1,0 +1,15 @@
+/* UI rework: Prüfungen */
+#ui .ui-ex-term { margin: calc(-1 * var(--s2)) 0 var(--s3); }
+#ui .ui-exl, #ui .ui-ex-undated { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+#ui .ui-ex-undated { margin-top: var(--s4); padding-top: var(--s3); }
+#ui .ui-ex-undated .ui-h2 { padding: 0 var(--s3); }
+#ui .ui-exl-kw { padding: var(--s2) var(--s3); background: var(--bg); border-bottom: 1px solid var(--line); font-weight: 600; }
+#ui .ui-exl-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: var(--s3); width: 100%; padding: var(--s2) var(--s3); border: 0; border-bottom: 1px solid var(--line); background: none; text-align: left; cursor: pointer; min-height: 56px; align-items: start; }
+#ui .ui-exl-row:hover { background: var(--bg); }
+#ui .ui-exl-row.ui-exl-clash { box-shadow: inset 3px 0 0 var(--bad); }
+#ui .ui-exl-row.ui-exl-open { grid-template-columns: minmax(0, 1fr); }
+#ui .ui-exl-d, #ui .ui-exl-m { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#ui .ui-exl-n { font-weight: 600; overflow-wrap: anywhere; }
+#ui .ui-exl-tags { gap: var(--s1); }
+#ui .ui-ex-weeks { margin-bottom: var(--s3); }
+@media (max-width: 719px) { #ui .ui-exl-row { grid-template-columns: 84px minmax(0, 1fr); gap: var(--s2); } }
