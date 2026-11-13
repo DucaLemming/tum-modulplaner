@@ -1,0 +1,21 @@
+/* UI rework: sheets, popovers, dialogs */
+.ui-sheet-root { color: var(--ink); font: 400 var(--fs-body)/1.4 var(--font); }
+.ui-sheet-root .ui-sheet-wrap { position: fixed; inset: 0; z-index: 1000; }
+.ui-sheet-root .ui-backdrop { position: absolute; inset: 0; background: rgba(16,24,40,.36); }
+.ui-sheet-root .ui-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 88vh; display: flex; flex-direction: column; background: var(--surface); border-radius: 16px 16px 0 0; box-shadow: var(--e2); animation: ui-up var(--t-sheet) ease-out; outline: none; }
+.ui-sheet-root .ui-sheet.ui-wide { left: 50%; right: auto; bottom: auto; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100vw - 32px)); border-radius: 12px; animation: ui-fade var(--t-sheet) ease-out; }
+.ui-sheet-root .ui-sheet.ui-wide.ui-sheet-popover { transform: none; }
+.ui-sheet-root .ui-sheet-head { display: flex; align-items: center; gap: var(--s2); padding: var(--s3) var(--s2) var(--s2) var(--s4); border-bottom: 1px solid var(--line); }
+.ui-sheet-root .ui-sheet-title { flex: 1; min-width: 0; font-size: var(--fs-card); font-weight: 600; overflow-wrap: anywhere; }
+.ui-sheet-root .ui-sheet-body { overflow: auto; padding: var(--s4); min-width: 0; }
+.ui-sheet-root .ui-actions { display: flex; justify-content: flex-end; gap: var(--s2); flex-wrap: wrap; margin-top: var(--s4); }
+.ui-sheet-root .ui-confirm p { margin: 0; overflow-wrap: anywhere; }
+.ui-sheet-root .ui-menu { display: flex; flex-direction: column; margin: calc(-1 * var(--s2)) calc(-1 * var(--s4)); }
+.ui-sheet-root .ui-menu-item { text-align: left; border: 0; background: transparent; min-height: 44px; padding: 0 var(--s4); cursor: pointer; font-weight: 600; border-bottom: 1px solid var(--line); }
+.ui-sheet-root .ui-menu-item:last-child { border-bottom: 0; }
+.ui-sheet-root .ui-menu-item:hover { background: var(--bg); }
+.ui-sheet-root .ui-field { display: flex; flex-direction: column; gap: var(--s1); margin-bottom: var(--s3); }
+.ui-sheet-root .ui-field > span { font-size: var(--fs-meta); color: var(--muted); font-weight: 600; }
+.ui-sheet-root .ui-row { display: flex; gap: var(--s2); align-items: center; flex-wrap: wrap; }
+@keyframes ui-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes ui-fade { from { opacity: 0; } to { opacity: 1; } }
