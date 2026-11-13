@@ -1,0 +1,70 @@
+name: Modulplaner auto-update
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # daily 03:17 UTC = 04:17 (winter) / 05:17 (summer) in Munich
+  workflow_dispatch:       # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write          # needed to commit the updated planner
+
+concurrency:
+  group: modulplaner-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Playwright (headless Chromium)
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Check that the planner file is there
+        run: |
+          test -f planner/TUM_Modulplaner.html || { echo "::error::planner/TUM_Modulplaner.html fehlt. Siehe README, Abschnitt 5."; exit 1; }
+
+      - name: Fetch TUMonline data and apply (read-only, no login)
+        run: python scripts/run_update.py --planner planner/TUM_Modulplaner.html --plan plan/Modulplan.txt --out work
+
+      - name: Sanity check
+        id: check
+        run: python scripts/check_planner.py planner/TUM_Modulplaner.html work/TUM_Modulplaner.html
+
+      - name: Commit the new planner
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          DAY=$(date -u +%Y-%m-%d)
+          # the run takes ~25 min: if the planner was changed on main meanwhile (new planner version),
+          # the result was built from the old file and must not overwrite it. The next run picks it up.
+          git fetch -q origin main
+          if ! git diff --quiet HEAD origin/main -- planner/TUM_Modulplaner.html; then
+            echo "::warning::Planer wurde während des Laufs geändert. Ergebnis verworfen, der nächste Lauf übernimmt."
+            exit 0
+          fi
+          cp work/TUM_Modulplaner.html planner/TUM_Modulplaner.html
+          mkdir -p reports
+          { echo "# Update $DAY"; echo; echo '```'; cat work/report.txt; echo '```'; } > reports/latest.md
+          echo "- $DAY: $(grep -m1 '^Module:' work/report.txt || echo 'aktualisiert')" >> reports/history.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add planner/TUM_Modulplaner.html reports/
+          git commit -m "Auto-update $DAY"
+          git pull -q --rebase origin main
+          git push
+
+      - name: Keep the raw data for 30 days
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tumonline-run-${{ github.run_number }}
+          path: work/
+          retention-days: 30

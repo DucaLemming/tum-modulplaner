@@ -1,0 +1,107 @@
+https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/207
+HTTP 200
+
+{
+   "link" : [ ],
+   "resource" : [ {
+      "link" : [ {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/207/courseGroupings",
+         "name" : "courseGroupings"
+      }, {
+         "rel" : "external",
+         "href" : "https://campus.tum.de/tumonline/pl/ui/$ctx/wbModHBReport.wbGenHTMLForBeschr?pKnotenNr=3554696&pSemesterNr=207&pLangCode=DE",
+         "type" : "text/html",
+         "name" : "EXPORT"
+      }, {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/207",
+         "name" : "moduleTemplateDetail"
+      }, {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/207/curriculumPositionGroupings",
+         "name" : "curriculumPositionGroupings"
+      }, {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/pages/brm.pm.bc/business-card/D88AF7B7E5B38584",
+         "name" : "IdentityLibDto",
+         "key" : "D88AF7B7E5B38584"
+      }, {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/availableSemesters",
+         "name" : "availableSemesters"
+      } ],
+      "content" : {
+         "type" : "model-slc.tm.cm.reg.moduleTemplateDetailDto",
+         "moduleTemplateDetailDto" : {
+            "id" : 3554696,
+            "identification" : "ED100042",
+            "name" : {
+               "coType" : "model-core.lib.model.langdata",
+               "value" : "Forschungspraktikum Maschinenwesen",
+               "translations" : {
+                  "translation" : [ {
+                     "lang" : "de",
+                     "value" : "Forschungspraktikum Maschinenwesen"
+                  }, {
+                     "lang" : "en",
+                     "value" : "Practical Research Course Mechanical Engineering"
+                  }, {
+                     "lang" : "fr"
+                  }, {
+                     "lang" : "it"
+                  } ]
+               }
+            },
+            "credits" : {
+               "value" : 11,
+               "hint" : {
+                  "coType" : "model-core.lib.model.langdata",
+                  "value" : "Credits können je nach SPO-Version variieren",
+                  "translations" : {
+                     "translation" : [ {
+                        "lang" : "de",
+                        "value" : "Credits können je nach SPO-Version variieren"
+                     }, {
+                        "lang" : "en",
+                        "value" : "Credits may vary according to SPO version"
+                     }, {
+                        "lang" : "fr"
+                     }, {
+                        "lang" : "it"
+                     } ]
+                  }
+               }
+            },
+            "duration" : 4.5,
+            "annotation" : {
+               "coType" : "model-core.lib.model.langdata",
+               "translations" : {
+                  "translation" : [ {
+                     "lang" : "de"
+                  }, {
+                     "lang" : "en"
+                  }, {
+                     "lang" : "fr"
+                  }, {
+                     "lang" : "it"
+                  } ]
+               }
+            },
+            "nodeType" : {
+               "id" : 4,
+               "key" : "MKN",
+               "iconName" : "stp_3"
+            },
+            "nodeDescription" : {
+               "id" : 85769,
+               "nodeDescriptionStatusDto" : {
+                  "id" : 2,
+                  "name" : {
+                     "coType" : "model-core.lib.model.langdata",
+                     "value" : "Beschreibung fertiggestellt",
+                     "translations" : {
+                        "translation" : [ {
+                           "lang" : "de",
+                           "value" : "Beschreibung fertiggestellt"
+          

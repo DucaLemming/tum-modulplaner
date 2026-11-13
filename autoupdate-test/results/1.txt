@@ -1,0 +1,130 @@
+https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/availableSemesters
+HTTP 200
+
+{
+   "link" : [ ],
+   "resource" : [ {
+      "link" : [ {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/209",
+         "name" : "moduleTemplateDetail"
+      } ],
+      "content" : {
+         "type" : "model-slc.lib.sm.selectableSemesterLibDto",
+         "selectableSemesterLibDto" : {
+            "id" : 209,
+            "optionText" : {
+               "coType" : "model-core.lib.model.langdata",
+               "value" : "2027W",
+               "translations" : {
+                  "translation" : [ {
+                     "lang" : "de",
+                     "value" : "2027W"
+                  }, {
+                     "lang" : "en"
+                  }, {
+                     "lang" : "fr"
+                  }, {
+                     "lang" : "it"
+                  } ]
+               }
+            }
+         }
+      }
+   }, {
+      "link" : [ {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/208",
+         "name" : "moduleTemplateDetail"
+      } ],
+      "content" : {
+         "type" : "model-slc.lib.sm.selectableSemesterLibDto",
+         "selectableSemesterLibDto" : {
+            "id" : 208,
+            "optionText" : {
+               "coType" : "model-core.lib.model.langdata",
+               "value" : "2027S",
+               "translations" : {
+                  "translation" : [ {
+                     "lang" : "de",
+                     "value" : "2027S"
+                  }, {
+                     "lang" : "en"
+                  }, {
+                     "lang" : "fr"
+                  }, {
+                     "lang" : "it"
+                  } ]
+               }
+            }
+         }
+      }
+   }, {
+      "link" : [ {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/207",
+         "name" : "moduleTemplateDetail"
+      } ],
+      "content" : {
+         "type" : "model-slc.lib.sm.selectableSemesterLibDto",
+         "selectableSemesterLibDto" : {
+            "id" : 207,
+            "optionText" : {
+               "coType" : "model-core.lib.model.langdata",
+               "value" : "2026W",
+               "translations" : {
+                  "translation" : [ {
+                     "lang" : "de",
+                     "value" : "2026W"
+                  }, {
+                     "lang" : "en"
+                  }, {
+                     "lang" : "fr"
+                  }, {
+                     "lang" : "it"
+                  } ]
+               }
+            }
+         }
+      }
+   }, {
+      "link" : [ {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/206",
+         "name" : "moduleTemplateDetail"
+      } ],
+      "content" : {
+         "type" : "model-slc.lib.sm.selectableSemesterLibDto",
+         "selectableSemesterLibDto" : {
+            "id" : 206,
+            "optionText" : {
+               "coType" : "model-core.lib.model.langdata",
+               "value" : "2026S",
+               "translations" : {
+                  "translation" : [ {
+                     "lang" : "de",
+                     "value" : "2026S"
+                  }, {
+                     "lang" : "en"
+                  }, {
+                     "lang" : "fr"
+                  }, {
+                     "lang" : "it"
+                  } ]
+               }
+            }
+         }
+      }
+   }, {
+      "link" : [ {
+         "rel" : "related",
+         "href" : "https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/205",
+         "name" : "moduleTemplateDetail"
+      } ],
+      "content" : {
+         "type" : "model-slc.lib.sm.selectableSemesterLibDto",
+         "selectableSemesterLibDto" : {
+            "id" : 205,
+            "optionText" : {
+               "coType" : "model-core.lib.model.langdata",
+               "

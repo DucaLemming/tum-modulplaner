@@ -1,0 +1,4 @@
+work/
+__pycache__/
+# personal plan export: lives in the private repo tum-modulplaner-data, copy it here for the golden tests
+plan/

@@ -1,0 +1,7 @@
+https://campus.tum.de/tumonline/ee/rest/slc.cm.reg/student/modules/detail/3554696/207/courseGroupings/courses
+HTTP 200
+
+{
+   "link" : [ ],
+   "resource" : [ ]
+}

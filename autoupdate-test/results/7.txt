@@ -1,0 +1,47 @@
+https://campus.tum.de/tumonline/wbStpCs.cbSpoTree?pStStudiumNr=&pStPersonNr=&pIsStudSicht=FALSE&pShowErg=J&pHideInactive=TRUE&pCaller=&pAction=0&pStpStpNr=5451&pSJNr=1623&pStpKnotenNr=4878472&pId=kn4878472
+HTTP 200
+
+<?xml version="1.0" encoding="UTF-8"?>
+<instructions>
+<instruction action="appendCSS"><![CDATA[
+CO.CSS.addStyle(" .CSS36375991489 { margin-left: 25px !important; } .CSS36375991491 { margin-left: 5px; } .CSS36375991492 { white-space: nowrap; } .CSS36375991473 { width: 1.4em;  height: 1.4em; } .CSS36375991490 { width: 13px;  height: 13px; } ","screen, projection");]]></instruction>
+<instruction action="insertAfterElement" jsid="kn4878472" type="ROWS"><![CDATA[
+<form action="" enctype="" method="POST" name="Mask36375991475" onsubmit="try{return CO.Mask.submitHandler(this);}catch(e){return($E(e));}" class="coBBNoCSS " id="Mask36375991475">
+<table cellspacing="0" class="cotable" id="tgt">
+<thead>
+<tr>
+<th class=" L">
+Knotenfilter-Bezeichnung</th>
+<th class=" L">
+<span class="TextToolTip " title=" "> </span></th>
+<th class=" C">
+<span class="TextToolTip " title="empf. Sem.">empf. Sem.</span></th>
+<th class=" R">
+<span class="TextToolTip " title="ECTS-Credits">ECTS Cr.</span></th>
+<th class=" R">
+<span class="TextToolTip " title="Gewichtungsfaktor">GF</span></th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<th colspan="5" class="ftr">
+&nbsp;
+<span id="idTimer36375991476"></span></th>
+</tr>
+</tfoot>
+<tbody>
+<tr class="coRow z0 hi coTableR  kn4878472 " id="kn4878698">
+<td class=" L"><a href="#" name="coTblIdx_tgt_1" onblur="try{CO.Table.blurRow(this);}catch(e){return($E(e));}" onfocus="try{CO.Table._focusRow($(&quot;tgt&quot;), this);}catch(e){return($E(e));}" class="coTabRA" id="coTblIdx_tgt_1" onclick="try{ return(false);}catch(e){return($E(e));}"></a><div class="CSS36375991489 ">
+<span><a href="#" class="KnotenLink noTextDecoration  " id="kn4878698-toggle" onclick="try{var cs_vIsReloaded = cs_loadSubElems.call(this,'kn4878698',null,'4878698',null,null);;return false;}catch(e){return($E(e));}"><span class="KnotenText noBorder kt kt3 TextToolTip " title="Regelknoten ">Master‘s Thesis</span> <a href="https://campus.tum.de/tumonline/ee/ui/ca2/app/desktop/#/slc.tm.cp/student/courses?curriculumVersionId=5451&amp;$filter=courseFilterResourceId-eq=RUxFTUVOVDtWRVJTSU9OX0lEOjU0NTE7Tk9ERV9JRDo0ODc4Njk4&amp;$ctx=lang=" class="CSS36375991491 " title="Alle Lehrveranstaltungen anzeigen"><img alt="" height="16" src="/tumprod/img/action_export.png?20150126160713" width="16" class="CSS36375991490 "></a></a> <a href="cbstpcs.cbCalendarPlan?pStpKnNr=4878698&amp;pSjNr=1623&amp;pStpStpNr=5451&amp;pStpSTypNr=10000&amp;pStpKnTypNr=3&amp;pOrgNr=1&amp;pTarget=&amp;pIsLeaf=&amp;pAnsicht=&amp;pAllItemsSelected=N&amp;pStartSemester=W" class=" nounderline" onclick="try{return(CO.WIN(this));}catch(e){return($E(e));}" title="Ort/Zeit"><img alt="" height="14" src="/tumprod/img/uhr3.gif?20031217211418" width="14"></a> <a href="cbstpcs.cbCalendarPlan?pStpKnNr=4878698&amp;pSjNr=1623&amp;pStpStpNr=5451&amp;pStpSTypNr=10000&amp;pStpKnTypNr=3&amp;pOrgNr=1&amp;pTarget=P&amp;pIsLeaf=&amp;pAnsicht=&amp;pStartSemester=W" class=" nounderline" onclick="try{return(CO.WIN(this));}catch(e){return($E(e));}" title="Ort/Zeit"><img alt="" height="19" src="/tumprod/img/weeklys.gif?20031217211434" width="20"></a></span></div>
+</td><td class=" L"><div class="L CSS36375991492 ">
+<span><a href="#"></a></span></div>
+</td><td class=" C"><div class="C ">
+<span></span></div>
+</td><td class=" R"><div class="R ">
+<span>30</span></div>
+</td><td class=" R"><div class="R ">
+<span>1</span></div>
+</td></tr>
+<tr class="coRow z1 hi coTableR  kn4878472 " id="kn4878706">
+<td class=" L"><a href="#" name="coTblIdx_tgt_2" onblur="try{CO.Table.blurRow(this);}catch(e){return($E(e));}" onfocus="try{CO.Table._focusRow($(&quot;tgt&quot;), this);}catch(e){return($E(e));}" class="coTabRA" id="coTblIdx_tgt_2" onclick="try{ return(false);}catch(e){return($E(e));}"></a><div class="CSS36375991489 ">
+<span><a href="#" class="KnotenLink noTextDecoration  " id="kn4878706-toggle" onclick="try{var cs_vIsReloaded = cs_loadSubElems.call(this,'kn4878706',null,'4878706',null,null);;return false;}catch(e){return($E(e));}"><span class="KnotenT

@@ -1,0 +1,42 @@
+[
+ {
+  "test": "1 semesters",
+  "status": 200,
+  "ok": true,
+  "bytes": 7047,
+  "ms": 168,
+  "sample": "{ \"link\" : [ ], \"resource\" : [ { \"link\" : [ { \"rel\" : \"rela"
+ },
+ {
+  "test": "2 module detail",
+  "status": 200,
+  "ok": true,
+  "bytes": 59189,
+  "ms": 563,
+  "sample": "{ \"link\" : [ ], \"resource\" : [ { \"link\" : [ { \"rel\" : \"rela"
+ },
+ {
+  "test": "3 course groupings",
+  "status": 200,
+  "ok": true,
+  "bytes": 40,
+  "ms": 623,
+  "sample": "{ \"link\" : [ ], \"resource\" : [ ] }"
+ },
+ {
+  "test": "5/6 skipped",
+  "status": "-",
+  "ok": false,
+  "bytes": 0,
+  "ms": 0,
+  "sample": "no course id"
+ },
+ {
+  "test": "7 study plan tree",
+  "status": 200,
+  "ok": true,
+  "bytes": 17317,
+  "ms": 3244,
+  "sample": "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <instructions> <instruction action=\"appen"
+ }
+]
