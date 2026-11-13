@@ -73,6 +73,7 @@ def device(browser, repo, name):
     ctx = browser.new_context(viewport={"width": 1700, "height": 1000}, locale="de-DE")
     ctx.route("https://planner.test/**", lambda r: r.fulfill(status=200, content_type="text/html; charset=utf-8", body=PLANNER))
     ctx.route("https://api.github.com/**", repo.handle)
+    ctx.add_init_script("try { localStorage.setItem('tum-ui-mode', 'old'); } catch (e) {}")   # the dialog is tested through the old header button
     pg = ctx.new_page()
     pg.errs = []
     pg.on("pageerror", lambda e: pg.errs.append(f"{name}: {e}"))

@@ -109,7 +109,7 @@ The planner keeps your plan in the browser (localStorage). With **☁ Sync** in 
 | More devices | "Weiteres Gerät verbinden" shows a QR code and a link `…#/connect/<owner%2Frepo>/<token>`. The link contains the token: open it only on your own devices. |
 | What is synced | All `tum_*` keys except view state (`tum_wksem`, `tum_wkmax`, `tum_exsem`, `tum_wkf`, `tum_recnotes`). |
 
-Code: `planner/src/sync.js` (and `planner/src/qrcode.js`, MIT, Kazuhiko Arase), embedded into the planner with `python scripts/embed.py`. Test with a mocked GitHub API and simulated devices: `python tests/test_sync.py`.
+Code: `planner/src/sync.js` (and `planner/src/qrcode.js`, MIT, Kazuhiko Arase), embedded into the planner with `python scripts/build.py`. Test with a mocked GitHub API and simulated devices: `python tests/test_sync.py`.
 
 ## 9. What this repository never does
 
