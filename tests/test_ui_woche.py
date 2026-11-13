@@ -12,6 +12,11 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from helpers import check, finish, open_planner, example_plan, import_plan, no_hscroll, shot
 
 EV = "#ui .ui-tg .ui-ev:not(.ui-ev-own):not(.ui-ev-travel)"
+SWIPE = """(dx) => { const el = document.querySelector('#ui .ui-wk-grid'); const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + 100;
+  const t = (cx) => new Touch({ identifier: 1, target: el, clientX: cx, clientY: y });
+  el.dispatchEvent(new TouchEvent('touchstart', { touches: [t(x)], changedTouches: [t(x)], bubbles: true }));
+  el.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [t(x + dx)], bubbles: true })); }"""
+
 
 
 def main():
@@ -58,6 +63,15 @@ def main():
             check(un[0]["name"] in pg.locator("#ui .ui-wk-untimed").inner_text(), "Ohne Zeit shows code and name")
         check(no_hscroll(pg), "no horizontal scroll")
         pg.evaluate(f"uiNav('woche/{s}')"); pg.wait_for_timeout(150)
+        pg.locator(EV).first.hover(); pg.wait_for_timeout(100)
+        check(pg.locator(".ui-sheet-root .ui-tip").count() == 1 and "Antippen" in pg.locator(".ui-sheet-root .ui-tip").inner_text(), "hover on an event block shows a tooltip")
+        pg.mouse.move(5, 5)
+        pg.locator("#ui .ui-top-help").click(); pg.wait_for_timeout(100)
+        hd = pg.locator(".ui-sheet-root .ui-sheet-title").inner_text()
+        check(hd == "Zeichen: Woche" and pg.locator(".ui-sheet-root .ui-legend").count() == 1, f"? on Woche shows only the week legend ({hd})")
+        pg.locator(".ui-sheet-root .ui-linkbtn", has_text="Alle Zeichen anzeigen").click(); pg.wait_for_timeout(50)
+        check(pg.locator(".ui-sheet-root .ui-legend").count() == 7, "Alle Zeichen anzeigen shows every section")
+        pg.keyboard.press("Escape")
         shot(pg, "woche_desktop")
         check(not pg.errs, "no page errors " + "; ".join(pg.errs[:3]))
         pg.context.close()
@@ -69,6 +83,10 @@ def main():
         check(pg.locator("#ui .ui-tg-col").count() == 1, "phone shows one day")
         pg.locator("#ui .ui-wk-days button", has_text="Mi").click(); pg.wait_for_timeout(100)
         check(pg.locator("#ui .ui-tg-body").get_attribute("data-wd") == "3", "day switch shows Mi")
+        pg.evaluate(SWIPE, -120); pg.wait_for_timeout(150)
+        check(pg.locator("#ui .ui-tg-body").get_attribute("data-wd") == "4", "swipe left: next day (Do)")
+        pg.evaluate(SWIPE, 120); pg.wait_for_timeout(150)
+        check(pg.locator("#ui .ui-tg-body").get_attribute("data-wd") == "3", "swipe right: previous day (Mi)")
         check(no_hscroll(pg), "no horizontal scroll")
         shot(pg, "woche_phone")
         check(not pg.errs, "no page errors " + "; ".join(pg.errs[:3]))

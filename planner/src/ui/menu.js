@@ -81,6 +81,7 @@ function uiDisclaimer(ui) {
 }
 function uiInitExtras(ui) {
   uiDisclaimer(ui);
+  uiTipInit();
   setTimeout(uiSyncPaint, 0);
   setInterval(uiSyncPaint, 2000);
 }

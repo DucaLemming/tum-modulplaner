@@ -32,16 +32,23 @@ def main():
             pg.locator(ROWS).first.click(); pg.wait_for_timeout(150)
             check(pg.locator("#ui .ui-modul").is_visible() and pg.locator('#ui .ui-modul .ui-sec[data-sec="pruefung"]').get_attribute("open") is not None, "row tap opens the module panel at Prüfung")
             pg.evaluate("uiCloseModule()"); pg.wait_for_timeout(100)
-            check((pg.locator("#ui .ui-ex-view").count() == 1) == (size == "desktop"), "Kalender toggle only on desktop")
-            if size == "desktop":
-                pg.locator("#ui .ui-ex-view button", has_text="Kalender").click(); pg.wait_for_timeout(150)
-                check(pg.locator("#ui .ui-tg .ui-ev").count() >= 1, "Kalender shows the exam week grid")
-                pg.locator("#ui .ui-ex-view button", has_text="Liste").click(); pg.wait_for_timeout(100)
+            check(pg.locator("#ui .ui-ex-view").count() == 1, "Liste | Kalender toggle on " + size)
+            pg.locator("#ui .ui-ex-view button", has_text="Kalender").click(); pg.wait_for_timeout(150)
+            check(pg.locator("#ui .ui-tg .ui-ev").count() >= 1 and pg.locator("#ui .ui-tg-col").count() == (1 if size == "phone" else pg.locator("#ui .ui-tg-col").count()), "Kalender shows the exam grid (phone: one day)")
+            if size == "phone":
+                check(pg.locator("#ui .ui-wk-days").count() == 1, "phone calendar: day switch")
+            pg.locator("#ui .ui-ex-view button", has_text="Liste").click(); pg.wait_for_timeout(100)
             pg.evaluate("""() => { window._ex = PL.exams; PL.exams = s => ({ s, term: '', label: 'Test', weeks: [{ kw: 7, from: '2027-02-15', rows: [
               { code: 'A1', name: 'Test A', date: '2027-02-15', wd: 1, v: '08:00', b: '09:30', room: '', est: true, retake: false, clash: false, sameDay: false },
               { code: 'B2', name: 'Test B', date: '2027-02-16', wd: 2, v: '10:00', b: '', room: 'MW 2001', est: false, retake: true, clash: true, sameDay: true }] }], undated: [] }); uiRender(true); }""")
             t = pg.locator("#ui .ui-exl").inner_text()
-            check("geschätzt" in t and "Wiederholung" in t and "gleicher Tag" in t, "tags geschätzt, Wiederholung, gleicher Tag shown")
+            check("geschätzt" in t and "↻ Wiederholung" in t and "gleicher Tag" in t, "tags geschätzt, ↻ Wiederholung, gleicher Tag shown")
+            check(pg.locator("#ui .ui-exl-row.ui-exl-re").count() == 1, "retake row is marked (hatched)")
+            pg.locator("#ui .ui-ex-view button", has_text="Kalender").click(); pg.wait_for_timeout(100)
+            if size == "phone":
+                pg.locator("#ui .ui-wk-days button", has_text="Di").click(); pg.wait_for_timeout(100)
+            check(pg.locator("#ui .ui-tg .ui-ev.ui-ev-retake").count() == 1 and "Wdh." in pg.locator("#ui .ui-tg .ui-ev.ui-ev-retake").inner_text(), "retake marked in the calendar")
+            pg.locator("#ui .ui-ex-view button", has_text="Liste").click(); pg.wait_for_timeout(100)
             pg.evaluate("PL.exams = s => ({ s, term: '', label: 'Test', weeks: [], undated: [] }); uiRender(true)")
             check("Keine Prüfungstermine bekannt." in pg.locator("#ui .ui-s-pruefungen").inner_text(), "empty semester: Keine Prüfungstermine bekannt.")
             pg.evaluate("PL.exams = window._ex; uiRender(true)")

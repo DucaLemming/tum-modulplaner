@@ -84,13 +84,8 @@ uiScreens.plan = {
         onclick: () => { uiPlanSel = S.s; uiRender(true); } }, S.s ? S.s + '.' : 'ohne'))));
       const col = uiPlanCol0(cols);
       const wrap = h('div', { class: 'ui-board ui-board-one' }, uiPlanCol(col));
-      let x0 = null, y0 = null;
-      wrap.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; });
-      wrap.addEventListener('pointerup', e => {
-        if (x0 == null) return; const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
-        if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
-        const i = cols.indexOf(col), j = i + (dx < 0 ? 1 : -1); if (j >= 0 && j < cols.length) { uiPlanSel = cols[j].s; uiRender(true); }
-      });
+      const step = d => { const i = cols.indexOf(col), j = i + d; if (j >= 0 && j < cols.length) { uiPlanSel = cols[j].s; uiRender(true); } };
+      uiSwipe(wrap, () => step(1), () => step(-1));
       c.appendChild(wrap);
       return;
     }

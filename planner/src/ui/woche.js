@@ -39,7 +39,7 @@ function uiEvNode(it, s) {
   if (it.kind === 'travel') return h('div', { class: 'ui-ev-travel' + (it.clash ? ' ui-ev-clash' : ''), title: it.title + ' · ' + it.min + ' min' }, h('span', { text: it.min + "'" }));
   const st = { onl: 'online', rec: 'rec', skip: 'skip', done: 'done' }[it.status] || 'vor';
   return h('button', { class: 'ui-ev ui-ev-' + st + (it.clash ? ' ui-ev-clash' : '') + (it.soft ? ' ui-ev-soft' : '') + (it.tag ? ' ui-ev-faint' : '') + (it.hiddenByDefault ? ' ui-ev-hidden' : ''),
-    type: 'button', 'data-code': it.code, 'data-key': it.key, style: { '--fill': it.fill }, onclick: e => uiEventSheet(it.code, it.key, e.currentTarget, s) },
+    type: 'button', 'data-code': it.code, 'data-key': it.key, 'data-tip': [{ vor: 'Vor Ort', online: 'Online', rec: 'Aufzeichnung (zählt nicht)', skip: 'Nicht (zählt nicht)', done: 'Erledigt (zählt nicht)' }[st], it.clash ? (it.soft ? 'unsichere Überschneidung' : 'Überschneidung') : '', it.mand ? 'Pflicht' : '', it.tag, it.vj ? 'Zeit aus dem Vorjahr' : '', 'Antippen zum Ändern'].filter(Boolean).join(' · '), style: { '--fill': it.fill }, onclick: e => uiEventSheet(it.code, it.key, e.currentTarget, s) },
     h('span', { class: 'ui-ev-l1' }, h('b', { text: it.code + ' ' + it.t }), it.clash ? ' ⚡' : '', it.mand ? ' ❗' : '', st === 'online' ? ' 💻' : ''),
     h('span', { class: 'ui-ev-l2', text: it.title }),
     h('span', { class: 'ui-ev-l3', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) + (it.room ? ' · ' + it.room : '') }),
@@ -69,7 +69,6 @@ uiScreens.woche = {
       !W.pub ? h('span', { class: 'ui-tag', text: 'Zeiten: Vorjahr' }) : null,
       h('div', { class: 'ui-head-x' },
         h('button', { class: 'ui-btn', type: 'button', 'aria-haspopup': 'true', onclick: e => uiFilterPop(e.currentTarget, 'Anzeige', () => [tog('alt', 'Alternativen zeigen'), tog('hid', 'Ausgeblendete zeigen'), tog('cf', 'nur Überschneidungen'), tog('list', 'Liste')]) }, 'Anzeige ▾'),
-        uiHelpBtn('woche'),
         h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => uiBlockForm(null, { wd: uiWeekDay || 1 }) }, '＋ Termin'))));
     const phone = window.innerWidth < 720;
     const td = new Date().getDay(); if (!uiWeekDay) uiWeekDay = td >= 1 && td <= 5 ? td : 1;
@@ -99,10 +98,8 @@ uiScreens.woche = {
         h('span', { class: 'ui-agenda-t', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) }), uiEvNode(it, s))), !D.items.length ? h('p', { class: 'ui-empty', text: 'Keine Termine.' }) : null);
       else el = uiTimeGrid([o], { onDraw: draw });
       const wrap = h('div', { class: 'ui-wk-grid' }, el);
-      let x0 = null, y0 = null;
-      wrap.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; });
-      wrap.addEventListener('pointerup', e => { if (x0 == null) return; const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null; if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
-        const i = W.days.indexOf(D), j = i + (dx < 0 ? 1 : -1); if (j >= 0 && j < W.days.length) { uiWeekDay = W.days[j].wd; uiRender(true); } });
+      const step = d => { const i = W.days.indexOf(D), j = i + d; if (j >= 0 && j < W.days.length) { uiWeekDay = W.days[j].wd; uiRender(true); } };
+      uiSwipe(wrap, () => step(1), () => step(-1));
       c.appendChild(wrap);
     } else c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(W.days.map(dayObj), { onDraw: draw })));
     if (W.untimed.length) c.appendChild(h('div', { class: 'ui-wk-untimed' }, h('span', { class: 'ui-meta', text: 'Ohne Zeit' }),

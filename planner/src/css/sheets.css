@@ -36,3 +36,4 @@
 #ui .ui-btn, .ui-sheet-root .ui-btn { white-space: normal; text-align: center; max-width: 100%; }
 .ui-sheet-root .ui-legenddoc { display: flex; flex-direction: column; gap: var(--s2); }
 .ui-sheet-root .ui-devlink-more > summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 36px; display: flex; align-items: center; }
+.ui-sheet-root .ui-tip { position: fixed; z-index: 3000; max-width: 280px; padding: 6px 10px; border-radius: 6px; background: #16202a; color: #fff; font-size: 12px; line-height: 1.35; box-shadow: var(--e2); pointer-events: none; }

@@ -55,6 +55,17 @@ function uiIcon(name, size) {
 /* seat state of a limited module: voll / teils voll / N frei / erhalten */
 function uiSeatTag(seat) {
   if (!seat) return null;
-  if (seat.got) return h('span', { class: 'ui-tag ui-seat ui-seat-got', title: 'Platz erhalten' }, '🔒 Platz erhalten');
-  return h('span', { class: 'ui-tag ui-seat ui-seat-' + seat.state, title: 'Teilnehmerzahl begrenzt' }, '🔒 ' + seat.text);
+  if (seat.got) return h('span', { class: 'ui-tag ui-seat ui-seat-got' }, '🔒 Platz erhalten');
+  return h('span', { class: 'ui-tag ui-seat ui-seat-' + seat.state }, '🔒 ' + seat.text);
+}
+/* horizontal swipe on touch screens (vertical scrolling stays with the browser) */
+function uiSwipe(el, onNext, onPrev) {
+  let x0 = null, y0 = null;
+  el.addEventListener('touchstart', e => { if (e.touches.length !== 1) { x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (x0 == null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
+    if (dx < 0) onNext(); else onPrev();
+  }, { passive: true });
+  el.addEventListener('touchcancel', () => { x0 = null; }, { passive: true });
 }

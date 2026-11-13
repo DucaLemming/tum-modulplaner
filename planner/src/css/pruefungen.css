@@ -13,3 +13,9 @@
 #ui .ui-exl-tags { gap: var(--s1); }
 #ui .ui-ex-weeks { margin-bottom: var(--s3); }
 @media (max-width: 719px) { #ui .ui-exl-row { grid-template-columns: 84px minmax(0, 1fr); gap: var(--s2); } }
+#ui .ui-exl-row.ui-exl-re { background: repeating-linear-gradient(135deg, transparent 0 8px, #fdf3e1 8px 12px); }
+#ui .ui-exl-row.ui-exl-re .ui-exl-n { font-weight: 400; }
+#ui .ui-tag-retake { color: #6b4a0e; background: #fdf0d5; border-color: var(--warn); }
+#ui .ui-ev.ui-ev-retake { background: repeating-linear-gradient(135deg, #fdf0d5 0 6px, #fff 6px 10px); border-color: var(--warn); border-style: dashed; }
+#ui .ui-wk-days > .ui-dayhas { font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
+#ui .ui-s-pruefungen .ui-wk-grid { touch-action: pan-y; }

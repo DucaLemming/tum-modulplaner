@@ -3671,6 +3671,7 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 #ui .ui-btn, .ui-sheet-root .ui-btn { white-space: normal; text-align: center; max-width: 100%; }
 .ui-sheet-root .ui-legenddoc { display: flex; flex-direction: column; gap: var(--s2); }
 .ui-sheet-root .ui-devlink-more > summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 36px; display: flex; align-items: center; }
+.ui-sheet-root .ui-tip { position: fixed; z-index: 3000; max-width: 280px; padding: 6px 10px; border-radius: 6px; background: #16202a; color: #fff; font-size: 12px; line-height: 1.35; box-shadow: var(--e2); pointer-events: none; }
 /* UI rework: Übersicht */
 #ui .ui-h2 { font-size: var(--fs-card); font-weight: 600; margin: 0 0 var(--s3); }
 #ui .ui-linkbtn, .ui-sheet-root .ui-linkbtn { border: 0; background: none; color: var(--accent); font-weight: 600; cursor: pointer; padding: var(--s2) 0; min-height: 36px; text-align: left; }
@@ -3968,6 +3969,7 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 @media (max-width: 440px) { .ui-sheet-root .ui-att { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ui-sheet-root .ui-att > button { border-bottom: 1px solid var(--line); } }
 #ui .ui-untimed { white-space: normal; text-align: left; height: auto; padding: var(--s1) var(--s3); max-width: 100%; overflow-wrap: anywhere; }
 .ui-sheet-root .ui-evacts .ui-btn { white-space: normal; height: auto; }
+#ui .ui-wk-grid, #ui .ui-board-one { touch-action: pan-y; }
 /* UI rework: Prüfungen */
 #ui .ui-ex-term { margin: calc(-1 * var(--s2)) 0 var(--s3); }
 #ui .ui-exl, #ui .ui-ex-undated { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
@@ -3983,6 +3985,12 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 #ui .ui-exl-tags { gap: var(--s1); }
 #ui .ui-ex-weeks { margin-bottom: var(--s3); }
 @media (max-width: 719px) { #ui .ui-exl-row { grid-template-columns: 84px minmax(0, 1fr); gap: var(--s2); } }
+#ui .ui-exl-row.ui-exl-re { background: repeating-linear-gradient(135deg, transparent 0 8px, #fdf3e1 8px 12px); }
+#ui .ui-exl-row.ui-exl-re .ui-exl-n { font-weight: 400; }
+#ui .ui-tag-retake { color: #6b4a0e; background: #fdf0d5; border-color: var(--warn); }
+#ui .ui-ev.ui-ev-retake { background: repeating-linear-gradient(135deg, #fdf0d5 0 6px, #fff 6px 10px); border-color: var(--warn); border-style: dashed; }
+#ui .ui-wk-days > .ui-dayhas { font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
+#ui .ui-s-pruefungen .ui-wk-grid { touch-action: pan-y; }
 </style>
 <script id="tumQr">
 //---------------------------------------------------------------------
@@ -7074,8 +7082,19 @@ function uiIcon(name, size) {
 /* seat state of a limited module: voll / teils voll / N frei / erhalten */
 function uiSeatTag(seat) {
   if (!seat) return null;
-  if (seat.got) return h('span', { class: 'ui-tag ui-seat ui-seat-got', title: 'Platz erhalten' }, '🔒 Platz erhalten');
-  return h('span', { class: 'ui-tag ui-seat ui-seat-' + seat.state, title: 'Teilnehmerzahl begrenzt' }, '🔒 ' + seat.text);
+  if (seat.got) return h('span', { class: 'ui-tag ui-seat ui-seat-got' }, '🔒 Platz erhalten');
+  return h('span', { class: 'ui-tag ui-seat ui-seat-' + seat.state }, '🔒 ' + seat.text);
+}
+/* horizontal swipe on touch screens (vertical scrolling stays with the browser) */
+function uiSwipe(el, onNext, onPrev) {
+  let x0 = null, y0 = null;
+  el.addEventListener('touchstart', e => { if (e.touches.length !== 1) { x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (x0 == null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
+    if (dx < 0) onNext(); else onPrev();
+  }, { passive: true });
+  el.addEventListener('touchcancel', () => { x0 = null; }, { passive: true });
 }
 /* UI rework: boot. Moves the old page into #legacy (hidden; the engine still renders into it) and creates #ui. */
 const UI_MODE_KEY = 'tum-ui-mode';
@@ -7814,13 +7833,8 @@ uiScreens.plan = {
         onclick: () => { uiPlanSel = S.s; uiRender(true); } }, S.s ? S.s + '.' : 'ohne'))));
       const col = uiPlanCol0(cols);
       const wrap = h('div', { class: 'ui-board ui-board-one' }, uiPlanCol(col));
-      let x0 = null, y0 = null;
-      wrap.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; });
-      wrap.addEventListener('pointerup', e => {
-        if (x0 == null) return; const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
-        if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
-        const i = cols.indexOf(col), j = i + (dx < 0 ? 1 : -1); if (j >= 0 && j < cols.length) { uiPlanSel = cols[j].s; uiRender(true); }
-      });
+      const step = d => { const i = cols.indexOf(col), j = i + d; if (j >= 0 && j < cols.length) { uiPlanSel = cols[j].s; uiRender(true); } };
+      uiSwipe(wrap, () => step(1), () => step(-1));
       c.appendChild(wrap);
       return;
     }
@@ -7871,7 +7885,7 @@ function uiEvNode(it, s) {
   if (it.kind === 'travel') return h('div', { class: 'ui-ev-travel' + (it.clash ? ' ui-ev-clash' : ''), title: it.title + ' · ' + it.min + ' min' }, h('span', { text: it.min + "'" }));
   const st = { onl: 'online', rec: 'rec', skip: 'skip', done: 'done' }[it.status] || 'vor';
   return h('button', { class: 'ui-ev ui-ev-' + st + (it.clash ? ' ui-ev-clash' : '') + (it.soft ? ' ui-ev-soft' : '') + (it.tag ? ' ui-ev-faint' : '') + (it.hiddenByDefault ? ' ui-ev-hidden' : ''),
-    type: 'button', 'data-code': it.code, 'data-key': it.key, style: { '--fill': it.fill }, onclick: e => uiEventSheet(it.code, it.key, e.currentTarget, s) },
+    type: 'button', 'data-code': it.code, 'data-key': it.key, 'data-tip': [{ vor: 'Vor Ort', online: 'Online', rec: 'Aufzeichnung (zählt nicht)', skip: 'Nicht (zählt nicht)', done: 'Erledigt (zählt nicht)' }[st], it.clash ? (it.soft ? 'unsichere Überschneidung' : 'Überschneidung') : '', it.mand ? 'Pflicht' : '', it.tag, it.vj ? 'Zeit aus dem Vorjahr' : '', 'Antippen zum Ändern'].filter(Boolean).join(' · '), style: { '--fill': it.fill }, onclick: e => uiEventSheet(it.code, it.key, e.currentTarget, s) },
     h('span', { class: 'ui-ev-l1' }, h('b', { text: it.code + ' ' + it.t }), it.clash ? ' ⚡' : '', it.mand ? ' ❗' : '', st === 'online' ? ' 💻' : ''),
     h('span', { class: 'ui-ev-l2', text: it.title }),
     h('span', { class: 'ui-ev-l3', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) + (it.room ? ' · ' + it.room : '') }),
@@ -7901,7 +7915,6 @@ uiScreens.woche = {
       !W.pub ? h('span', { class: 'ui-tag', text: 'Zeiten: Vorjahr' }) : null,
       h('div', { class: 'ui-head-x' },
         h('button', { class: 'ui-btn', type: 'button', 'aria-haspopup': 'true', onclick: e => uiFilterPop(e.currentTarget, 'Anzeige', () => [tog('alt', 'Alternativen zeigen'), tog('hid', 'Ausgeblendete zeigen'), tog('cf', 'nur Überschneidungen'), tog('list', 'Liste')]) }, 'Anzeige ▾'),
-        uiHelpBtn('woche'),
         h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => uiBlockForm(null, { wd: uiWeekDay || 1 }) }, '＋ Termin'))));
     const phone = window.innerWidth < 720;
     const td = new Date().getDay(); if (!uiWeekDay) uiWeekDay = td >= 1 && td <= 5 ? td : 1;
@@ -7931,10 +7944,8 @@ uiScreens.woche = {
         h('span', { class: 'ui-agenda-t', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) }), uiEvNode(it, s))), !D.items.length ? h('p', { class: 'ui-empty', text: 'Keine Termine.' }) : null);
       else el = uiTimeGrid([o], { onDraw: draw });
       const wrap = h('div', { class: 'ui-wk-grid' }, el);
-      let x0 = null, y0 = null;
-      wrap.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; });
-      wrap.addEventListener('pointerup', e => { if (x0 == null) return; const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null; if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
-        const i = W.days.indexOf(D), j = i + (dx < 0 ? 1 : -1); if (j >= 0 && j < W.days.length) { uiWeekDay = W.days[j].wd; uiRender(true); } });
+      const step = d => { const i = W.days.indexOf(D), j = i + d; if (j >= 0 && j < W.days.length) { uiWeekDay = W.days[j].wd; uiRender(true); } };
+      uiSwipe(wrap, () => step(1), () => step(-1));
       c.appendChild(wrap);
     } else c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(W.days.map(dayObj), { onDraw: draw })));
     if (W.untimed.length) c.appendChild(h('div', { class: 'ui-wk-untimed' }, h('span', { class: 'ui-meta', text: 'Ohne Zeit' }),
@@ -8012,15 +8023,15 @@ function uiEventSheet(code, key, anchor) {
   return close;
 }
 /* UI rework: Prüfungen. Exam dates of one semester as a list grouped by calendar week; desktop also as a week grid. */
-let uiExView = 'list', uiExWeek = {};
+let uiExView = (() => { try { return localStorage.getItem('tum-ui-exview') === 'cal' ? 'cal' : 'list'; } catch (e) { return 'list'; } })(), uiExWeek = {}, uiExDay = {};
 function uiExOpen(code) { uiModulOpen[code + '|pruefung'] = true; uiOpenModule(code); }
 function uiExTags(r) {
-  return [r.est ? h('span', { class: 'ui-tag', text: 'geschätzt' }) : null, r.retake ? h('span', { class: 'ui-tag', text: 'Wiederholung' }) : null,
+  return [r.est ? h('span', { class: 'ui-tag', text: 'geschätzt' }) : null, r.retake ? h('span', { class: 'ui-tag ui-tag-retake', text: '↻ Wiederholung' }) : null,
     r.clash ? h('span', { class: 'ui-tag ui-tag-bad', text: '⚡ Überschneidung' }) : null, r.sameDay ? h('span', { class: 'ui-tag', text: 'gleicher Tag' }) : null,
     r.optional ? h('span', { class: 'ui-tag', text: 'optional' }) : null];
 }
 function uiExRow(r) {
-  return h('button', { class: 'ui-exl-row' + (r.clash ? ' ui-exl-clash' : ''), type: 'button', 'data-code': r.code, 'data-date': r.date, onclick: () => uiExOpen(r.code) },
+  return h('button', { class: 'ui-exl-row' + (r.clash ? ' ui-exl-clash' : '') + (r.retake ? ' ui-exl-re' : ''), type: 'button', 'data-code': r.code, 'data-date': r.date, onclick: () => uiExOpen(r.code) },
     h('span', { class: 'ui-exl-d' }, h('b', { text: uiFmt.wd(r.wd) + ' ' + uiFmt.date(r.date) }), h('span', { class: 'ui-meta', text: r.v ? r.v + (r.b ? '–' + r.b : '') : 'Zeit offen' })),
     h('span', { class: 'ui-exl-m' }, h('span', { class: 'ui-meta', text: r.code + (r.room ? ' · ' + r.room : '') }), h('span', { class: 'ui-exl-n', text: r.name }), h('span', { class: 'ui-row ui-exl-tags' }, uiExTags(r))));
 }
@@ -8031,21 +8042,28 @@ uiScreens.pruefungen = {
     c.appendChild(h('div', { class: 'ui-head' }, h('h1', { class: 'ui-title', text: 'Prüfungen' }),
       h('div', { class: 'ui-head-x' },
         h('div', { class: 'ui-seg ui-ex-sem', role: 'tablist', 'aria-label': 'Semester' }, [1, 2, 3, 4].map(i => h('button', { class: i === s ? 'ui-on' : '', type: 'button', role: 'tab', 'aria-selected': String(i === s), onclick: () => uiNav('pruefungen/' + i) }, i + '.'))),
-        uiHelpBtn('pruefungen'),
-        wide ? h('div', { class: 'ui-seg ui-ex-view', role: 'group', 'aria-label': 'Ansicht' }, [['list', 'Liste'], ['cal', 'Kalender']].map(([v, l]) => h('button', { class: uiExView === v ? 'ui-on' : '', type: 'button', 'aria-pressed': String(uiExView === v), onclick: () => { uiExView = v; uiRender(true); } }, l))) : null)));
+        h('div', { class: 'ui-seg ui-ex-view', role: 'group', 'aria-label': 'Ansicht' }, [['list', 'Liste'], ['cal', 'Kalender']].map(([v, l]) => h('button', { class: uiExView === v ? 'ui-on' : '', type: 'button', 'aria-pressed': String(uiExView === v), onclick: () => { uiExView = v; try { localStorage.setItem('tum-ui-exview', v); } catch (e) {} uiRender(true); } }, l))))));
     c.appendChild(h('p', { class: 'ui-meta ui-ex-term', text: X.label }));
     if (!rows) c.appendChild(h('p', { class: 'ui-empty ui-card', text: 'Keine Prüfungstermine bekannt.' }));
-    else if (wide && uiExView === 'cal') {
+    else if (uiExView === 'cal') {
       const ws = X.weeks, cur = ws.find(w => w.kw === uiExWeek[s]) || ws[0];
-      c.appendChild(h('div', { class: 'ui-row ui-ex-weeks' }, ws.map(w => h('button', { class: 'ui-chip' + (w === cur ? ' ui-on' : ''), type: 'button', onclick: () => { uiExWeek[s] = w.kw; uiRender(true); } }, 'KW ' + w.kw + ' · ' + w.rows.length))));
-      const days = [1, 2, 3, 4, 5].concat(cur.rows.some(r => r.wd === 6) ? [6] : []).map(wd => {
+      c.appendChild(h('div', { class: 'ui-row ui-ex-weeks' }, ws.map(w => h('button', { class: 'ui-chip' + (w === cur ? ' ui-on' : ''), type: 'button', onclick: () => { uiExWeek[s] = w.kw; delete uiExDay[s]; uiRender(true); } }, 'KW ' + w.kw + ' · ' + w.rows.length))));
+      let days = [1, 2, 3, 4, 5].concat(cur.rows.some(r => r.wd === 6) ? [6] : []).map(wd => {
         const iso = (() => { const d = new Date(cur.from + 'T12:00:00'); d.setDate(d.getDate() + wd - 1); return d.toISOString().slice(0, 10); })();
         return { wd, clash: cur.rows.some(r => r.wd === wd && r.clash), title: h('b', { text: uiFmt.wd(wd) + ' ' + uiFmt.date(iso) }),
           items: cur.rows.filter(r => r.wd === wd).map(r => { const a = r.v ? +r.v.slice(0, 2) * 60 + +r.v.slice(3, 5) : 8 * 60, b = r.b ? +r.b.slice(0, 2) * 60 + +r.b.slice(3, 5) : a + 90;
-            return { a, b, node: h('button', { class: 'ui-ev' + (r.clash ? ' ui-ev-clash' : '') + (r.est ? ' ui-ev-faint' : ''), type: 'button', style: { '--fill': PL.color((PL.module(r.code) || { state: {} }).state.bracket) }, onclick: () => uiExOpen(r.code) },
-              h('b', { class: 'ui-ev-l1', text: r.code }), h('span', { class: 'ui-ev-l2', text: r.name }), h('span', { class: 'ui-ev-l3', text: (r.v || '') + (r.b ? '–' + r.b : '') + (r.room ? ' · ' + r.room : '') })) }; }) };
+            return { a, b, node: h('button', { class: 'ui-ev' + (r.clash ? ' ui-ev-clash' : '') + (r.est ? ' ui-ev-faint' : '') + (r.retake ? ' ui-ev-retake' : ''), type: 'button', 'data-tip': [r.retake ? 'Wiederholungsprüfung' : '', r.est ? 'Termin geschätzt' : '', r.clash ? 'Überschneidung' : ''].filter(Boolean).join(' · ') || null, style: { '--fill': PL.color((PL.module(r.code) || { state: {} }).state.bracket) }, onclick: () => uiExOpen(r.code) },
+              h('b', { class: 'ui-ev-l1', text: (r.retake ? '↻ Wdh. ' : '') + r.code }), h('span', { class: 'ui-ev-l2', text: r.name }), h('span', { class: 'ui-ev-l3', text: (r.v || '') + (r.b ? '–' + r.b : '') + (r.room ? ' · ' + r.room : '') })) }; }) };
       });
-      c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(days)));
+      if (!wide) {
+        const withEx = days.filter(d => d.items.length), cd = days.find(d => d.wd === uiExDay[s]) || withEx[0] || days[0];
+        c.appendChild(h('div', { class: 'ui-seg ui-wk-days', role: 'tablist', 'aria-label': 'Tag' }, days.map(d => h('button', { class: (d === cd ? 'ui-on' : '') + (d.items.length ? ' ui-dayhas' : ''), type: 'button', role: 'tab', 'aria-selected': String(d === cd),
+          onclick: () => { uiExDay[s] = d.wd; uiRender(true); } }, uiFmt.wd(d.wd)))));
+        const wrap = h('div', { class: 'ui-wk-grid' }, uiTimeGrid([cd]));
+        const step = k => { const i = days.indexOf(cd) + k; if (i >= 0 && i < days.length) { uiExDay[s] = days[i].wd; uiRender(true); } };
+        uiSwipe(wrap, () => step(1), () => step(-1));
+        c.appendChild(wrap);
+      } else c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(days)));
     } else {
       c.appendChild(h('div', { class: 'ui-exl' }, X.weeks.map(w => [h('div', { class: 'ui-exl-kw' }, 'KW ' + w.kw, h('span', { class: 'ui-meta', text: ' · ab ' + uiFmt.date(w.from) })), w.rows.map(uiExRow)])));
     }
@@ -8136,6 +8154,7 @@ function uiDisclaimer(ui) {
 }
 function uiInitExtras(ui) {
   uiDisclaimer(ui);
+  uiTipInit();
   setTimeout(uiSyncPaint, 0);
   setInterval(uiSyncPaint, 2000);
 }
@@ -8184,20 +8203,73 @@ const UI_LEGEND = {
   woche: ['Woche', [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet (sichtbar mit Anzeige > Ausgeblendete zeigen)'],
     ['Überschneidung', 'roter Rand und ⚡'], ['unsichere Überschneidung', 'gelber Rand (Vorjahreszeiten)'], ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'],
     ['Fahrt', 'schmaler schraffierter Streifen links mit Minuten'], ['Punkt unter dem Tag (Handy)', 'an diesem Tag gibt es eine Überschneidung']]],
-  pruefungen: ['Prüfungen', [['geschätzt', 'noch kein Termin, aus dem Vorjahr geschätzt'], ['Wiederholung', 'Wiederholungsprüfung, zählt nicht für Überschneidungen'], ['⚡ Überschneidung', 'zwei Prüfungen zur selben Zeit'],
+  pruefungen: ['Prüfungen', [['geschätzt', 'noch kein Termin, aus dem Vorjahr geschätzt'], ['↻ Wiederholung (gelb schraffiert)', 'Wiederholungsprüfung, zählt nicht für Überschneidungen'], ['⚡ Überschneidung', 'zwei Prüfungen zur selben Zeit'],
     ['gleicher Tag', 'zwei Prüfungen am selben Tag'], ['roter linker Rand', 'Überschneidung']]],
   modul: ['Modul', [['Teilnahme-Etikett hervorgehoben', 'von der Voreinstellung abweichend'], ['Vorjahr', 'Zeit aus dem Vorjahr'], ['❗', 'Anwesenheitspflicht'], ['blasse Terminzeile', 'gehört zu einer nicht gewählten Gruppe']]],
   platz: ['Begrenzte Module', [['🔒 voll (rot)', 'alle Plätze im geplanten Semester vergeben'], ['🔒 teils voll (gelb)', 'einige Gruppen voll'], ['🔒 N von M frei (grün)', 'noch Plätze frei'],
     ['🔒 Platz erhalten', 'du hast den Platz'], ['🔒 Belegung unbekannt', 'TUMonline zeigt noch keine Belegung'], ['grau', 'Zahlen aus einem anderen Semester (meist Vorjahr)']]]
 };
+/* which legend sections can occur on which page */
+const UI_LEGEND_FOR = { uebersicht: ['uebersicht', 'platz'], module: ['module', 'platz'], plan: ['plan', 'platz'], woche: ['woche'], pruefungen: ['pruefungen'], modul: ['modul', 'platz'] };
+function uiLegendKey() { const r = uiRoute(); return r.module ? 'modul' : r.screen; }
 function uiLegendBody(first) {
-  const keys = Object.keys(UI_LEGEND).sort((a, b) => (b === first) - (a === first));
-  return h('div', { class: 'ui-legenddoc' }, keys.map(k => [h('h3', { class: 'ui-h3', text: UI_LEGEND[k][0] }),
+  const only = first ? UI_LEGEND_FOR[first] : null;
+  const keys = only && only.length ? only : Object.keys(UI_LEGEND);
+  const box = h('div', { class: 'ui-legenddoc' }, keys.map(k => [only ? (keys.length > 1 ? h('h3', { class: 'ui-h3', text: UI_LEGEND[k][0] }) : null) : h('h3', { class: 'ui-h3', text: UI_LEGEND[k][0] }),
     h('dl', { class: 'ui-legend' }, UI_LEGEND[k][1].map(([a, b]) => [h('dt', { text: a }), h('dd', { text: b })]))]));
+  if (only && only.length) box.appendChild(h('button', { class: 'ui-linkbtn', type: 'button', onclick: () => { box.replaceWith(uiLegendBody('')); } }, 'Alle Zeichen anzeigen'));
+  return box;
 }
-function uiLegend(anchor, first) { uiSheet('Zeichen und Farben', uiLegendBody(first || (uiRoute().module ? 'modul' : uiRoute().screen)), { kind: 'dialog' }); }
+function uiLegend(anchor, first) {
+  const k = first || uiLegendKey(), L = UI_LEGEND_FOR[k];
+  const title = L && L.length ? 'Zeichen: ' + UI_LEGEND[L[0]][0] : 'Zeichen und Farben';
+  uiSheet(title, uiLegendBody(L && L.length ? k : ''), { kind: 'dialog' });
+}
 function uiHelpBtn(first) { return h('button', { class: 'ui-iconbtn ui-help-btn', type: 'button', 'aria-label': 'Zeichen und Farben erklären', title: 'Zeichen und Farben', onclick: e => uiLegend(e.currentTarget, first) }, '?'); }
-/* UI rework: Hilfe. Kürzel, legend, counting rules, disclaimer. */
+
+/* desktop: hover over a symbol or tag shows what it means, above the page content */
+const UI_TIPS = {
+  'optional': 'Steht im Plan, zählt aber nicht', 'Alternative': 'Von mehreren Modulen einer Entscheidung zählt nur das erste', 'Platz offen': 'Zählt erst, sobald du den Platz hast',
+  'abgeschlossen': 'Schon bestanden', 'Vorjahr': 'Zeiten aus dem Vorjahr, das Semester ist noch nicht veröffentlicht', 'Zeiten: Vorjahr': 'Dieses Semester ist noch nicht veröffentlicht, die Zeiten stammen aus dem Vorjahr',
+  'unsicher': 'Überschneidung nur mit Vorjahreszeiten', 'geschätzt': 'Noch kein Termin, aus dem Vorjahr geschätzt', '↻ Wiederholung': 'Wiederholungsprüfung, zählt nicht für Überschneidungen',
+  'gleicher Tag': 'Zwei Prüfungen am selben Tag', '⚡ Überschneidung': 'Zwei Prüfungen zur selben Zeit', 'neu': 'Neu in den Moduldaten', 'eingestellt?': 'Wird vielleicht nicht mehr angeboten',
+  'Block': 'Blockveranstaltung', 'Ethik': 'Zählt für die Ethik-Pflicht (Überfachliche Ergänzung)', 'eigener Termin': 'Von dir eingetragener Prüfungstermin', 'geändert': 'Von dir geänderter Prüfungstermin',
+  'zählt vorerst': 'Zählt, solange die Entscheidung offen ist', 'genutzt': 'In diesem Abschnitt ist etwas eingestellt', '⚡': 'Überschneidung oder Hinweis zu diesem Modul',
+  '⚠': 'Regel', '⇄': 'Entscheidung zwischen Alternativen', '🔒': 'Teilnehmerzahl begrenzt', '🚆': 'Fahrzeit reicht nicht', '↕': 'Reihenfolge: Turnus oder Voraussetzung', 'ⓘ': 'Angebot unsicher', '↻': 'Datenupdate',
+  '✓': 'erfüllt', '⛔': 'Als „Nicht für mich“ markiert', '❗': 'Anwesenheitspflicht', '💻': 'Online', 'W': 'Nur im Wintersemester angeboten', 'S': 'Nur im Sommersemester angeboten', 'W+S': 'Im Winter und im Sommer angeboten',
+  'Vor Ort': 'Du gehst hin (zählt für Überschneidungen und Wege)', 'Online': 'Du nimmst online teil', 'Aufzeichnung': 'Du schaust die Aufzeichnung (zählt nicht)', 'Nicht': 'Du gehst nicht hin (zählt nicht)', 'Erledigt': 'Schon erledigt (zählt nicht)'
+};
+const UI_SEAT_TIP = { full: 'Alle Plätze im geplanten Semester vergeben', part: 'Einige Gruppen sind voll', free: 'Noch Plätze frei', unknown: 'TUMonline zeigt noch keine Belegung', old: 'Zahlen aus einem anderen Semester, meist Vorjahr', got: 'Du hast den Platz' };
+function uiTipText(el) {
+  if (el.dataset.tip) return el.dataset.tip;
+  const seat = [...el.classList].find(c => c.startsWith('ui-seat-'));
+  if (seat) return UI_SEAT_TIP[seat.slice(8)] || '';
+  if (el.title) return el.title;
+  const t = (el.textContent || '').trim();
+  if (UI_TIPS[t]) return UI_TIPS[t];
+  const first = t.split(/\s+/)[0];
+  return el.classList.contains('ui-issue-ic') || el.classList.contains('ui-bracket-st') ? (UI_TIPS[first] || '') : '';
+}
+const UI_TIP_SEL = '[data-tip], .ui-tag, .ui-issue-ic, .ui-bracket-st, .ui-planmark, .ui-mrow-turn, .ui-mrow-icons > span, .ui-evrow-tags > span, .ui-pcard-tags > span, .ui-ev-l1 .ui-ic';
+function uiTipInit() {
+  if (!(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches)) return;
+  let tip = null, cur = null;
+  const hide = () => { if (tip) tip.remove(); tip = null; cur = null; };
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest && e.target.closest(UI_TIP_SEL);
+    if (!el || !(el.closest('#ui') || el.closest('.ui-sheet-root'))) { if (cur && !(el && el === cur)) hide(); return; }
+    if (el === cur) return;
+    const txt = uiTipText(el); hide(); if (!txt) return;
+    cur = el; if (el.title) { el.dataset.tip = el.dataset.tip || txt; el.removeAttribute('title'); }
+    tip = h('div', { class: 'ui-tip', role: 'tooltip', text: txt }); uiSheetRoot().appendChild(tip);
+    const r = el.getBoundingClientRect(), w = tip.offsetWidth, hh = tip.offsetHeight;
+    let left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8), top = r.top - hh - 8;
+    if (top < 8) top = r.bottom + 8;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  });
+  document.addEventListener('scroll', hide, true);
+  document.addEventListener('mousedown', hide, true);
+}
 function uiHelpSheet() {
   const T = PL.eventTypes();
   const body = h('div', { class: 'ui-helpdoc' },
