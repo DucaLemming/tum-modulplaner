@@ -370,7 +370,7 @@ Rules:
         sync.js hooks localStorage (v86), unchanged
 ```
 
-- **Engine** = today's main script and tail scripts, moved verbatim into `planner/src/engine/legacy.js` (without `DATA`). Its render functions keep existing but draw into a hidden container, and the expensive ones (graph build, week render) are switched off once the matching new screen exists.
+- **Engine** = today's main script and tail scripts inside the built HTML, untouched. Its render functions keep running but draw into a hidden container.
 - **`PL`** (`planner/src/api.js`) is the contract. Screens never touch engine globals or `localStorage` directly. Read functions return plain objects ready to draw; actions change the plan through the existing engine functions and then emit one `change` event that screens re-render on.
 
   Read models (names fixed here, exact fields in the implementation plan after reading the engine code): `PL.totals()`, `PL.brackets()`, `PL.issues()`, `PL.modules(filter)`, `PL.module(code)`, `PL.semesters()`, `PL.week(sem, weekKind)`, `PL.exams(sem)`, `PL.settings()`.
@@ -381,40 +381,33 @@ Rules:
 
 ### 7.2 Files and build
 
+The engine is **not** extracted from the HTML. The built file `planner/TUM_Modulplaner.html` stays the home of `DATA`, the engine and the updater, because the nightly update rewrites that file. New code lives in `planner/src/` and is injected as blocks before `</body>` by `scripts/build.py` (the mechanism of `scripts/embed.py` from v86, extended to style blocks). Running the build twice gives the same file.
+
 ```
 planner/
-  TUM_Modulplaner.html        built file, committed, the one users open; nightly update rewrites DATA in it
+  TUM_Modulplaner.html        built file, committed; nightly update rewrites DATA in it
   src/
-    shell.html                page skeleton (nav, containers), no data, no scripts
     css/  tokens.css base.css nav.css uebersicht.css module.css modul.css plan.css woche.css pruefungen.css sheets.css
-    engine/legacy.js          today's code, verbatim
-    api.js
-    ui/   h.js router.js nav.js uebersicht.js module.js modul.js plan.js woche.js event-sheet.js pruefungen.js menu.js help.js
+    api.js                    PL
+    ui/   h.js boot.js router.js nav.js sheet.js uebersicht.js module.js modul.js plan.js woche.js event-sheet.js pruefungen.js menu.js help.js
     sync.js qrcode.js         from v86
-scripts/build.py              replaces embed.py: shell + css + DATA (taken from the current built file) + updater text + engine + api + ui + sync
-tests/
-  golden/                     export text and PL snapshots for a generated example plan (committed); the personal plan is checked locally only
-  test_golden.py              export text identical to golden (ignoring the timestamp line)
-  test_api.py                 PL read models and actions
-  test_ui_<screen>.py         Playwright, at 390 x 844 and 1440 x 900
-  test_sync.py                from v86
+scripts/build.py              injects <style id="uiCss">, <script id="tumQr">, <script id="tumSync">, <script id="uiApi">, <script id="uiApp">
+tests/                        see the implementation plan
 ```
 
-`build.py` must keep three things the updater relies on: the `const DATA=` literal, the `<script type="text/plain" id="tumuScript">` block, and the markers `/*tumterm:1*/`, `/*tumupd:1*/`, `/*tumlim:1*/`.
+All new CSS classes and ids start with `ui-`, and the new markup uses no `<header>` or `<main>` element, so the old stylesheet cannot reach it.
 
 ### 7.3 Migration path (old and new side by side)
 
-The new surface is built screen by screen while the old one stays reachable, so the planner is usable after every task:
-
-1. Foundation: sources extracted, `build.py`, golden test, shell with navigation. The old UI runs inside the shell as a sixth entry `Alte Ansicht`.
-2. `PL` with tests.
-3. Screens in this order: Übersicht, Module + Modul, Plan, Woche + event sheet, Prüfungen, Menü.
+1. Foundation: `build.py`, test helpers, parity test. `ui/boot.js` moves the old page content into a hidden `<div id="legacy">` and creates `<div id="ui">`. Menu entry `Alte Ansicht` swaps the two (stored per device in `tum-ui`).
+2. `PL` with tests. The old UI keeps rendering into the hidden container and serves as the oracle: tests compare `PL` values with what the old UI shows.
+3. Screens in this order: Übersicht, Module, Modul, Plan, Woche + event sheet, Prüfungen, Menü.
 4. Phone pass and accessibility pass over all screens.
-5. Removal: `Alte Ansicht`, old markup, old CSS and the old render functions are deleted; engine functions that only served rendering are removed. Golden test must still pass.
+5. Removal of the old UI from the built file: a separate step, only after the owner has used the new UI and says so.
 
 ### 7.4 Testing
 
-- **Golden master:** `exportPlan()` for `plan/Modulplan.txt` covers totals, SPO check, per-semester numbers, all warnings, limits, exams. It must stay byte-identical (except the timestamp) through the whole rework. Known reference values: 128 sure, 136 with open seats, 169 with optional; semesters 40 + 37 + 21 + 30.
+- **Parity:** the text export (`exportPlan()`) covers totals, SPO check, per-semester numbers, all warnings, limits and exams. It must be byte-identical (except the timestamp line) between the planner without the new blocks and the planner with them, for the same plan, before and after a scripted series of `PL` actions versus the same series done through the engine directly. Reference values of the owner's plan (checked locally only): 128 sure, 136 with open seats, 169 with optional; semesters 40 + 37 + 21 + 30.
 - **API tests:** every `PL` action is followed by a check of the affected read model and of the stored `tum_*` key.
 - **UI tests:** Playwright per screen at phone and desktop size: renders without page errors, no horizontal scroll at 390 px, key elements present, one main interaction works.
 - **Sync test** keeps passing.
