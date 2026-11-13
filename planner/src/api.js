@@ -154,13 +154,15 @@
     const before = (m.prereqs || []).filter(x => M[x]);
     const after = Object.keys(M).filter(x => (M[x].prereqs || []).includes(c));
     let exams = [];
-    try { exams = (m.ex || []).map(x => ({ d: x.d || '', v: x.v || '', b: x.b || '', room: (x.o && x.o.length ? (typeof ort === 'function' ? ort(x.o) : x.o.join(', ')) : ''), retake: !!x.re, own: !!x._own, changed: !!x._o, key: x._k || '', name: x.n || '' })); } catch (e) {}
+    try { exams = (m.ex || []).map(x => ({ d: x.d || '', v: x.v || '', b: x.b || '', room: (x.o && x.o.length ? (typeof ort === 'function' ? ort(x.o) : x.o.join(', ')) : ''), retake: !!x.re, retakeGuess: !!x.reD, own: !!x._own, changed: !!x._o, key: x._k || '', name: x.n || '',
+      reg: x.a || '', orig: x._o ? { d: x._o.d || '', v: x._o.v || '', b: x._o.b || '' } : null })); } catch (e) {}
+    const VK = varKinds(list), variants = Object.keys(VK).map(t => ({ t, options: [...new Set(Object.values(VK[t]))], chosen: (varSel[c] && varSel[c][t]) || '' }));
     return { code: c, name: m.name, ects: m.ects, m,
       state: { inPlan, bracket: marked[c] || primaryBracket(c), brackets: m.brackets || [], sem: sem[c] || 0,
         status: done[c] ? 'done' : opt[c] ? 'optional' : 'count', seat: isLimMod(c) && inPlan ? (limGot(c) ? 'got' : 'open') : null,
         easy: !!frei[c], cat, result: inPlan ? RESULT(c, cat) : 'Nicht im Plan.', nogo: isNogo(c), nogoReason: nogo[c] || '' },
       term, termLabel: termLabel(term), src: LV.src || null, vj: events.some(e => e.vj) || (!!LV.src && LV.src !== term), events, groups: G,
-      variant: typeof optV0 === 'function' ? optV0(c) : null, lim, exams,
+      variant: typeof optV0 === 'function' ? optV0(c) : null, variants, lim, exams,
       alt: g ? { codes: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].filter(Boolean), rank: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].indexOf(c), cnt: g.cnt, group: eoList.indexOf(g) } : null,
       fallbacks: typeof optsOf === 'function' ? optsOf(c).slice(1).map(o => o.s) : [], before, after, dep: m.dep ? (typeof depTxt === 'function' ? depTxt(c) : 'eingestellt?') : '', link: m.link || '',
       color: color(marked[c] || primaryBracket(c)), turn: turnOf(c), lang: m.sprache || '', camp: (() => { try { const l = modLoc(c); return (l && l.camp) || ''; } catch (e) { return ''; } })(),
@@ -360,6 +362,20 @@
   });
   const exclude = act((c, on, reason) => setNogo(c, on, reason));
   const setExam = act((c, k, o) => exoSet(c, k, o || null));
+
+  const exOf = (c, k) => (M[c].ex || []).find(x => x._k === k);
+  const examRetake = act((c, k, on) => { const x = exOf(c, k); if (!x) return; const o = Object.assign({}, (exo[c] || {})[k] || {}); if (!x._own && on === x.reD) delete o.re; else o.re = on; exoSet(c, k, o); });
+  const examSave = act((c, k, f) => {
+    const d = f.d, v = f.v, t = f.b || '', r = (f.room || '').trim();
+    if (!d || !v) return 'Bitte Datum und Beginn angeben.';
+    if (t && mins(t) <= mins(v)) return 'Ende muss nach dem Beginn liegen.';
+    if (!k) { const a = exo[c] || (exo[c] = {}); let n = 1; while (a['+' + n]) n++; const o = { d, v, re: !!f.re }; if (t) o.b = t; if (r) o.room = r; exoSet(c, '+' + n, o); return ''; }
+    const x = exOf(c, k); if (!x) return 'Termin nicht gefunden.';
+    const old = (exo[c] || {})[k] || {}, O = x._o || x;
+    if (x._own) { const o = Object.assign({}, old, { d, v }); if (t) o.b = t; else delete o.b; if (r) o.room = r; else delete o.room; exoSet(c, k, o); return ''; }
+    const o = {}; if (d !== O.d) o.d = d; if (v !== O.v) o.v = v; if (t && t !== (O.b || '')) o.b = t; if (r) o.room = r; if (old.re != null) o.re = old.re; exoSet(c, k, o); return '';
+  });
+  const examReset = act((c, k) => { const x = exOf(c, k); if (!x) return; const o = (exo[c] || {})[k] || {}; exoSet(c, k, x._own ? null : (o.re != null ? { re: o.re } : null)); });
   function importPreview(text) {
     const R = parsePlanText(text), cs = Object.keys(R.marked).filter(c => M[c]), perSem = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
     cs.forEach(c => perSem[R.sem[c] || 0]++);
@@ -381,7 +397,7 @@
     totals, brackets, rules, issues, checks, modules, search, filters, module, semesters, week, exams, settings, exportText,
     setInPlan, setBracket, setSemester, setStatus, setSeat, setEasy, setAttendance, setGroup, setVariant, toggleMandatory, toggleMandatoryDate,
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
-    addBlock, editBlock, removeBlock, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
+    addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
     openExtra: () => { try { openExtra(); } catch (e) { console.error(e); } },
     label, color, dataDate: () => (DATA.terms && DATA.terms.at) || ''
   };

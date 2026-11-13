@@ -3724,6 +3724,67 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 .ui-sheet-root .ui-fopt:hover { background: var(--bg); }
 .ui-sheet-root .ui-fbox { width: 20px; height: 20px; border: 1.5px solid var(--line); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; flex: none; }
 .ui-sheet-root .ui-fopt.ui-on .ui-fbox { background: var(--accent); border-color: var(--accent); }
+/* UI rework: Modul (detail panel) */
+#ui .ui-modul { display: flex; flex-direction: column; gap: var(--s3); min-width: 0; }
+#ui .ui-mname { font-size: var(--fs-title); font-weight: 600; overflow-wrap: anywhere; margin: 2px 0 var(--s2); }
+#ui .ui-mchips { gap: var(--s1); }
+#ui .ui-row, .ui-sheet-root .ui-row { display: flex; gap: var(--s2); align-items: center; flex-wrap: wrap; }
+#ui .ui-banner { margin-top: var(--s2); padding: var(--s2) var(--s3); border-radius: var(--r); background: #fff7e6; color: #7a5212; font-size: var(--fs-meta); }
+#ui .ui-plan-block { border: 1px solid var(--line); border-radius: var(--r); padding: var(--s2) var(--s3); }
+#ui .ui-prow { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: 48px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+#ui .ui-prow-l { font-weight: 600; display: inline-flex; align-items: center; gap: var(--s2); }
+#ui .ui-prow-c { min-width: 0; max-width: 100%; }
+#ui .ui-result { color: var(--muted); padding: var(--s2) 0 var(--s1); }
+#ui .ui-switch { position: relative; width: 48px; height: 28px; border-radius: 999px; border: 0; background: var(--line); cursor: pointer; flex: none; padding: 0; }
+#ui .ui-switch.ui-on { background: var(--accent); }
+#ui .ui-switch-k { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: var(--e1); transition: left 120ms; }
+#ui .ui-switch.ui-on .ui-switch-k { left: 23px; }
+@media (max-width: 1199px) { #ui .ui-switch { width: 52px; height: 44px; background: transparent; } #ui .ui-switch::before { content: ""; position: absolute; left: 2px; right: 2px; top: 8px; bottom: 8px; border-radius: 999px; background: var(--line); } #ui .ui-switch.ui-on::before { background: var(--accent); } #ui .ui-switch-k { top: 11px; left: 5px; z-index: 1; } #ui .ui-switch.ui-on .ui-switch-k { left: 25px; } }
+#ui .ui-help { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; }
+@media (max-width: 1199px) { #ui .ui-help { width: 44px; height: 44px; border: 0; background: transparent; } }
+#ui .ui-sec { border-top: 1px solid var(--line); }
+#ui .ui-sec-h { display: flex; align-items: center; gap: var(--s2); min-height: 44px; cursor: pointer; font-weight: 600; list-style: none; }
+#ui .ui-sec-h::-webkit-details-marker { display: none; }
+#ui .ui-sec-h::before { content: "▸"; color: var(--muted); width: 12px; }
+#ui .ui-sec[open] > .ui-sec-h::before { content: "▾"; }
+#ui .ui-sec-b { padding-bottom: var(--s3); display: flex; flex-direction: column; gap: var(--s2); min-width: 0; }
+#ui .ui-evtype { display: flex; flex-direction: column; gap: var(--s1); }
+#ui .ui-evtype-h { display: flex; gap: var(--s2); align-items: baseline; min-width: 0; }
+#ui .ui-ellip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+#ui .ui-evrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--s2); align-items: center; text-align: left; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: var(--s1) var(--s2); min-height: 44px; cursor: pointer; }
+#ui .ui-evrow:hover { border-color: var(--accent); }
+#ui .ui-evrow.ui-off { opacity: .55; }
+#ui .ui-evrow-t { font-weight: 600; white-space: nowrap; }
+#ui .ui-evrow-r { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ui .ui-evrow-tags { display: flex; gap: var(--s1); align-items: center; }
+#ui .ui-evrow-tags .ui-chip { min-height: 24px; padding: 0 var(--s2); }
+#ui .ui-grp { display: flex; flex-wrap: wrap; gap: var(--s1); }
+#ui .ui-grp-o { display: inline-flex; align-items: center; gap: var(--s2); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); min-height: 36px; padding: 0 var(--s2); cursor: pointer; }
+#ui .ui-grp-o.ui-on { border-color: var(--accent); background: var(--accent-weak); }
+#ui .ui-radio { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--muted); }
+#ui .ui-grp-o.ui-on .ui-radio { border: 4px solid var(--accent); }
+#ui .ui-wrap { overflow-wrap: anywhere; white-space: pre-line; }
+#ui .ui-exrow { display: flex; gap: var(--s2); justify-content: space-between; align-items: flex-start; flex-wrap: wrap; padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
+#ui .ui-exrow-m { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+#ui .ui-exrow-a { display: flex; gap: var(--s1); flex-wrap: wrap; }
+#ui .ui-btn-on { background: var(--accent-weak); border-color: var(--accent); }
+.ui-sheet-root .ui-exform { display: flex; flex-direction: column; gap: var(--s2); }
+.ui-sheet-root .ui-err, #ui .ui-err { color: var(--bad); margin: 0; min-height: 1em; }
+#ui .ui-altrow { display: flex; align-items: center; gap: var(--s1); min-width: 0; }
+#ui .ui-altrow.ui-cur { font-weight: 600; }
+#ui .ui-altrow .ui-linkbtn { flex: 1; }
+#ui .ui-altrank { width: 20px; color: var(--muted); }
+#ui .ui-field { display: flex; flex-direction: column; gap: var(--s1); }
+#ui .ui-field > span { font-size: var(--fs-meta); color: var(--muted); font-weight: 600; }
+#ui .ui-fallback { display: flex; flex-direction: column; gap: var(--s1); }
+#ui .ui-h3 { font-size: var(--fs-body); font-weight: 600; margin: var(--s2) 0 var(--s1); }
+#ui .ui-list { margin: 0; padding-left: var(--s4); }
+#ui .ui-list li { overflow-wrap: anywhere; }
+#ui .ui-acc { border-bottom: 1px solid var(--line); }
+#ui .ui-acc > summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; }
+#ui .ui-desc { padding-bottom: var(--s2); font-size: var(--fs-body); }
+#ui .ui-nogo { border-top: 1px solid var(--line); padding-top: var(--s3); }
+#ui .ui-nogo input { flex: 1; min-width: 120px; }
 </style>
 <script id="tumQr">
 //---------------------------------------------------------------------
@@ -6484,13 +6545,15 @@ var qrcode = function() {
     const before = (m.prereqs || []).filter(x => M[x]);
     const after = Object.keys(M).filter(x => (M[x].prereqs || []).includes(c));
     let exams = [];
-    try { exams = (m.ex || []).map(x => ({ d: x.d || '', v: x.v || '', b: x.b || '', room: (x.o && x.o.length ? (typeof ort === 'function' ? ort(x.o) : x.o.join(', ')) : ''), retake: !!x.re, own: !!x._own, changed: !!x._o, key: x._k || '', name: x.n || '' })); } catch (e) {}
+    try { exams = (m.ex || []).map(x => ({ d: x.d || '', v: x.v || '', b: x.b || '', room: (x.o && x.o.length ? (typeof ort === 'function' ? ort(x.o) : x.o.join(', ')) : ''), retake: !!x.re, retakeGuess: !!x.reD, own: !!x._own, changed: !!x._o, key: x._k || '', name: x.n || '',
+      reg: x.a || '', orig: x._o ? { d: x._o.d || '', v: x._o.v || '', b: x._o.b || '' } : null })); } catch (e) {}
+    const VK = varKinds(list), variants = Object.keys(VK).map(t => ({ t, options: [...new Set(Object.values(VK[t]))], chosen: (varSel[c] && varSel[c][t]) || '' }));
     return { code: c, name: m.name, ects: m.ects, m,
       state: { inPlan, bracket: marked[c] || primaryBracket(c), brackets: m.brackets || [], sem: sem[c] || 0,
         status: done[c] ? 'done' : opt[c] ? 'optional' : 'count', seat: isLimMod(c) && inPlan ? (limGot(c) ? 'got' : 'open') : null,
         easy: !!frei[c], cat, result: inPlan ? RESULT(c, cat) : 'Nicht im Plan.', nogo: isNogo(c), nogoReason: nogo[c] || '' },
       term, termLabel: termLabel(term), src: LV.src || null, vj: events.some(e => e.vj) || (!!LV.src && LV.src !== term), events, groups: G,
-      variant: typeof optV0 === 'function' ? optV0(c) : null, lim, exams,
+      variant: typeof optV0 === 'function' ? optV0(c) : null, variants, lim, exams,
       alt: g ? { codes: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].filter(Boolean), rank: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].indexOf(c), cnt: g.cnt, group: eoList.indexOf(g) } : null,
       fallbacks: typeof optsOf === 'function' ? optsOf(c).slice(1).map(o => o.s) : [], before, after, dep: m.dep ? (typeof depTxt === 'function' ? depTxt(c) : 'eingestellt?') : '', link: m.link || '',
       color: color(marked[c] || primaryBracket(c)), turn: turnOf(c), lang: m.sprache || '', camp: (() => { try { const l = modLoc(c); return (l && l.camp) || ''; } catch (e) { return ''; } })(),
@@ -6690,6 +6753,20 @@ var qrcode = function() {
   });
   const exclude = act((c, on, reason) => setNogo(c, on, reason));
   const setExam = act((c, k, o) => exoSet(c, k, o || null));
+
+  const exOf = (c, k) => (M[c].ex || []).find(x => x._k === k);
+  const examRetake = act((c, k, on) => { const x = exOf(c, k); if (!x) return; const o = Object.assign({}, (exo[c] || {})[k] || {}); if (!x._own && on === x.reD) delete o.re; else o.re = on; exoSet(c, k, o); });
+  const examSave = act((c, k, f) => {
+    const d = f.d, v = f.v, t = f.b || '', r = (f.room || '').trim();
+    if (!d || !v) return 'Bitte Datum und Beginn angeben.';
+    if (t && mins(t) <= mins(v)) return 'Ende muss nach dem Beginn liegen.';
+    if (!k) { const a = exo[c] || (exo[c] = {}); let n = 1; while (a['+' + n]) n++; const o = { d, v, re: !!f.re }; if (t) o.b = t; if (r) o.room = r; exoSet(c, '+' + n, o); return ''; }
+    const x = exOf(c, k); if (!x) return 'Termin nicht gefunden.';
+    const old = (exo[c] || {})[k] || {}, O = x._o || x;
+    if (x._own) { const o = Object.assign({}, old, { d, v }); if (t) o.b = t; else delete o.b; if (r) o.room = r; else delete o.room; exoSet(c, k, o); return ''; }
+    const o = {}; if (d !== O.d) o.d = d; if (v !== O.v) o.v = v; if (t && t !== (O.b || '')) o.b = t; if (r) o.room = r; if (old.re != null) o.re = old.re; exoSet(c, k, o); return '';
+  });
+  const examReset = act((c, k) => { const x = exOf(c, k); if (!x) return; const o = (exo[c] || {})[k] || {}; exoSet(c, k, x._own ? null : (o.re != null ? { re: o.re } : null)); });
   function importPreview(text) {
     const R = parsePlanText(text), cs = Object.keys(R.marked).filter(c => M[c]), perSem = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
     cs.forEach(c => perSem[R.sem[c] || 0]++);
@@ -6711,7 +6788,7 @@ var qrcode = function() {
     totals, brackets, rules, issues, checks, modules, search, filters, module, semesters, week, exams, settings, exportText,
     setInPlan, setBracket, setSemester, setStatus, setSeat, setEasy, setAttendance, setGroup, setVariant, toggleMandatory, toggleMandatoryDate,
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
-    addBlock, editBlock, removeBlock, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
+    addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
     openExtra: () => { try { openExtra(); } catch (e) { console.error(e); } },
     label, color, dataDate: () => (DATA.terms && DATA.terms.at) || ''
   };
@@ -7250,6 +7327,167 @@ uiScreens.module = {
     if (!list.length) box.appendChild(h('p', { class: 'ui-empty', text: 'Keine Module für diese Suche und Filter.' }));
     c.appendChild(box);
     c.appendChild(h('button', { class: 'ui-btn ui-extra', type: 'button', onclick: () => PL.openExtra() }, '＋ Zusatzmodul'));
+  }
+};
+/* UI rework: Modul (detail panel). The only place where a module's state is edited. */
+const UI_ST_LABEL = { vor: 'Vor Ort', onl: 'Online', rec: 'Aufzeichnung', skip: 'Nicht', done: 'Erledigt' };
+const UI_VAR_LABEL = { block: 'Block', woche: 'semesterbegleitend' };
+const uiModulOpen = {};
+const UI_DESC = [['lern', 'Lernergebnisse'], ['inhalt', 'Inhalt'], ['pruef', 'Prüfungsform'], ['lehr', 'Lehrmethoden'], ['medien', 'Medien'], ['lit', 'Literatur'], ['h', 'Stunden'], ['verantw', 'Verantwortlich']];
+function uiSwitch(on, label, f) {
+  return h('button', { class: 'ui-switch' + (on ? ' ui-on' : ''), type: 'button', role: 'switch', 'aria-checked': String(on), 'aria-label': label, onclick: () => f(!on) }, h('span', { class: 'ui-switch-k' }));
+}
+function uiHelp(text, label) {
+  return h('button', { class: 'ui-help', type: 'button', 'aria-label': 'Hilfe: ' + (label || ''), onclick: e => uiSheet(label || 'Hilfe', h('p', { text }), { kind: 'popover', anchor: e.currentTarget }) }, '?');
+}
+function uiSec(code, id, title, open, body, badge) {
+  const k = code + '|' + id, isOpen = k in uiModulOpen ? uiModulOpen[k] : open;
+  const d = h('details', { class: 'ui-sec', 'data-sec': id, open: isOpen }, h('summary', { class: 'ui-sec-h' }, h('span', { text: title }), badge ? h('span', { class: 'ui-tag', text: badge }) : null), h('div', { class: 'ui-sec-b' }, body));
+  d.addEventListener('toggle', () => { uiModulOpen[k] = d.open; });
+  return d;
+}
+function uiHasOwn(m) { return m.events.some(e => e.status !== e.def || e.mand || e.ovr) || m.exams.some(x => x.own || x.changed); }
+function uiModulPlanBlock(m) {
+  const S = m.state, c = m.code, rows = [];
+  const row = (lab, ctl, help) => h('div', { class: 'ui-prow' }, h('span', { class: 'ui-prow-l' }, lab, help || null), h('div', { class: 'ui-prow-c' }, ctl));
+  rows.push(row('Im Plan', uiSwitch(S.inPlan, 'Im Plan', async on => {
+    if (!on && uiHasOwn(m) && !(await uiConfirm(c + ' aus dem Plan nehmen? Eigene Einstellungen (Teilnahme, Prüfungstermine) bleiben gespeichert.', 'Aus Plan entfernen'))) return;
+    PL.setInPlan(c, on);
+  })));
+  if (S.inPlan) {
+    if (S.brackets.length > 1) rows.push(row('Zählt für', h('select', { class: 'ui-sel-br', 'aria-label': 'Zählt für', onchange: e => PL.setBracket(c, e.target.value) },
+      S.brackets.map(b => h('option', { value: b, selected: b === S.bracket }, PL.label(b))))));
+    rows.push(row('Semester', h('div', { class: 'ui-seg ui-seg-sem', role: 'group', 'aria-label': 'Semester' },
+      [1, 2, 3, 4].map(s => h('button', { class: S.sem === s ? 'ui-on' : '', type: 'button', 'aria-pressed': String(S.sem === s), onclick: () => PL.setSemester(c, s) }, String(s))),
+      h('button', { class: !S.sem ? 'ui-on' : '', type: 'button', 'aria-pressed': String(!S.sem), onclick: () => PL.setSemester(c, 0) }, 'offen'))));
+    rows.push(row('Status', h('select', { class: 'ui-sel-status', 'aria-label': 'Status', disabled: S.cat === 'x', onchange: e => PL.setStatus(c, e.target.value) },
+      [['count', 'Zählt'], ['optional', 'Optional'], ['done', 'Abgeschlossen']].map(([v, l]) => h('option', { value: v, selected: S.status === v }, l)))));
+    if (S.seat !== null) rows.push(row('Platz', h('div', { class: 'ui-seg ui-seg-seat', role: 'group', 'aria-label': 'Platz' },
+      [['open', 'offen'], ['got', 'erhalten']].map(([v, l]) => h('button', { class: S.seat === v ? 'ui-on' : '', type: 'button', 'aria-pressed': String(S.seat === v), onclick: () => PL.setSeat(c, v) }, l)))));
+    rows.push(row('Wenig Aufwand', uiSwitch(S.easy, 'Wenig Aufwand', on => PL.setEasy(c, on)),
+      uiHelp('Für Module, die du nur nebenbei machst: Übungen und Tutorien zählen nicht für Überschneidungen und Aufwand.', 'Wenig Aufwand')));
+  }
+  return h('section', { class: 'ui-plan-block' }, rows, h('p', { class: 'ui-result', text: S.result }));
+}
+function uiEventsBlock(m) {
+  const c = m.code, by = {};
+  m.events.forEach(e => (by[e.t] = by[e.t] || []).push(e));
+  const blocks = Object.keys(by).map(t => {
+    const L = by[t], gks = [...new Set(L.map(e => e.gk).filter(Boolean))];
+    const vr = m.variants.find(v => v.t === t);
+    return h('div', { class: 'ui-evtype' },
+      h('div', { class: 'ui-evtype-h' }, h('b', { text: t }), L.some(e => e.n && e.n !== m.name) ? h('span', { class: 'ui-meta ui-ellip', text: L[0].n }) : null),
+      vr ? h('div', { class: 'ui-seg ui-seg-var', role: 'group', 'aria-label': 'Variante ' + t }, vr.options.map(o => h('button', { class: vr.chosen === o ? 'ui-on' : '', type: 'button', onclick: () => PL.setVariant(c, vr.chosen === o ? null : o, t) }, UI_VAR_LABEL[o] || o))) : null,
+      gks.map(gk => { const G = m.groups[gk]; if (!G || G.names.length < 2) return null;
+        return h('div', { class: 'ui-grp', role: 'radiogroup', 'aria-label': 'Gruppe' }, G.names.map(n => h('button', { class: 'ui-grp-o' + (G.chosen.includes(n) ? ' ui-on' : ''), type: 'button', role: 'radio', 'aria-checked': String(G.chosen.includes(n)),
+          onclick: () => PL.setGroup(c, gk, [n]) }, h('span', { class: 'ui-radio', 'aria-hidden': 'true' }), n))); }),
+      L.map(e => h('button', { class: 'ui-evrow' + (e.chosen ? '' : ' ui-off'), type: 'button', 'data-key': e.key,
+        onclick: ev => { if (typeof uiEventSheet === 'function') uiEventSheet(c, e.key, ev.currentTarget); } },
+        h('span', { class: 'ui-evrow-t', text: e.wd ? uiFmt.wd(e.wd) + ' ' + e.v + (e.b ? '–' + e.b : '') : 'ohne Zeit' }),
+        h('span', { class: 'ui-evrow-r ui-meta', text: [e.grp, e.one && e.d ? 'einmalig ' + uiFmt.date(e.d) : '', e.room].filter(Boolean).join(' · ') }),
+        h('span', { class: 'ui-evrow-tags' }, e.vj ? h('span', { class: 'ui-tag', text: 'Vorjahr' }) : null, e.mand ? h('span', { title: 'Pflicht', text: '❗' }) : null,
+          h('span', { class: 'ui-chip ui-chip-static ui-st-' + e.status + (e.status !== e.def ? ' ui-on' : ''), text: UI_ST_LABEL[e.status] || e.status })))));
+  });
+  return h('div', { class: 'ui-events' }, m.vj ? h('p', { class: 'ui-meta' }, h('span', { class: 'ui-tag', text: 'Vorjahr' }), ' ' + m.termLabel + ' noch nicht veröffentlicht, Zeiten aus dem Vorjahr.') : null,
+    blocks.length ? blocks : h('p', { class: 'ui-meta', text: 'Keine Termine bekannt.' }));
+}
+function uiLimBlock(m) {
+  const L = m.lim;
+  return h('div', { class: 'ui-lim' },
+    h('p', null, h('b', { text: '🔒 ' + L.short })), h('p', { class: 'ui-meta', text: L.reg }),
+    L.groups ? h('p', { class: 'ui-meta ui-wrap', text: L.groups }) : null,
+    L.at ? h('p', { class: 'ui-meta', text: 'Stand ' + uiFmt.dateY(L.at) }) : null,
+    h('button', { class: 'ui-linkbtn', type: 'button', onclick: e => { const p = e.currentTarget.closest('.ui-panel-body'); if (p) p.scrollTop = 0; } }, 'Status ändern ↑'));
+}
+function uiExamForm(c, x) {
+  const v = x || {}, f = h('div', { class: 'ui-exform' });
+  const d = h('input', { type: 'date', value: (v.d || '').slice(0, 10), 'aria-label': 'Datum' }), a = h('input', { type: 'time', value: v.v || '', 'aria-label': 'Beginn' }),
+    b = h('input', { type: 'time', value: v.b || '', 'aria-label': 'Ende' }), r = h('input', { type: 'text', value: '', placeholder: 'Raum / Ort', 'aria-label': 'Raum' }),
+    re = h('input', { type: 'checkbox', checked: !!(x && x.retake) }), err = h('p', { class: 'ui-err' });
+  f.append(h('div', { class: 'ui-row' }, d, a, '–', b), r, x ? null : h('label', { class: 'ui-row' }, re, 'Wiederholung'), err,
+    h('div', { class: 'ui-actions' }, h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => {
+      const msg = PL.examSave(c, x ? x.key : null, { d: d.value, v: a.value, b: b.value, room: r.value, re: re.checked }); if (msg) err.textContent = msg; else close(); } }, 'Speichern')));
+  const close = uiSheet(x ? 'Prüfungstermin ändern' : 'Prüfungstermin hinzufügen', f, { kind: 'dialog' });
+}
+function uiExamBlock(m) {
+  const c = m.code;
+  return h('div', { class: 'ui-exams' }, m.exams.length ? m.exams.map(x => h('div', { class: 'ui-exrow' },
+    h('div', { class: 'ui-exrow-m' }, h('b', { text: x.d ? uiFmt.dateY(x.d) : 'ohne Datum' }), ' ' + (x.v || '') + (x.b ? '–' + x.b : ''),
+      x.retake ? h('span', { class: 'ui-tag', text: 'Wiederholung' }) : null, x.own ? h('span', { class: 'ui-tag', text: 'eigener Termin' }) : x.changed ? h('span', { class: 'ui-tag', text: 'geändert' }) : null,
+      h('div', { class: 'ui-meta', text: [x.room, x.reg ? 'Anmeldung ' + x.reg : ''].filter(Boolean).join(' · ') })),
+    h('div', { class: 'ui-exrow-a' },
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => uiExamForm(c, x) }, '✎'),
+      h('button', { class: 'ui-btn' + (x.retake ? ' ui-btn-on' : ''), type: 'button', 'aria-pressed': String(x.retake), onclick: () => PL.examRetake(c, x.key, !x.retake) }, 'Wiederholung'),
+      x.own || x.changed ? h('button', { class: 'ui-btn', type: 'button', onclick: () => PL.examReset(c, x.key) }, x.own ? 'Entfernen' : 'Zurücksetzen') : null)))
+    : h('p', { class: 'ui-meta', text: m.exs || 'Kein Prüfungstermin bekannt.' }),
+    h('button', { class: 'ui-btn', type: 'button', onclick: () => uiExamForm(c, null) }, '＋ Termin'));
+}
+function uiAltBlock(m) {
+  const c = m.code, A = m.alt, S = m.state, out = [];
+  if (A) {
+    out.push(h('p', { class: 'ui-meta', text: 'Nur eines dieser Module zählt (Rang 1).' }));
+    A.codes.forEach((x, i) => out.push(h('div', { class: 'ui-altrow' + (x === c ? ' ui-cur' : '') },
+      h('span', { class: 'ui-altrank', text: (i + 1) + '.' }), h('button', { class: 'ui-linkbtn ui-ellip', type: 'button', onclick: () => uiOpenModule(x) }, x + ' ' + (PL.module(x) || {}).name),
+      h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'nach oben', disabled: i === 0, onclick: () => PL.rankAlternative(x, -1) }, '↑'),
+      h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'nach unten', disabled: i === A.codes.length - 1, onclick: () => PL.rankAlternative(x, 1) }, '↓'))));
+    out.push(h('div', { class: 'ui-row' },
+      typeof uiCompareSheet === 'function' ? h('button', { class: 'ui-btn', type: 'button', onclick: () => uiCompareSheet(A.group) }, 'Vergleichen') : null,
+      h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: async () => { if (await uiConfirm(c + ' behalten, die anderen Module aus dem Plan entfernen?', 'Dafür entscheiden')) PL.decide(c); } }, 'Dafür entscheiden'),
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => PL.unlinkAlternative(c) }, 'Aus Gruppe lösen')));
+  }
+  const others = PL.modules().filter(x => x.inPlan && x.code !== c && !(A && A.codes.includes(x.code)));
+  if (S.inPlan && others.length) out.push(h('label', { class: 'ui-field' }, h('span', { text: 'Alternative zu …' }),
+    h('select', { 'aria-label': 'Alternative zu', onchange: e => { if (e.target.value) PL.linkAlternative(c, e.target.value); } },
+      h('option', { value: '' }, 'Modul wählen'), others.map(x => h('option', { value: x.code }, x.code + ' ' + x.name)))));
+  if (S.inPlan && S.sem) out.push(h('div', { class: 'ui-fallback' }, h('span', { class: 'ui-meta', text: 'Ausweichsemester' }),
+    h('div', { class: 'ui-row' }, [1, 2, 3, 4].filter(s => s !== S.sem).map(s => { const on = m.fallbacks.includes(s);
+      return h('button', { class: 'ui-chip' + (on ? ' ui-on' : ''), type: 'button', 'aria-pressed': String(on),
+        onclick: () => PL.setFallbacks(c, on ? m.fallbacks.filter(x => x !== s) : m.fallbacks.concat([s]).sort()) }, 'sonst ' + s + '.'); }))));
+  if (!out.length) out.push(h('p', { class: 'ui-meta', text: 'Erst in den Plan aufnehmen.' }));
+  return h('div', { class: 'ui-alt' }, out);
+}
+function uiPreBlock(m) {
+  const mine = m.state.sem || 0;
+  const item = x => { const o = PL.module(x); if (!o) return null; const ok = o.state.inPlan && o.state.sem && (!mine || o.state.sem < mine);
+    return h('li', null, h('button', { class: 'ui-linkbtn', type: 'button', onclick: () => uiOpenModule(x) }, x + ' ' + o.name), ok ? h('span', { class: 'ui-st-ok', text: ' ✓' }) : null); };
+  return h('div', { class: 'ui-pre' },
+    h('h3', { class: 'ui-h3', text: 'Vorher empfohlen' }), m.before.length ? h('ul', { class: 'ui-list' }, m.before.map(item)) : h('p', { class: 'ui-meta', text: 'keine' }),
+    h('h3', { class: 'ui-h3', text: 'Wird empfohlen für' }), m.after.length ? h('ul', { class: 'ui-list' }, m.after.map(item)) : h('p', { class: 'ui-meta', text: 'keine' }));
+}
+function uiDescBlock(m) {
+  const R = UI_DESC.map(([k, lab]) => { let v = m.m[k]; if (v == null || String(v).trim() === '') return null; if (Array.isArray(v)) v = v.filter(x => x != null).join(' / ');
+    return h('details', { class: 'ui-acc' }, h('summary', { text: lab }), h('div', { class: 'ui-wrap ui-desc', text: String(v) })); }).filter(Boolean);
+  return h('div', { class: 'ui-descs' }, R.length ? R : h('p', { class: 'ui-meta', text: 'Keine Beschreibung.' }));
+}
+uiScreens.modul = {
+  render(c, code) {
+    const m = PL.module(code);
+    if (!m) { c.appendChild(h('div', { class: 'ui-modul' }, h('p', { class: 'ui-empty', text: 'Modul nicht gefunden.' }))); return; }
+    const S = m.state, root = h('div', { class: 'ui-modul' });
+    [
+      h('div', { class: 'ui-mhead' },
+        h('div', { class: 'ui-meta', text: m.code }),
+        h('h2', { class: 'ui-mname', text: m.name }),
+        h('div', { class: 'ui-row ui-mchips' },
+          h('span', { class: 'ui-tag', text: m.ects + ' ECTS' }),
+          h('span', { class: 'ui-tag' }, h('span', { class: 'ui-dot', style: { background: m.color } }), PL.label(S.bracket)),
+          m.turn ? h('span', { class: 'ui-tag', text: m.turn === 'W+S' ? 'Winter und Sommer' : m.turn === 'W' ? 'Winter' : 'Sommer' }) : null,
+          m.lang ? h('span', { class: 'ui-tag', text: m.lang }) : null, m.camp ? h('span', { class: 'ui-tag', text: m.camp }) : null,
+          m.neu ? h('span', { class: 'ui-tag', text: 'neu' }) : null, m.eth ? h('span', { class: 'ui-tag', text: 'Ethik' }) : null,
+          m.link ? h('a', { class: 'ui-linkbtn', href: m.link, target: '_blank', rel: 'noopener' }, 'TUMonline ↗') : null),
+        m.dep ? h('p', { class: 'ui-banner', text: 'Angebot: ' + m.dep }) : null),
+      uiModulPlanBlock(m),
+      uiSec(code, 'termine', 'Termine (' + m.events.length + ')', S.inPlan, uiEventsBlock(m)),
+      m.lim ? uiSec(code, 'platz', 'Platz & Anmeldung', S.seat === 'open', uiLimBlock(m)) : null,
+      uiSec(code, 'pruefung', 'Prüfung', false, uiExamBlock(m)),
+      uiSec(code, 'alt', 'Alternativen & Ausweichsemester', false, uiAltBlock(m), m.alt || m.fallbacks.length ? 'genutzt' : null),
+      uiSec(code, 'pre', 'Voraussetzungen', false, uiPreBlock(m)),
+      uiSec(code, 'beschreibung', 'Beschreibung', false, uiDescBlock(m)),
+      !S.inPlan ? h('section', { class: 'ui-nogo' }, S.nogo
+        ? h('div', { class: 'ui-row' }, h('span', { text: '⛔ Nicht für mich' + (S.nogoReason ? ': ' + S.nogoReason : '') }), h('button', { class: 'ui-btn', type: 'button', onclick: () => PL.exclude(code, false) }, 'Zurücknehmen'))
+        : (() => { const r = h('input', { type: 'text', placeholder: 'Grund (optional)', 'aria-label': 'Grund' });
+          return h('div', { class: 'ui-row' }, r, h('button', { class: 'ui-btn ui-btn-danger', type: 'button', onclick: () => PL.exclude(code, true, r.value.trim()) }, '⛔ Nicht für mich')); })()) : null].forEach(x => { if (x) root.appendChild(x); });
+    c.appendChild(root);
   }
 };
 uiBoot();
