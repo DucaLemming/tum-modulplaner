@@ -22,7 +22,7 @@ function uiPlanCard(k) {
       h('span', { class: 'ui-pcard-top' }, h('span', { class: 'ui-meta', text: k.code }), h('b', { class: 'ui-pcard-ects', text: k.ects + ' ECTS' })),
       h('span', { class: 'ui-pcard-name', text: k.name, title: k.name }),
       tag || k.limited || k.issue || k.block ? h('span', { class: 'ui-row ui-pcard-tags' }, tag ? h('span', { class: 'ui-tag ' + tag[1], text: tag[0] }) : null,
-        k.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null, k.block ? h('span', { class: 'ui-tag', text: 'Block' }) : null,
+        k.seat ? uiSeatTag(k.seat) : k.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null, k.block ? h('span', { class: 'ui-tag', text: 'Block' }) : null,
         k.issue ? h('span', { class: 'ui-tag ui-tag-bad', text: '⚡' }) : null) : null),
     h('button', { class: 'ui-iconbtn ui-pcard-more', type: 'button', 'aria-label': 'Aktionen für ' + k.code, onclick: e => uiPlanMenu(k, e.currentTarget) }, uiIcon('more', 20)));
   return card;

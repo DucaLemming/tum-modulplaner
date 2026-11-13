@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from helpers import check, finish, open_planner, reload, example_plan, import_plan, export_text, no_hscroll, shot
 
-ENTRIES = ["Sync", "Plan exportieren", "Plan importieren", "Moduldaten aktualisieren", "Einstellungen", "Hilfe", "Alte Ansicht"]
+ENTRIES = ["Sync", "Plan exportieren", "Plan importieren", "Moduldaten aktualisieren", "Hilfe", "Alte Ansicht"]
 
 
 def menu(pg, entry=None):
@@ -46,9 +46,10 @@ def main():
             got = pathlib.Path(dl.value.path()).read_text(encoding="utf-8").replace("\r\n", "\n")
             got = "\n".join(l for l in got.splitlines() if not l.startswith("Erstellt:"))
             check(dl.value.suggested_filename == "Modulplan.txt" and got == export_text(pg), "export download = text export")
-            menu(pg, "Einstellungen")
-            pg.locator(".ui-sheet-root .ui-workgoal").fill("15"); pg.locator(".ui-sheet-root .ui-workgoal").dispatch_event("change"); pg.wait_for_timeout(100)
+            pg.evaluate("uiNav('einstellungen')"); pg.wait_for_timeout(200)
+            pg.locator("#ui .ui-workgoal").fill("15"); pg.locator("#ui .ui-workgoal").dispatch_event("change"); pg.wait_for_timeout(100)
             check(pg.evaluate("PL.settings().workGoal") == 15, "Arbeitsziel 15")
+            check(pg.locator("#ui .ui-devlink .ui-btn", has_text="Sync einrichten").count() == 1, "Einstellungen: Sync einrichten while sync is off")
             check(no_hscroll(pg), "settings: no horizontal scroll")
             shot(pg, f"menu_settings_{size}")
             pg.keyboard.press("Escape")
@@ -62,6 +63,14 @@ def main():
             check(pg.locator("#updDlg").is_visible(), "Moduldaten aktualisieren shows the update dialog")
             pg.evaluate("document.getElementById('updDlg').remove()")
             check(pg.locator("#ui .ui-sync:visible").count() == 1, "sync status icon visible")
+            pg.evaluate("localStorage.setItem('tum-sync', JSON.stringify({ repo: 'a/b', token: 'tok', branch: 'main', path: 'plan.json' }))")
+            reload(pg)
+            pg.evaluate("uiNav('einstellungen')"); pg.wait_for_timeout(200)
+            pg.locator("#ui .ui-devlink-more summary").click(); pg.wait_for_timeout(50)
+            url = pg.locator("#ui .ui-devlink-url").inner_text()
+            check(pg.locator("#ui .ui-qr svg").count() == 1 and "#/connect/a%2Fb/tok" in url, "Einstellungen: QR code and connect link")
+            pg.keyboard.press("Escape")
+            pg.evaluate("localStorage.removeItem('tum-sync')")
             menu(pg, "Alte Ansicht")
             check(pg.evaluate("document.body.dataset.ui") == "old", "Alte Ansicht switches to the old view")
             check(not pg.errs, "no page errors " + "; ".join(pg.errs[:3]))

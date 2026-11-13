@@ -14,6 +14,8 @@ function uiShellInit(ui) {
     h('div', { class: 'ui-top-title', text: '' }),
     h('div', { class: 'ui-top-search' }, q),
     h('button', { class: 'ui-iconbtn ui-top-searchbtn', type: 'button', 'aria-label': 'Suchen', onclick: () => { uiNav('module'); setTimeout(() => { const f = document.querySelector('#ui .ui-module-q'); if (f) f.focus(); }, 30); } }, uiIcon('search')),
+    h('button', { class: 'ui-iconbtn ui-top-help', type: 'button', 'aria-label': 'Zeichen und Farben erklären', title: 'Zeichen und Farben', onclick: e => uiLegend(e.currentTarget) }, h('span', { class: 'ui-qmark', text: '?' })),
+    h('button', { class: 'ui-iconbtn ui-top-settings', type: 'button', 'aria-label': 'Einstellungen', onclick: () => uiNav('einstellungen') }, uiIcon('einstellungen')),
     h('div', { class: 'ui-top-sync' }),
     h('button', { class: 'ui-iconbtn ui-top-more', type: 'button', 'aria-label': 'Menü', onclick: e => uiOpenMenu(e.currentTarget) }, uiIcon('more')));
   const screen = h('div', { class: 'ui-screen', tabindex: '-1' });

@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from helpers import ROOT, check, finish, open_planner, example_plan, import_plan, no_hscroll, shot
 
-ROUTES = ["uebersicht", "module", "plan", "woche/2", "pruefungen/3", "plan/m/{code}"]
+ROUTES = ["uebersicht", "module", "plan", "woche/2", "pruefungen/3", "einstellungen", "plan/m/{code}"]
 
 SMALL = """() => [...document.querySelectorAll('#ui button, #ui a, #ui select, #ui input, #ui [role=button]')].filter(e => {
     const r = e.getBoundingClientRect(); if (!r.width || !r.height) return false;

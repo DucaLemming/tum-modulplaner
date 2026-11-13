@@ -3554,6 +3554,11 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 @media (prefers-reduced-motion: reduce) {
   #ui *, .ui-sheet-root * { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
+#ui .ui-seat-full, .ui-sheet-root .ui-seat-full { color: #fff; background: var(--bad); border-color: var(--bad); }
+#ui .ui-seat-part, .ui-sheet-root .ui-seat-part { color: #6b4a0e; background: #fdf0d5; border-color: var(--warn); }
+#ui .ui-seat-free, #ui .ui-seat-got, .ui-sheet-root .ui-seat-free, .ui-sheet-root .ui-seat-got { color: var(--ok); background: #e8f5ee; border-color: var(--ok); }
+#ui .ui-seat-old, .ui-sheet-root .ui-seat-old { color: var(--muted); }
+#ui .ui-seat-unknown, .ui-sheet-root .ui-seat-unknown { color: var(--muted); }
 /* UI rework: shell layout. phone < 720, tablet 720 to 1199, desktop >= 1200 */
 #ui { display: grid; grid-template-columns: 1fr; grid-template-rows: auto 48px minmax(0, 1fr) 56px; grid-template-areas: "disc" "top" "screen" "nav"; }
 #ui .ui-discslot { grid-area: disc; }
@@ -3623,6 +3628,12 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 #ui .ui-top-sync .ui-sync-t { display: none; }
 #ui .ui-nav-foot .ui-sync { width: 100%; font-size: var(--fs-meta); }
 @media (max-width: 1199px) { #ui .ui-sync { min-height: 44px; min-width: 44px; } }
+#ui .ui-qmark { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1.8px solid currentColor; border-radius: 50%; font-weight: 700; font-size: 14px; }
+@media (max-width: 719px) { #ui .ui-head:has(> .ui-head-x:empty) { display: none; } }
+/* Einstellungen: rail and tablet tabs; on the phone in the top bar (bottom bar keeps five entries) */
+#ui .ui-top-settings { display: none; }
+@media (max-width: 719px) { #ui .ui-nav-item[data-nav="einstellungen"] { display: none; } #ui .ui-top-settings { display: inline-flex; } }
+@media (min-width: 720px) and (max-width: 1199px) { #ui .ui-nav-item { padding: 0 var(--s2); } }
 /* UI rework: sheets, popovers, dialogs */
 .ui-sheet-root { color: var(--ink); font: 400 var(--fs-body)/1.4 var(--font); }
 .ui-sheet-root .ui-sheet-wrap { position: fixed; inset: 0; z-index: 1000; }
@@ -3653,6 +3664,14 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 .ui-sheet-root .ui-list { margin: 0; padding-left: var(--s4); }
 .ui-sheet-root .ui-meta { color: var(--muted); font-size: var(--fs-meta); }
 .ui-sheet-root p { margin: 0; overflow-wrap: anywhere; }
+.ui-sheet-root .ui-devlink { display: flex; flex-direction: column; gap: var(--s2); padding-bottom: var(--s3); border-bottom: 1px solid var(--line); }
+.ui-sheet-root .ui-devlink-area { display: flex; flex-direction: column; gap: var(--s2); align-items: flex-start; }
+.ui-sheet-root .ui-qr svg { width: 200px; height: 200px; border: 1px solid var(--line); border-radius: 6px; display: block; }
+.ui-sheet-root .ui-devlink-url { font-size: 11px; overflow-wrap: anywhere; word-break: break-all; background: var(--bg); padding: var(--s2); border-radius: var(--r); max-width: 100%; }
+.ui-sheet-root .ui-warnbox { background: #fff7e6; color: #5c3d0a; border: 1px solid #f0d9a8; border-radius: var(--r); padding: var(--s2) var(--s3); font-size: var(--fs-meta); }
+#ui .ui-btn, .ui-sheet-root .ui-btn { white-space: normal; text-align: center; max-width: 100%; }
+.ui-sheet-root .ui-legenddoc { display: flex; flex-direction: column; gap: var(--s2); }
+.ui-sheet-root .ui-devlink-more > summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 36px; display: flex; align-items: center; }
 /* UI rework: Übersicht */
 #ui .ui-h2 { font-size: var(--fs-card); font-weight: 600; margin: 0 0 var(--s3); }
 #ui .ui-linkbtn, .ui-sheet-root .ui-linkbtn { border: 0; background: none; color: var(--accent); font-weight: 600; cursor: pointer; padding: var(--s2) 0; min-height: 36px; text-align: left; }
@@ -3706,6 +3725,15 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 .ui-sheet-root .ui-cmp-v { overflow-wrap: anywhere; }
 .ui-sheet-root .ui-cmp-act { display: flex; flex-direction: column; gap: var(--s2); }
 .ui-sheet-root .ui-cmp-act .ui-btn { white-space: normal; }
+#ui .ui-hidden-sec { margin-top: var(--s3); }
+#ui .ui-hidden-sec > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: var(--s2); min-height: 44px; }
+#ui .ui-hidden-sec > summary::-webkit-details-marker { display: none; }
+#ui .ui-hidden-sec > summary::before { content: "▸"; }
+#ui .ui-hidden-sec[open] > summary::before { content: "▾"; }
+#ui .ui-hidden-sec .ui-issues { margin-top: var(--s2); }
+#ui .ui-issue-show { align-self: center; }
+#ui .ui-hidden-link { color: var(--accent); font-weight: 600; }
+#ui .ui-issue-detail { color: var(--muted); }
 /* UI rework: Module */
 #ui .ui-msearch { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s3); }
 #ui .ui-module-q { flex: 1; min-width: 0; }
@@ -3744,6 +3772,12 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 .ui-sheet-root .ui-fopt:hover { background: var(--bg); }
 .ui-sheet-root .ui-fbox { width: 20px; height: 20px; border: 1.5px solid var(--line); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; flex: none; }
 .ui-sheet-root .ui-fopt.ui-on .ui-fbox { background: var(--accent); border-color: var(--accent); }
+#ui .ui-mgroup-btn { width: 100%; border: 0; border-bottom: 1px solid var(--line); text-align: left; cursor: pointer; font: inherit; font-weight: 600; min-height: 48px; color: var(--ink); }
+#ui .ui-mgroup-btn:hover:not(:disabled) { background: var(--accent-weak); }
+#ui .ui-mgroup-btn:disabled { cursor: default; color: var(--ink); }
+#ui .ui-mgroup-btn:disabled .ui-mgroup-chev { display: none; }
+#ui .ui-mgroup-chev { width: 14px; color: var(--accent); }
+#ui .ui-mgroup-btn[aria-expanded="false"] { position: static; }
 /* UI rework: Modul (detail panel) */
 #ui .ui-modul { display: flex; flex-direction: column; gap: var(--s3); min-width: 0; }
 #ui .ui-mname { font-size: var(--fs-title); font-weight: 600; overflow-wrap: anywhere; margin: 2px 0 var(--s2); }
@@ -3805,6 +3839,36 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 #ui .ui-desc { padding-bottom: var(--s2); font-size: var(--fs-body); }
 #ui .ui-nogo { border-top: 1px solid var(--line); padding-top: var(--s3); }
 #ui .ui-nogo input { flex: 1; min-width: 120px; }
+/* expandable sections must look expandable */
+#ui .ui-sec-h { color: var(--accent); }
+#ui .ui-sec-h::before { content: "▸"; color: var(--accent); width: 14px; font-size: 14px; }
+#ui .ui-sec-h:hover { background: var(--accent-weak); }
+#ui .ui-acc { border: 1px solid var(--line); border-radius: var(--r); margin-bottom: var(--s2); background: var(--surface); }
+#ui .ui-acc > summary { list-style: none; padding: 0 var(--s3); min-height: 44px; font-weight: 600; justify-content: space-between; }
+#ui .ui-acc > summary::-webkit-details-marker { display: none; }
+#ui .ui-acc > summary::after { content: "anzeigen ▸"; color: var(--accent); font-size: var(--fs-meta); font-weight: 600; }
+#ui .ui-acc[open] > summary::after { content: "ausblenden ▾"; }
+#ui .ui-acc > .ui-desc { padding: 0 var(--s3) var(--s3); }
+#ui .ui-grp-o, .ui-sheet-root .ui-grp-o { white-space: normal; text-align: left; height: auto; padding: var(--s1) var(--s2); max-width: 100%; overflow-wrap: anywhere; line-height: 1.25; }
+#ui .ui-grp-o .ui-radio, .ui-sheet-root .ui-grp-o .ui-radio { flex: none; }
+
+/* Einstellungen screen */
+#ui .ui-s-einstellungen { max-width: 760px; }
+#ui .ui-settings .ui-h3 { margin-top: var(--s4); }
+#ui .ui-settings, #ui .ui-imp, #ui .ui-helpdoc { display: flex; flex-direction: column; gap: var(--s2); }
+#ui .ui-h3 { font-size: var(--fs-body); font-weight: 600; margin: var(--s3) 0 0; }
+#ui .ui-h3:first-child { margin-top: 0; }
+#ui .ui-trow { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); flex-wrap: wrap; padding: var(--s1) 0; border-bottom: 1px solid var(--line); }
+#ui .ui-trow input[type=number] { width: 80px; }
+#ui .ui-workgoal { width: 90px; }
+#ui .ui-list { margin: 0; padding-left: var(--s4); }
+#ui .ui-devlink { display: flex; flex-direction: column; gap: var(--s2); padding-bottom: var(--s3); border-bottom: 1px solid var(--line); }
+#ui .ui-devlink-area { display: flex; flex-direction: column; gap: var(--s2); align-items: flex-start; }
+#ui .ui-qr svg { width: 200px; height: 200px; border: 1px solid var(--line); border-radius: 6px; display: block; }
+#ui .ui-devlink-url { font-size: 11px; overflow-wrap: anywhere; word-break: break-all; background: var(--bg); padding: var(--s2); border-radius: var(--r); max-width: 100%; }
+#ui .ui-warnbox { background: #fff7e6; color: #5c3d0a; border: 1px solid #f0d9a8; border-radius: var(--r); padding: var(--s2) var(--s3); font-size: var(--fs-meta); }
+#ui .ui-devlink-more > summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 36px; display: flex; align-items: center; }
+#ui .ui-devlink > .ui-btn, .ui-sheet-root .ui-devlink > .ui-btn { align-self: flex-start; }
 /* UI rework: Plan */
 #ui .ui-s-plan { max-width: none; }
 #ui .ui-board { display: flex; gap: var(--s3); overflow-x: auto; align-items: flex-start; padding-bottom: var(--s2); }
@@ -3900,6 +3964,11 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 .ui-sheet-root .ui-linkbtn { align-self: flex-start; }
 @media (max-width: 1199px) { #ui .ui-tg-sum { min-height: var(--tap); } }
 @media (max-width: 719px) { #ui .ui-tg .ui-ev { min-height: var(--tap); } }
+.ui-sheet-root .ui-att { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ui-sheet-root .ui-att > button { white-space: normal; overflow-wrap: anywhere; line-height: 1.2; padding: var(--s1); min-width: 0; font-size: 13px; border-bottom: 0; }
+@media (max-width: 440px) { .ui-sheet-root .ui-att { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ui-sheet-root .ui-att > button { border-bottom: 1px solid var(--line); } }
+#ui .ui-untimed { white-space: normal; text-align: left; height: auto; padding: var(--s1) var(--s3); max-width: 100%; overflow-wrap: anywhere; }
+.ui-sheet-root .ui-evacts .ui-btn { white-space: normal; height: auto; }
 /* UI rework: Prüfungen */
 #ui .ui-ex-term { margin: calc(-1 * var(--s2)) 0 var(--s3); }
 #ui .ui-exl, #ui .ui-ex-undated { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
@@ -6514,7 +6583,7 @@ var qrcode = function() {
     setInterval(()=>{if(!document.hidden&&ready&&status!=='choose')sync('timer');},60000);
     window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('syDlg')&&status!=='choose')closeDlg();});
   }
-  window.TUMSYNC={sync,ready:()=>ready,status:()=>status,snapshot,isSynced,meta:()=>meta,cfg:()=>cfg&&Object.assign({},cfg,{token:cfg.token?'***':''})};
+  window.TUMSYNC={link:()=>cfg&&cfg.repo&&cfg.token&&/^https?:$/.test(location.protocol)?connectLink():null,web:()=>/^https?:$/.test(location.protocol),qr:qrSvg,sync,ready:()=>ready,status:()=>status,snapshot,isSynced,meta:()=>meta,cfg:()=>cfg&&Object.assign({},cfg,{token:cfg.token?'***':''})};
   try{init();}catch(e){console.error('Sync',e);}
 })();
 </script>
@@ -6584,6 +6653,19 @@ var qrcode = function() {
     const r = RULE_BR.find(([p]) => txt.startsWith(p)); return r ? r[1] : '';
   }
 
+  /* seat state of a limited module for its planned semester (or the semester it would be planned in) */
+  function seatInfo(c) {
+    if (!isLimMod(c)) return null;
+    const i = limInfo(c, sem[c] || undefined); if (!i) return null;
+    const cur = typeof limCur === 'function' ? limCur(i) : !i.vj && !i.other, free = Math.max(0, (i.tot || 0) - (i.occ || 0));
+    const known = (i.g || []).some(g => g[3] != null);
+    const state = !cur ? 'old' : i.full ? 'full' : i.part ? 'part' : known ? 'free' : 'unknown';
+    const text = state === 'full' ? 'voll' : state === 'part' ? 'teils voll' : state === 'free' ? free + ' von ' + i.tot + ' frei' : state === 'unknown' ? i.tot + ' Plätze, Belegung unbekannt' : (i.full ? 'im ' + (i.vj ? 'Vorjahr' : termLabel(i.t)) + ' voll' : 'Plätze offen (' + (i.vj ? 'Vorjahr' : termLabel(i.t)) + ')');
+    return { state, text, free, tot: i.tot || 0, occ: i.occ || 0, term: i.t, cur, got: !!marked[c] && limGot(c) };
+  }
+  const nameOf = c => M[c] ? c + ' ' + M[c].name : c;
+  const codeInText = txt => { let best = null; for (const c in M) { const n = M[c].name; if (n && n.length > 3 && txt.includes(n) && (!best || n.length > M[best].name.length)) best = c; } return best; };
+
   /* ---------- issues ---------- */
   const CF_TYPE = { LV: 'Überschneidung', PF: 'Überschneidung', PFK: 'Überschneidung', LF: 'Überschneidung', PR: 'Überschneidung', PT: 'Überschneidung', PB: 'Überschneidung',
     WG: 'Weg', RF: 'Reihenfolge', T: 'Reihenfolge', DEP: 'Angebot' };
@@ -6594,21 +6676,22 @@ var qrcode = function() {
     R.bad.concat(R.open).forEach(txt => { const i = txt.indexOf(':'); push({ type: 'Regel', sem: 0, title: i > 0 ? txt.slice(0, i) : txt, detail: i > 0 ? txt.slice(i + 1).trim() : '', full: txt, bad: R.bad.includes(txt), ref: ruleBracket(txt) }); });
     (eoList || []).forEach((g, gi) => {
       const cs = g.codes.filter(c => M[c]); if (cs.length < 2) return;
-      push({ type: 'Entscheidung', sem: 0, title: cs.join(' oder '), detail: cs.map(c => M[c].ects + ' ECTS' + (sem[c] ? ', ' + sem[c] + '. Sem.' : '')).join(' / '),
+      push({ type: 'Entscheidung', sem: 0, title: cs.map(nameOf).join(' oder '), detail: cs.map(c => M[c].ects + ' ECTS' + (sem[c] ? ', ' + sem[c] + '. Sem.' : '')).join(' / '),
         full: cs.map(c => c + ' ' + M[c].name).join(' oder '), codes: cs, action: 'compare', ref: gi });
     });
-    limPlan().filter(o => !limGot(o.c)).forEach(({ c, i }) => push({ type: 'Anmeldung', sem: sem[c] || 0, title: c + ' ' + M[c].name,
+    limPlan().filter(o => !limGot(o.c)).forEach(({ c, i }) => push({ type: 'Anmeldung', sem: sem[c] || 0, title: c + ' ' + M[c].name, seat: seatInfo(c),
       detail: limShort(i) + ' · ' + limReg(i), full: limShort(i) + ' · ' + limReg(i), codes: [c], action: 'seat', vj: !!i.vj }));
     const cf = computeConflicts();
     [1, 2, 3, 4].forEach(s => (cf[s] || []).forEach(w => {
       if (w.k === 'EO') return;
       const type = CF_TYPE[w.k] || 'Überschneidung';
       const codes = [...new Set([w.A && w.A.c, w.B && w.B.c, w.c].concat(w.cs || []).filter(c => c && M[c]))];
+      if (!codes.length) { const f = codeInText(w.txt); if (f) codes.push(f); }
       let title;
-      if (w.A && w.B && w.A.c && w.B.c) title = w.A.c + ' ' + w.A.t + ' ↔ ' + w.B.c + ' ' + w.B.t;
-      else { const i = w.txt.indexOf(':'); title = (i > 0 ? w.txt.slice(0, i) : w.txt) + (codes[0] ? ' · ' + M[codes[0]].name : ''); }
+      if (w.A && w.B && w.A.c && w.B.c) title = w.A.c + ' ' + M[w.A.c].name + ' (' + w.A.t + ') ↔ ' + w.B.c + ' ' + M[w.B.c].name + ' (' + w.B.t + ')';
+      else { const i = w.txt.indexOf(':'); title = (i > 0 && i < 30 ? w.txt.slice(0, i) : type) + (codes.length ? ': ' + codes.map(nameOf).join(', ') : ''); }
       const id = wKey(s, w), vj = [w.A, w.B].some(x => x && x.e && x.e.vj);
-      push({ id, type, sem: s, kind: w.k, title, detail: w.txt.length > 90 ? w.txt.slice(0, 89) + '…' : w.txt, full: w.txt, soft: clashSev(w) === 'soft', codes, vj,
+      push({ id, type, sem: s, kind: w.k, title, detail: w.txt, full: w.txt, soft: clashSev(w) === 'soft', codes, vj,
         wd: (w.A && w.A.wd) || 0, a: (w.A && w.A.a) || 0 });
     }));
     (typeof recNotes !== 'undefined' ? recNotes : []).forEach(txt => {
@@ -6623,7 +6706,7 @@ var qrcode = function() {
   const modules = K(() => Object.keys(M).map(code => {
     const m = M[code];
     return { code, name: m.name, ects: m.ects, bracket: marked[code] || primaryBracket(code) || m.primary, brackets: m.brackets || [], turn: turnOf(code),
-      lang: m.sprache || '', inPlan: !!marked[code], sem: sem[code] || 0, cat: marked[code] ? semCat(code) : '', limited: isLimMod(code),
+      lang: m.sprache || '', inPlan: !!marked[code], sem: sem[code] || 0, cat: marked[code] ? semCat(code) : '', limited: isLimMod(code), seat: marked[code] ? seatInfo(code) : null,
       neu: !!m.neu, dep: !!m.dep, nogo: isNogo(code), eth: isEth(code), done: !!done[code] };
   }));
   function search(q) {
@@ -6672,7 +6755,7 @@ var qrcode = function() {
     const events = list.map(e => evRow(c, e, term)), G = {}, gl = grpList(c);
     Object.keys(gl).forEach(gk => G[gk] = { names: gl[gk], chosen: grpChosenSet(c, gk) });
     let lim = null;
-    if (isLimMod(c)) { const i = limInfo(c); if (i) lim = { short: limShort(i), reg: limReg(i), groups: (typeof limGroupsTxt === 'function' ? limGroupsTxt(i, 20) : ''), full: !!i.full, vj: !!i.vj, term: i.t, at: typeof LIMD !== 'undefined' ? LIMD : '' }; }
+    if (isLimMod(c)) { const i = limInfo(c, sem[c] || undefined); if (i) lim = { short: limShort(i), reg: limReg(i), groups: (typeof limGroupsTxt === 'function' ? limGroupsTxt(i, 20) : ''), full: !!i.full, vj: !!i.vj, term: i.t, seat: seatInfo(c), at: typeof LIMD !== 'undefined' ? LIMD : '' }; }
     const g = eoOf(c);
     const before = (m.prereqs || []).filter(x => M[x]);
     const after = Object.keys(M).filter(x => (M[x].prereqs || []).includes(c));
@@ -6701,7 +6784,7 @@ var qrcode = function() {
     for (let s = 0; s <= 4; s++) {
       const L = all.filter(c => (sem[c] || 0) === s), st = semStats(L), term = s ? termOf(s) : '';
       const cards = L.map(c => ({ code: c, name: M[c].name, ects: M[c].ects, bracket: marked[c], color: color(marked[c]), cat: semCat(c), done: !!done[c],
-        limited: isLimMod(c), block: typeof blkOut === 'function' ? !!blkOut(c) : false, issue: iss.some(i => !i.hidden && i.sem === s && i.codes.includes(c)) }));
+        limited: isLimMod(c), seat: seatInfo(c), block: typeof blkOut === 'function' ? !!blkOut(c) : false, issue: iss.some(i => !i.hidden && i.sem === s && i.codes.includes(c)) }));
       cards.sort((a, b) => CAT_ORDER[a.cat] - CAT_ORDER[b.cat] || ORDER.indexOf(a.bracket) - ORDER.indexOf(b.bracket) || a.name.localeCompare(b.name));
       out.push({ s, term, label: s ? termLabel(term) : 'Ohne Semester', pub: s ? termPub(term) : true, E: st.E, effortSure: st.es, effortAll: st.ea,
         issues: iss.filter(i => !i.hidden && i.sem === s).length, cards,
@@ -6922,6 +7005,10 @@ var qrcode = function() {
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
     addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
     openExtra: () => { try { openExtra(); } catch (e) { console.error(e); } },
+    seatInfo: K(seatInfo),
+    syncLink: () => { try { return window.TUMSYNC && TUMSYNC.link ? TUMSYNC.link() : null; } catch (e) { return null; } },
+    syncWeb: () => /^https?:$/.test(location.protocol),
+    qrSvg: t => { try { return window.TUMSYNC && TUMSYNC.qr ? TUMSYNC.qr(t) : ''; } catch (e) { return ''; } },
     openSync: () => { const b = document.getElementById('syncBtn'); if (b) b.click(); },
     syncStatus: () => { try { return window.TUMSYNC ? TUMSYNC.status() : 'off'; } catch (e) { return 'off'; } },
     openUpdate: () => { try { openUpdate(); } catch (e) { console.error(e); } },
@@ -6970,6 +7057,7 @@ const UI_ICON = {
   woche: '<path d="M4 5h16v15H4zM4 9h16M9 3v4M15 3v4"/>',
   pruefungen: '<path d="M6 3h9l3 3v15H6zM9 11h6M9 15h6"/>',
   search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+  einstellungen: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
   more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
@@ -6983,6 +7071,12 @@ function uiIcon(name, size) {
   s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '1.8');
   s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true');
   s.innerHTML = UI_ICON[name] || ''; return s;
+}
+/* seat state of a limited module: voll / teils voll / N frei / erhalten */
+function uiSeatTag(seat) {
+  if (!seat) return null;
+  if (seat.got) return h('span', { class: 'ui-tag ui-seat ui-seat-got', title: 'Platz erhalten' }, '🔒 Platz erhalten');
+  return h('span', { class: 'ui-tag ui-seat ui-seat-' + seat.state, title: 'Teilnehmerzahl begrenzt' }, '🔒 ' + seat.text);
 }
 /* UI rework: boot. Moves the old page into #legacy, creates #ui and switches between old and new view. */
 const UI_MODE_KEY = 'tum-ui-mode';
@@ -7027,7 +7121,7 @@ function uiSetMode(m) {
 /* UI rework: hash router. #/uebersicht, #/module, #/plan, #/woche/<1-4>, #/pruefungen/<1-4>, each optionally + /m/<CODE>.
    Hashes starting with #/connect/ belong to sync.js and are ignored here. */
 const uiScreens = {};
-const UI_SCREENS = [['uebersicht', 'Übersicht'], ['module', 'Module'], ['plan', 'Plan'], ['woche', 'Woche'], ['pruefungen', 'Prüfungen']];
+const UI_SCREENS = [['uebersicht', 'Übersicht'], ['module', 'Module'], ['plan', 'Plan'], ['woche', 'Woche'], ['pruefungen', 'Prüfungen'], ['einstellungen', 'Einstellungen']];
 const UI_SEM_SCREENS = ['woche', 'pruefungen'];
 let uiPushedModule = false;
 function uiParse(hash) {
@@ -7166,6 +7260,8 @@ function uiShellInit(ui) {
     h('div', { class: 'ui-top-title', text: '' }),
     h('div', { class: 'ui-top-search' }, q),
     h('button', { class: 'ui-iconbtn ui-top-searchbtn', type: 'button', 'aria-label': 'Suchen', onclick: () => { uiNav('module'); setTimeout(() => { const f = document.querySelector('#ui .ui-module-q'); if (f) f.focus(); }, 30); } }, uiIcon('search')),
+    h('button', { class: 'ui-iconbtn ui-top-help', type: 'button', 'aria-label': 'Zeichen und Farben erklären', title: 'Zeichen und Farben', onclick: e => uiLegend(e.currentTarget) }, h('span', { class: 'ui-qmark', text: '?' })),
+    h('button', { class: 'ui-iconbtn ui-top-settings', type: 'button', 'aria-label': 'Einstellungen', onclick: () => uiNav('einstellungen') }, uiIcon('einstellungen')),
     h('div', { class: 'ui-top-sync' }),
     h('button', { class: 'ui-iconbtn ui-top-more', type: 'button', 'aria-label': 'Menü', onclick: e => uiOpenMenu(e.currentTarget) }, uiIcon('more')));
   const screen = h('div', { class: 'ui-screen', tabindex: '-1' });
@@ -7232,7 +7328,7 @@ function uiHead(title, ...extra) {
 /* UI rework: Übersicht. Progress, Offene Punkte (the single inbox), Bereiche. */
 const UI_ISSUE_ICON = { Regel: '⚠', Entscheidung: '⇄', Anmeldung: '🔒', 'Überschneidung': '⚡', Weg: '🚆', Reihenfolge: '↕', Angebot: 'ⓘ', Datenupdate: '↻' };
 const UI_ISSUE_ORDER = ['Regel', 'Entscheidung', 'Anmeldung', 'Überschneidung', 'Weg', 'Reihenfolge', 'Angebot', 'Datenupdate'];
-const uiIssueView = { sem: 0, type: '', showHidden: false, open: new Set() };
+const uiIssueView = { sem: 0, type: '', showHidden: false };
 function uiSortIssues(L) {
   return L.map((x, i) => [x, i]).sort((A, B) => {
     const a = A[0], b = B[0], d = UI_ISSUE_ORDER.indexOf(a.type) - UI_ISSUE_ORDER.indexOf(b.type);
@@ -7249,23 +7345,23 @@ function uiIssueGo(x) {
   else if (x.codes[0]) uiOpenModule(x.codes[0]);
 }
 function uiIssueCard(x) {
-  const open = uiIssueView.open.has(x.id), hasMore = x.full && x.full !== x.detail;
   const actions = { compare: ['Vergleichen', () => uiCompareSheet(x.ref)], seat: ['Platz erhalten', () => PL.setSeat(x.codes[0], 'got')], ack: ['OK', () => PL.ackUpdateNotes()] };
   const A = x.action && actions[x.action];
-  const more = h('button', { class: 'ui-iconbtn ui-issue-more', type: 'button', 'aria-label': 'Weitere Aktionen',
-    onclick: e => { e.stopPropagation(); uiMenuSheet(x.title, [[x.hidden ? 'Einblenden' : 'Ausblenden', () => PL.hideIssue(x.id, !x.hidden)]], e.currentTarget); } }, uiIcon('more', 20));
-  const detail = x.detail || x.full ? h(hasMore ? 'button' : 'span', { class: 'ui-issue-detail' + (open ? ' ui-open' : ''), type: hasMore ? 'button' : null, 'aria-expanded': hasMore ? String(open) : null,
-    onclick: hasMore ? e => { e.stopPropagation(); if (open) uiIssueView.open.delete(x.id); else uiIssueView.open.add(x.id); uiRender(true); } : null }, open ? x.full : (x.detail || x.full)) : null;
+  const side = x.hidden
+    ? h('button', { class: 'ui-btn ui-issue-show', type: 'button', onclick: () => PL.hideIssue(x.id, false) }, 'Einblenden')
+    : [h('button', { class: 'ui-iconbtn ui-issue-more', type: 'button', 'aria-label': 'Weitere Aktionen',
+        onclick: e => { e.stopPropagation(); uiMenuSheet(x.title, [['Ausblenden (kommt unter „Ausgeblendet“)', () => PL.hideIssue(x.id, true)]], e.currentTarget); } }, uiIcon('more', 20)),
+      h('button', { class: 'ui-iconbtn ui-issue-go', type: 'button', 'aria-label': 'Öffnen', onclick: () => uiIssueGo(x) }, uiIcon('chev', 20))];
+  const detail = x.detail && x.detail !== x.title ? h('p', { class: 'ui-issue-detail', text: x.detail }) : null;
   return h('div', { class: 'ui-issue ui-card' + (x.soft ? ' ui-soft' : '') + (x.hidden ? ' ui-hid' : '') + (x.bad || (x.type === 'Überschneidung' && !x.soft) ? ' ui-issue-bad' : ''), 'data-type': x.type },
     h('div', { class: 'ui-issue-main' },
       h('div', { class: 'ui-issue-top' }, h('span', { class: 'ui-issue-ic', 'aria-hidden': 'true', text: UI_ISSUE_ICON[x.type] || '•' }),
         h('span', { class: 'ui-issue-type', text: x.type + (x.sem ? ' · ' + x.sem + '. Sem.' : '') }), x.vj ? h('span', { class: 'ui-tag', text: 'Vorjahr' }) : null,
-        x.soft && x.type === 'Überschneidung' ? h('span', { class: 'ui-tag', text: 'unsicher' }) : null),
+        x.soft && x.type === 'Überschneidung' ? h('span', { class: 'ui-tag', text: 'unsicher' }) : null, x.seat ? uiSeatTag(x.seat) : null),
       h('p', { class: 'ui-issue-tl' }, h('button', { class: 'ui-issue-title', type: 'button', onclick: () => uiIssueGo(x) }, x.title)),
-      detail ? h('p', { class: 'ui-issue-dl' }, detail) : null,
-      A ? h('div', { class: 'ui-issue-act' }, h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: e => { e.stopPropagation(); A[1](); } }, A[0])) : null),
-    h('div', { class: 'ui-issue-side' }, more,
-      h('button', { class: 'ui-iconbtn ui-issue-go', type: 'button', 'aria-label': 'Öffnen', onclick: () => uiIssueGo(x) }, uiIcon('chev', 20))));
+      detail,
+      A && !x.hidden ? h('div', { class: 'ui-issue-act' }, h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: e => { e.stopPropagation(); A[1](); } }, A[0])) : null),
+    h('div', { class: 'ui-issue-side' }, side));
 }
 function uiProgress() {
   const T = PL.totals(), max = Math.max(120, T.sure + T.seatOpen + T.optional), w = v => (100 * v / max).toFixed(2) + '%';
@@ -7297,22 +7393,25 @@ function uiBrackets() {
   return h('section', { class: 'ui-brackets ui-card', 'aria-label': 'Bereiche' }, h('h2', { class: 'ui-h2', text: 'Bereiche' }), rows);
 }
 function uiInbox() {
-  const all = uiSortIssues(PL.issues()), vis = all.filter(x => !x.hidden), nh = all.length - vis.length, V = uiIssueView;
-  const base = V.showHidden ? all : vis;
+  const all = uiSortIssues(PL.issues()), vis = all.filter(x => !x.hidden), hid = all.filter(x => x.hidden), V = uiIssueView;
   const pass = x => (!V.sem || x.sem === V.sem) && (!V.type || x.type === V.type);
-  const L = base.filter(pass);
+  const L = vis.filter(pass);
   const chip = (lab, on, f, n) => h('button', { class: 'ui-chip' + (on ? ' ui-on' : ''), type: 'button', 'aria-pressed': String(on), onclick: () => { f(); uiRender(true); } }, lab, n != null ? h('span', { class: 'ui-chip-n', text: String(n) }) : null);
-  const types = UI_ISSUE_ORDER.filter(t => base.some(x => x.type === t));
+  const types = UI_ISSUE_ORDER.filter(t => vis.some(x => x.type === t));
   const chips = h('div', { class: 'ui-chips' },
-    chip('Alle', !V.sem && !V.type, () => { V.sem = 0; V.type = ''; }, base.length),
-    [1, 2, 3, 4].map(s => chip(s + '.', V.sem === s, () => { V.sem = V.sem === s ? 0 : s; }, base.filter(x => x.sem === s).length)),
-    types.map(t => chip(t, V.type === t, () => { V.type = V.type === t ? '' : t; }, base.filter(x => x.type === t).length)));
+    chip('Alle', !V.sem && !V.type, () => { V.sem = 0; V.type = ''; }, vis.length),
+    [1, 2, 3, 4].map(s => chip(s + '.', V.sem === s, () => { V.sem = V.sem === s ? 0 : s; }, vis.filter(x => x.sem === s).length)),
+    types.map(t => chip(t, V.type === t, () => { V.type = V.type === t ? '' : t; }, vis.filter(x => x.type === t).length)));
   const checks = PL.checks();
   const muted = [1, 2, 3, 4].filter(s => !checks[s - 1] && (!V.sem || V.sem === s)).map(s => h('div', { class: 'ui-issue-muted ui-card', text: 'Überschneidungen im ' + s + '. Sem. nicht geprüft' }));
+  const hd = hid.length ? h('details', { class: 'ui-hidden-sec', open: V.showHidden }, h('summary', { class: 'ui-hidden-link' }, 'Ausgeblendet (' + hid.length + ')'),
+    h('p', { class: 'ui-meta', text: 'Ausgeblendete Punkte zählen nicht im Zähler oben. „Einblenden“ holt sie zurück.' }),
+    h('div', { class: 'ui-issues' }, hid.map(uiIssueCard))) : null;
+  if (hd) hd.addEventListener('toggle', () => { V.showHidden = hd.open; });
   return h('section', { class: 'ui-inbox', 'aria-label': 'Offene Punkte' },
     h('h2', { class: 'ui-h2', text: 'Offene Punkte (' + vis.length + ')' }), chips,
-    h('div', { class: 'ui-issues' }, L.map(uiIssueCard), muted, !L.length && !muted.length ? h('p', { class: 'ui-empty', text: 'Keine offenen Punkte.' }) : null),
-    nh ? h('button', { class: 'ui-linkbtn ui-hidden-link', type: 'button', onclick: () => { V.showHidden = !V.showHidden; uiRender(true); } }, nh + ' ausgeblendet · ' + (V.showHidden ? 'verbergen' : 'anzeigen')) : null,
+    h('div', { class: 'ui-issues ui-issues-open' }, L.map(uiIssueCard), muted, !L.length && !muted.length ? h('p', { class: 'ui-empty', text: 'Keine offenen Punkte.' }) : null),
+    hd,
     h('div', { class: 'ui-checks' }, h('span', { class: 'ui-meta', text: 'Überschneidungen prüfen' }),
       h('div', { class: 'ui-seg', role: 'group', 'aria-label': 'Überschneidungen prüfen' }, [1, 2, 3, 4].map(s => h('button', { class: checks[s - 1] ? 'ui-on' : '', type: 'button', 'aria-pressed': String(checks[s - 1]),
         'aria-label': s + '. Semester prüfen', onclick: () => PL.setCheck(s, !checks[s - 1]) }, s + '.')))));
@@ -7351,6 +7450,11 @@ function uiCompareSheet(gi) {
 /* UI rework: Module. Searchable, filterable list of all modules, grouped by bracket. */
 const uiModuleFilter = { q: '', brackets: new Set(), ects: new Set(), turn: new Set(), plan: '', limited: '', dep: '', timing: new Set(), eth: false, lang: new Set() };
 const uiModuleMore = {};
+/* collapsed groups, per device; default: all collapsed. Active filters open every group. */
+const uiMGroups = (() => { try { const v = JSON.parse(localStorage.getItem('tum-ui-mgroups') || 'null'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } })();
+function uiMGroupOpen(b) { return uiMGroups[b] === true; }
+function uiMGroupSet(b, on) { uiMGroups[b] = on; try { localStorage.setItem('tum-ui-mgroups', JSON.stringify(uiMGroups)); } catch (e) {} uiRender(true); }
+function uiModuleFiltered(F) { return F.brackets.size || F.ects.size || F.turn.size || F.plan || F.limited || F.dep || F.timing.size || F.eth || F.lang.size; }
 function uiModuleFilterSet(p, silent) {
   for (const k in p) {
     const v = p[k];
@@ -7420,7 +7524,7 @@ function uiModuleRow(m) {
       h('span', { class: 'ui-mrow-name', text: m.name, title: m.name }),
       h('span', { class: 'ui-mrow-icons' },
         m.inPlan ? h('span', { class: 'ui-planmark', title: 'Im Plan' + (m.sem ? ', ' + m.sem + '. Semester' : '') }, h('span', { class: 'ui-dot', style: { background: PL.color(m.bracket) } }), m.sem ? String(m.sem) : '') : null,
-        m.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null,
+        m.seat ? uiSeatTag(m.seat) : m.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null,
         m.neu ? h('span', { class: 'ui-tag', text: 'neu' }) : null,
         m.dep ? h('span', { class: 'ui-tag', text: 'eingestellt?' }) : null,
         m.nogo ? h('span', { title: 'Nicht für mich', text: '⛔' }) : null),
@@ -7451,11 +7555,21 @@ uiScreens.module = {
     } else {
       const groups = {}; list.forEach(m => (groups[m.bracket] = groups[m.bracket] || []).push(m));
       const ids = PL.brackets().rows.map(r => r.id).concat(['extern', 'zusatz']).concat(Object.keys(groups).filter(b => !PL.brackets().rows.some(r => r.id === b) && b !== 'extern' && b !== 'zusatz'));
-      ids.forEach(b => {
-        const L = groups[b]; if (!L || !L.length) return;
+      const forced = !!uiModuleFiltered(F), shown = ids.filter(b => groups[b] && groups[b].length);
+      if (!forced && shown.length > 1) {
+        const allOpen = shown.every(uiMGroupOpen);
+        c.lastChild.appendChild(h('button', { class: 'ui-chip ui-chip-all', type: 'button', onclick: () => { shown.forEach(b => uiMGroups[b] = !allOpen); uiMGroupSet(shown[0], !allOpen); } }, allOpen ? 'Alle zuklappen' : 'Alle aufklappen'));
+      }
+      shown.forEach(b => {
+        const L = groups[b], open = forced || uiMGroupOpen(b), inP = L.filter(m => m.inPlan).length;
         L.sort((x, y) => x.name.localeCompare(y.name));
         const n = uiModuleMore[b] || 100;
-        box.appendChild(h('div', { class: 'ui-mgroup-h' }, h('span', { class: 'ui-dot', style: { background: PL.color(b) } }), h('span', { class: 'ui-mgroup-n', text: PL.label(b) }), h('span', { class: 'ui-meta', text: String(L.length) })));
+        box.appendChild(h('button', { class: 'ui-mgroup-h ui-mgroup-btn', type: 'button', 'aria-expanded': String(open), 'data-group': b, disabled: forced,
+          onclick: () => uiMGroupSet(b, !open) },
+          h('span', { class: 'ui-mgroup-chev', 'aria-hidden': 'true', text: open ? '▾' : '▸' }),
+          h('span', { class: 'ui-dot', style: { background: PL.color(b) } }), h('span', { class: 'ui-mgroup-n', text: PL.label(b) }),
+          inP ? h('span', { class: 'ui-meta', text: inP + ' im Plan · ' }) : null, h('span', { class: 'ui-meta', text: L.length + ' Module' })));
+        if (!open) return;
         L.slice(0, n).forEach(m => box.appendChild(uiModuleRow(m)));
         if (L.length > n) box.appendChild(h('button', { class: 'ui-btn ui-more', type: 'button', onclick: () => { uiModuleMore[b] = n + 100; uiRender(true); } }, 'Weitere ' + Math.min(100, L.length - n) + ' anzeigen'));
       });
@@ -7498,7 +7612,7 @@ function uiModulPlanBlock(m) {
       h('button', { class: !S.sem ? 'ui-on' : '', type: 'button', 'aria-pressed': String(!S.sem), onclick: () => PL.setSemester(c, 0) }, 'offen'))));
     rows.push(row('Status', h('select', { class: 'ui-sel-status', 'aria-label': 'Status', disabled: S.cat === 'x', onchange: e => PL.setStatus(c, e.target.value) },
       [['count', 'Zählt'], ['optional', 'Optional'], ['done', 'Abgeschlossen']].map(([v, l]) => h('option', { value: v, selected: S.status === v }, l)))));
-    if (S.seat !== null) rows.push(row('Platz', h('div', { class: 'ui-seg ui-seg-seat', role: 'group', 'aria-label': 'Platz' },
+    if (S.seat !== null) rows.push(row(h('span', null, 'Platz ', m.lim && m.lim.seat && !m.lim.seat.got ? uiSeatTag(m.lim.seat) : null), h('div', { class: 'ui-seg ui-seg-seat', role: 'group', 'aria-label': 'Platz' },
       [['open', 'offen'], ['got', 'erhalten']].map(([v, l]) => h('button', { class: S.seat === v ? 'ui-on' : '', type: 'button', 'aria-pressed': String(S.seat === v), onclick: () => PL.setSeat(c, v) }, l)))));
     rows.push(row('Wenig Aufwand', uiSwitch(S.easy, 'Wenig Aufwand', on => PL.setEasy(c, on)),
       uiHelp('Für Module, die du nur nebenbei machst: Übungen und Tutorien zählen nicht für Überschneidungen und Aufwand.', 'Wenig Aufwand')));
@@ -7530,7 +7644,7 @@ function uiEventsBlock(m) {
 function uiLimBlock(m) {
   const L = m.lim;
   return h('div', { class: 'ui-lim' },
-    h('p', null, h('b', { text: '🔒 ' + L.short })), h('p', { class: 'ui-meta', text: L.reg }),
+    h('p', null, uiSeatTag(L.seat), ' ', h('b', { text: L.short })), h('p', { class: 'ui-meta', text: L.reg }),
     L.groups ? h('p', { class: 'ui-meta ui-wrap', text: L.groups }) : null,
     L.at ? h('p', { class: 'ui-meta', text: 'Stand ' + uiFmt.dateY(L.at) }) : null,
     h('button', { class: 'ui-linkbtn', type: 'button', onclick: e => { const p = e.currentTarget.closest('.ui-panel-body'); if (p) p.scrollTop = 0; } }, 'Status ändern ↑'));
@@ -7649,7 +7763,7 @@ function uiPlanCard(k) {
       h('span', { class: 'ui-pcard-top' }, h('span', { class: 'ui-meta', text: k.code }), h('b', { class: 'ui-pcard-ects', text: k.ects + ' ECTS' })),
       h('span', { class: 'ui-pcard-name', text: k.name, title: k.name }),
       tag || k.limited || k.issue || k.block ? h('span', { class: 'ui-row ui-pcard-tags' }, tag ? h('span', { class: 'ui-tag ' + tag[1], text: tag[0] }) : null,
-        k.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null, k.block ? h('span', { class: 'ui-tag', text: 'Block' }) : null,
+        k.seat ? uiSeatTag(k.seat) : k.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null, k.block ? h('span', { class: 'ui-tag', text: 'Block' }) : null,
         k.issue ? h('span', { class: 'ui-tag ui-tag-bad', text: '⚡' }) : null) : null),
     h('button', { class: 'ui-iconbtn ui-pcard-more', type: 'button', 'aria-label': 'Aktionen für ' + k.code, onclick: e => uiPlanMenu(k, e.currentTarget) }, uiIcon('more', 20)));
   return card;
@@ -7781,11 +7895,6 @@ function uiWeekShow(it) {
   if (uiWeekView.cf) return it.clash;
   return true;
 }
-function uiWeekLegend(anchor) {
-  const R = [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet'], ['Überschneidung', 'roter Rand und ⚡'],
-    ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'], ['Fahrt', 'schmaler schraffierter Streifen mit Minuten']];
-  uiSheet('Legende', h('dl', { class: 'ui-legend' }, R.map(([a, b]) => [h('dt', { text: a }), h('dd', { text: b })])), { kind: 'popover', anchor });
-}
 uiScreens.woche = {
   render(c, r) {
     const s = r.sem || 1, W = PL.week(s, uiWeekMode[s] || 'sem');
@@ -7803,7 +7912,7 @@ uiScreens.woche = {
       !W.pub ? h('span', { class: 'ui-tag', text: 'Zeiten: Vorjahr' }) : null,
       h('div', { class: 'ui-head-x' },
         h('button', { class: 'ui-btn', type: 'button', 'aria-haspopup': 'true', onclick: e => uiFilterPop(e.currentTarget, 'Anzeige', () => [tog('alt', 'Alternativen zeigen'), tog('hid', 'Ausgeblendete zeigen'), tog('cf', 'nur Überschneidungen'), tog('list', 'Liste')]) }, 'Anzeige ▾'),
-        h('button', { class: 'ui-iconbtn ui-help-btn', type: 'button', 'aria-label': 'Legende', onclick: e => uiWeekLegend(e.currentTarget) }, '?'),
+        uiHelpBtn('woche'),
         h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => uiBlockForm(null, { wd: uiWeekDay || 1 }) }, '＋ Termin'))));
     const phone = window.innerWidth < 720;
     const td = new Date().getDay(); if (!uiWeekDay) uiWeekDay = td >= 1 && td <= 5 ? td : 1;
@@ -7840,7 +7949,7 @@ uiScreens.woche = {
       c.appendChild(wrap);
     } else c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(W.days.map(dayObj), { onDraw: draw })));
     if (W.untimed.length) c.appendChild(h('div', { class: 'ui-wk-untimed' }, h('span', { class: 'ui-meta', text: 'Ohne Zeit' }),
-      W.untimed.map(u => h('button', { class: 'ui-chip', type: 'button', onclick: () => uiOpenModule(u.code) }, u.code + ' · ' + u.tag))));
+      W.untimed.map(u => h('button', { class: 'ui-chip ui-untimed', type: 'button', onclick: () => uiOpenModule(u.code) }, h('b', { text: u.code + ' ' + u.name }), h('span', { class: 'ui-meta', text: ' · ' + u.tag })))));
     const iss = W.issues.filter(i => !i.hidden);
     c.appendChild(h('details', { class: 'ui-wk-cf', open: iss.length > 0 && iss.length <= 6 }, h('summary', { class: 'ui-h2', text: 'Überschneidungen in dieser Woche (' + iss.length + ')' }),
       h('div', { class: 'ui-issues' }, iss.map(uiIssueCard), !iss.length ? h('p', { class: 'ui-meta', text: 'Keine.' }) : null)));
@@ -7881,6 +7990,7 @@ function uiEventSheet(code, key, anchor) {
     body.append(
       h('p', { class: 'ui-meta', text: [e.wd ? uiFmt.wd(e.wd) + ' ' + e.v + (e.b ? '–' + e.b : '') : 'ohne Zeit', e.room, e.grp].filter(Boolean).join(' · ') }),
       h('button', { class: 'ui-linkbtn', type: 'button', onclick: () => { close(); uiOpenModule(code); } }, 'Details zum Modul ›'),
+      (() => { const same = m.events.filter(x => x.key === key && x.d); return same.length > 1 ? h('p', { class: 'ui-warnbox', text: 'Teilnahme und „Erledigt“ gelten für alle ' + same.length + ' Termine mit gleichem Wochentag, gleicher Zeit und Gruppe: ' + same.map(x => uiFmt.date(x.d)).join(', ') + ' Für einzelne Tage gibt es „Fällt aus …“.' }) : null; })(),
       h('div', { class: 'ui-field' }, h('span', { text: 'Teilnahme' }),
         h('div', { class: 'ui-seg ui-att', role: 'group', 'aria-label': 'Teilnahme' }, UI_ATT.map(([v, l]) => h('button', { class: (e.status === v ? 'ui-on' : '') + (e.def === v ? ' ui-def' : ''), type: 'button', 'aria-pressed': String(e.status === v),
           onclick: () => { PL.setAttendance(code, key, e.status === v ? null : v); draw(); } }, l, e.def === v ? h('span', { class: 'ui-defdot', 'aria-label': '(Standard)', text: ' •' }) : null)))));
@@ -7932,6 +8042,7 @@ uiScreens.pruefungen = {
     c.appendChild(h('div', { class: 'ui-head' }, h('h1', { class: 'ui-title', text: 'Prüfungen' }),
       h('div', { class: 'ui-head-x' },
         h('div', { class: 'ui-seg ui-ex-sem', role: 'tablist', 'aria-label': 'Semester' }, [1, 2, 3, 4].map(i => h('button', { class: i === s ? 'ui-on' : '', type: 'button', role: 'tab', 'aria-selected': String(i === s), onclick: () => uiNav('pruefungen/' + i) }, i + '.'))),
+        uiHelpBtn('pruefungen'),
         wide ? h('div', { class: 'ui-seg ui-ex-view', role: 'group', 'aria-label': 'Ansicht' }, [['list', 'Liste'], ['cal', 'Kalender']].map(([v, l]) => h('button', { class: uiExView === v ? 'ui-on' : '', type: 'button', 'aria-pressed': String(uiExView === v), onclick: () => { uiExView = v; uiRender(true); } }, l))) : null)));
     c.appendChild(h('p', { class: 'ui-meta ui-ex-term', text: X.label }));
     if (!rows) c.appendChild(h('p', { class: 'ui-empty ui-card', text: 'Keine Prüfungstermine bekannt.' }));
@@ -7963,7 +8074,6 @@ function uiMenuOpen(anchor) {
     ['Plan exportieren', () => uiExport()],
     ['Plan importieren', () => uiImportPick()],
     ['Moduldaten aktualisieren' + (d ? ' (Stand: ' + uiFmt.dateY(d) + ')' : ''), () => PL.openUpdate()],
-    ['Einstellungen', () => uiSettings()],
     ['Hilfe', () => uiHelpSheet()],
     ['Alte Ansicht', () => uiSetMode('old')]
   ], anchor);
@@ -7993,12 +8103,13 @@ function uiImportPreview(text, name) {
       : [h('button', { class: 'ui-btn', type: 'button', onclick: () => go('merge') }, 'Zusammenführen'), h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => go('replace') }, 'Aktuellen Plan ersetzen')]) : null);
   close = uiSheet('Plan importieren', body, { kind: 'dialog' });
 }
-function uiSettings() {
-  const body = h('div', { class: 'ui-settings' });
-  const draw = () => {
-    const S = PL.settings(); body.innerHTML = '';
+uiScreens.einstellungen = {
+  render(c) {
+    const body = h('div', { class: 'ui-settings' }), draw = () => uiRender(true);
+    const S = PL.settings();
     const year = h('input', { type: 'number', min: '2020', max: '2040', value: String(S.startYear), 'aria-label': 'Jahr', onchange: e => { PL.setStart(null, +e.target.value); draw(); } });
     body.append(
+      uiDeviceLink(),
       h('h3', { class: 'ui-h3', text: 'Startsemester' }),
       h('div', { class: 'ui-row' }, h('select', { 'aria-label': 'Startsemester', onchange: e => { PL.setStart(e.target.value, null); draw(); } },
         [['W', 'Wintersemester'], ['S', 'Sommersemester']].map(([v, l]) => h('option', { value: v, selected: S.startSem === v }, l))), year),
@@ -8010,14 +8121,13 @@ function uiSettings() {
       h('h3', { class: 'ui-h3', text: 'Eigene Termine' }),
       S.blocks.length ? h('div', { class: 'ui-blocks' }, S.blocks.map(b => h('div', { class: 'ui-trow' },
         h('span', { text: b.l + ' · ' + UI_WD[b.wd] + ' ' + b.v + '–' + b.b + (b.sems && b.sems.length ? ' · Sem ' + b.sems.join(', ') : '') }),
-        h('span', { class: 'ui-row' }, h('button', { class: 'ui-btn', type: 'button', onclick: () => { close(); uiBlockForm(b.i); } }, 'Bearbeiten'),
+        h('span', { class: 'ui-row' }, h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(b.i); } }, 'Bearbeiten'),
           h('button', { class: 'ui-btn ui-btn-danger', type: 'button', onclick: async () => { if (await uiConfirm('Termin „' + b.l + '“ löschen?', 'Löschen')) { PL.removeBlock(b.i); draw(); } } }, 'Löschen')))))
         : h('p', { class: 'ui-meta', text: 'Keine eigenen Termine.' }),
-      h('button', { class: 'ui-btn', type: 'button', onclick: () => { close(); uiBlockForm(null); } }, '＋ Termin'));
-  };
-  draw();
-  const close = uiSheet('Einstellungen', body, { kind: 'dialog' });
-}
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => { uiBlockForm(null); } }, '＋ Termin'));
+    c.append(uiHead('Einstellungen'), body);
+  }
+};
 function uiSyncIcon() {
   const st = PL.syncStatus();
   return h('button', { class: 'ui-sync ui-sync-' + st, type: 'button', 'aria-label': 'Sync: ' + (UI_SYNC_TXT[st] || st), title: UI_SYNC_TXT[st] || st, onclick: () => PL.openSync() },
@@ -8040,16 +8150,69 @@ function uiInitExtras(ui) {
   setInterval(uiSyncPaint, 2000);
 }
 function uiAfterRender() { uiSyncPaint(); }
+
+/* Einstellungen > Weiteres Gerät verbinden: QR code and link with the token (as in Hydro Garden) */
+function uiDeviceLink() {
+  const box = h('div', { class: 'ui-devlink' }, h('h3', { class: 'ui-h3', text: 'Weiteres Gerät verbinden' }));
+  const st = PL.syncStatus(), link = PL.syncLink();
+  if (st === 'off' || (!link && PL.syncWeb())) {
+    box.append(h('p', { class: 'ui-meta', text: 'Sync ist auf diesem Gerät noch nicht eingerichtet. Richte ihn einmal ein, dann erscheint hier ein QR-Code für deine anderen Geräte.' }),
+      h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => PL.openSync() }, 'Sync einrichten'));
+    return box;
+  }
+  if (!link) {
+    box.append(h('p', { class: 'ui-meta', text: 'Der Link mit QR-Code funktioniert nur, wenn der Planer über eine Webadresse geöffnet ist (https://ducalemming.github.io/tum-modulplaner/). Diese Datei ist lokal geöffnet.' }));
+    return box;
+  }
+  const msg = h('span', { class: 'ui-meta' });
+  const area = h('div', { class: 'ui-devlink-area' },
+    h('p', { text: 'Scanne diesen Code mit dem Handy oder Tablet, oder öffne den Link auf dem anderen Rechner. Das Gerät ist dann verbunden, nichts abzutippen.' }),
+    h('div', { class: 'ui-qr', html: PL.qrSvg(link), role: 'img', 'aria-label': 'QR-Code zum Verbinden' }),
+    h('div', { class: 'ui-row' },
+      h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: async () => { try { await navigator.clipboard.writeText(link); msg.textContent = 'Link kopiert.'; } catch (e) { window.prompt('Diesen Link auf dem anderen Gerät öffnen:', link); } } }, 'Verbindungslink kopieren'), msg),
+    h('p', { class: 'ui-warnbox', text: 'Der Link enthält deinen Zugangsschlüssel (Token). Nur auf eigenen Geräten öffnen, nicht weitergeben.' }),
+    h('details', { class: 'ui-devlink-more' }, h('summary', { text: 'Link als Text' }), h('code', { class: 'ui-devlink-url', text: link })),
+    h('div', { class: 'ui-row' },
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => { try { TUMSYNC.sync('manual'); msg.textContent = 'Wird synchronisiert …'; } catch (e) {} } }, 'Jetzt synchronisieren'),
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => PL.openSync() }, 'Sync-Einstellungen')));
+  box.appendChild(area);
+  return box;
+}
+/* Legend of every symbol, colour and border, one section per screen; the current screen comes first. */
+const UI_LEGEND = {
+  uebersicht: ['Übersicht', [['⚠ Regel', 'eine SPO-Regel ist noch offen oder verletzt'], ['⇄ Entscheidung', 'mehrere Module als Alternativen, nur eines zählt'], ['🔒 Anmeldung', 'begrenztes Modul, Platz noch nicht erhalten'],
+    ['⚡ Überschneidung', 'zwei Termine oder Prüfungen zur selben Zeit'], ['🚆 Weg', 'Fahrzeit zwischen zwei Orten reicht nicht'], ['↕ Reihenfolge', 'Turnus passt nicht zum Semester oder Voraussetzung liegt später'],
+    ['ⓘ Angebot', 'Modul wird vielleicht nicht mehr angeboten'], ['↻ Datenupdate', 'beim letzten Update hat sich etwas geändert'], ['roter linker Rand', 'Regel verletzt oder sichere Überschneidung'],
+    ['Vorjahr', 'Zeiten aus dem Vorjahr, das Semester ist noch nicht veröffentlicht'], ['unsicher', 'Überschneidung nur mit Vorjahreszeiten'], ['✓ / ⚠ bei Bereichen', 'erfüllt / über dem Maximum'],
+    ['Balken oben', 'dunkel: sicher, gestreift: zählt, sobald der Platz da ist, Umriss: optional, schwarzer Strich: 120 ECTS']]],
+  module: ['Module', [['● 2', 'im Plan, im 2. Semester (Farbe = Bereich)'], ['✓', 'schon im Plan'], ['＋', 'zum Plan hinzufügen'], ['W / S / W+S', 'Angebot im Winter, im Sommer, in beiden'],
+    ['Zahl rechts', 'ECTS'], ['🔒', 'Teilnehmerzahl begrenzt'], ['neu', 'neu in den Moduldaten'], ['eingestellt?', 'wird vielleicht nicht mehr angeboten'], ['⛔', 'als „Nicht für mich“ markiert']]],
+  plan: ['Plan', [['farbiger linker Rand', 'Bereich, für den das Modul zählt'], ['blass und gestrichelter Rand', 'zählt nicht: optional oder Alternative'], ['optional, Alternative, abgeschlossen', 'Status des Moduls'],
+    ['Platz offen', 'zählt erst, sobald du den Platz hast'], ['⚡ (rot umrandet)', 'das Modul hat eine Überschneidung oder einen Hinweis'], ['ECTS-Balken', 'dunkel: sicher, gestreift: Platz offen, Umriss: optional; Strich in der Mitte: 30 ECTS'],
+    ['Aufwand-Balken', 'grün bis 30, gelb bis 36, rot darüber; blasser Teil: mit unsicheren Modulen']]],
+  woche: ['Woche', [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet (sichtbar mit Anzeige > Ausgeblendete zeigen)'],
+    ['Überschneidung', 'roter Rand und ⚡'], ['unsichere Überschneidung', 'gelber Rand (Vorjahreszeiten)'], ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'],
+    ['Fahrt', 'schmaler schraffierter Streifen links mit Minuten'], ['Punkt unter dem Tag (Handy)', 'an diesem Tag gibt es eine Überschneidung']]],
+  pruefungen: ['Prüfungen', [['geschätzt', 'noch kein Termin, aus dem Vorjahr geschätzt'], ['Wiederholung', 'Wiederholungsprüfung, zählt nicht für Überschneidungen'], ['⚡ Überschneidung', 'zwei Prüfungen zur selben Zeit'],
+    ['gleicher Tag', 'zwei Prüfungen am selben Tag'], ['roter linker Rand', 'Überschneidung']]],
+  modul: ['Modul', [['Teilnahme-Etikett hervorgehoben', 'von der Voreinstellung abweichend'], ['Vorjahr', 'Zeit aus dem Vorjahr'], ['❗', 'Anwesenheitspflicht'], ['blasse Terminzeile', 'gehört zu einer nicht gewählten Gruppe']]],
+  platz: ['Begrenzte Module', [['🔒 voll (rot)', 'alle Plätze im geplanten Semester vergeben'], ['🔒 teils voll (gelb)', 'einige Gruppen voll'], ['🔒 N von M frei (grün)', 'noch Plätze frei'],
+    ['🔒 Platz erhalten', 'du hast den Platz'], ['🔒 Belegung unbekannt', 'TUMonline zeigt noch keine Belegung'], ['grau', 'Zahlen aus einem anderen Semester (meist Vorjahr)']]]
+};
+function uiLegendBody(first) {
+  const keys = Object.keys(UI_LEGEND).sort((a, b) => (b === first) - (a === first));
+  return h('div', { class: 'ui-legenddoc' }, keys.map(k => [h('h3', { class: 'ui-h3', text: UI_LEGEND[k][0] }),
+    h('dl', { class: 'ui-legend' }, UI_LEGEND[k][1].map(([a, b]) => [h('dt', { text: a }), h('dd', { text: b })]))]));
+}
+function uiLegend(anchor, first) { uiSheet('Zeichen und Farben', uiLegendBody(first || (uiRoute().module ? 'modul' : uiRoute().screen)), { kind: 'dialog' }); }
+function uiHelpBtn(first) { return h('button', { class: 'ui-iconbtn ui-help-btn', type: 'button', 'aria-label': 'Zeichen und Farben erklären', title: 'Zeichen und Farben', onclick: e => uiLegend(e.currentTarget, first) }, '?'); }
 /* UI rework: Hilfe. Kürzel, legend, counting rules, disclaimer. */
 function uiHelpSheet() {
   const T = PL.eventTypes();
   const body = h('div', { class: 'ui-helpdoc' },
     h('h3', { class: 'ui-h3', text: 'Kürzel' }),
     h('dl', { class: 'ui-legend' }, T.map(t => [h('dt', { text: t.k }), h('dd', null, h('b', { text: t.name }), t.text ? ' · ' + t.text : '')])),
-    h('h3', { class: 'ui-h3', text: 'Woche: Farben und Zeichen' }),
-    h('dl', { class: 'ui-legend' }, [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet'],
-      ['Überschneidung', 'roter Rand und ⚡'], ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'], ['Fahrt', 'schmaler schraffierter Streifen mit Minuten'],
-      ['Platz offen', 'gestreift: zählt, sobald du den Platz hast']].map(([a, b]) => [h('dt', { text: a }), h('dd', { text: b })])),
+    uiLegendBody(''),
     h('h3', { class: 'ui-h3', text: 'Was zählt' }),
     h('ul', { class: 'ui-list' },
       h('li', { text: 'Zählt: das Modul ist im Plan und zählt mit seinen ECTS.' }),

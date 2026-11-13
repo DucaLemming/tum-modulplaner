@@ -37,6 +37,7 @@ const UI_ICON = {
   woche: '<path d="M4 5h16v15H4zM4 9h16M9 3v4M15 3v4"/>',
   pruefungen: '<path d="M6 3h9l3 3v15H6zM9 11h6M9 15h6"/>',
   search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+  einstellungen: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
   more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
@@ -50,4 +51,10 @@ function uiIcon(name, size) {
   s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '1.8');
   s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true');
   s.innerHTML = UI_ICON[name] || ''; return s;
+}
+/* seat state of a limited module: voll / teils voll / N frei / erhalten */
+function uiSeatTag(seat) {
+  if (!seat) return null;
+  if (seat.got) return h('span', { class: 'ui-tag ui-seat ui-seat-got', title: 'Platz erhalten' }, '🔒 Platz erhalten');
+  return h('span', { class: 'ui-tag ui-seat ui-seat-' + seat.state, title: 'Teilnehmerzahl begrenzt' }, '🔒 ' + seat.text);
 }

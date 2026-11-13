@@ -133,7 +133,7 @@ python tests/test_build.py         # and every other test file below; each print
 | Where | What |
 |---|---|
 | `planner/src/api.js` | `window.PL`: read models (`PL.totals()`, `PL.issues()`, `PL.week(s)`, ...) and actions (`PL.setInPlan()`, `PL.setSemester()`, ...). The only file that touches engine globals; every action calls the same engine functions as the old handler. |
-| `planner/src/ui/` | `h.js` (DOM helper), `boot.js` (wraps the old page in `#legacy`, creates `#ui`), `router.js` (hash routes `#/uebersicht`, `#/module`, `#/plan`, `#/woche/2`, `#/pruefungen/3`, each with optional `/m/<CODE>`), `sheet.js`, `nav.js`, one file per screen, `menu.js`, `help.js`. Screens call only `PL`. |
+| `planner/src/ui/` | `h.js` (DOM helper), `boot.js` (wraps the old page in `#legacy`, creates `#ui`), `router.js` (hash routes `#/uebersicht`, `#/module`, `#/plan`, `#/woche/2`, `#/pruefungen/3`, `#/einstellungen`, each with optional `/m/<CODE>`), `sheet.js`, `nav.js`, one file per screen, `menu.js`, `help.js`. Screens call only `PL`. |
 | `planner/src/css/` | `tokens.css` (colours, sizes), `base.css`, one file per screen. All selectors under `#ui` or `.ui-sheet-root`. |
 | `tests/test_parity.py` | The text export must be identical with and without the new UI, also after the same changes done through `PL` and through the engine. |
 | `tests/test_api.py` | `PL` against the old UI (oracle) and the stored `tum_*` keys. |

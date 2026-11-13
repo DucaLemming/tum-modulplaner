@@ -1,7 +1,7 @@
 /* UI rework: hash router. #/uebersicht, #/module, #/plan, #/woche/<1-4>, #/pruefungen/<1-4>, each optionally + /m/<CODE>.
    Hashes starting with #/connect/ belong to sync.js and are ignored here. */
 const uiScreens = {};
-const UI_SCREENS = [['uebersicht', 'Übersicht'], ['module', 'Module'], ['plan', 'Plan'], ['woche', 'Woche'], ['pruefungen', 'Prüfungen']];
+const UI_SCREENS = [['uebersicht', 'Übersicht'], ['module', 'Module'], ['plan', 'Plan'], ['woche', 'Woche'], ['pruefungen', 'Prüfungen'], ['einstellungen', 'Einstellungen']];
 const UI_SEM_SCREENS = ['woche', 'pruefungen'];
 let uiPushedModule = false;
 function uiParse(hash) {

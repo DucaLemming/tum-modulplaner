@@ -31,7 +31,7 @@ function uiModulPlanBlock(m) {
       h('button', { class: !S.sem ? 'ui-on' : '', type: 'button', 'aria-pressed': String(!S.sem), onclick: () => PL.setSemester(c, 0) }, 'offen'))));
     rows.push(row('Status', h('select', { class: 'ui-sel-status', 'aria-label': 'Status', disabled: S.cat === 'x', onchange: e => PL.setStatus(c, e.target.value) },
       [['count', 'Zählt'], ['optional', 'Optional'], ['done', 'Abgeschlossen']].map(([v, l]) => h('option', { value: v, selected: S.status === v }, l)))));
-    if (S.seat !== null) rows.push(row('Platz', h('div', { class: 'ui-seg ui-seg-seat', role: 'group', 'aria-label': 'Platz' },
+    if (S.seat !== null) rows.push(row(h('span', null, 'Platz ', m.lim && m.lim.seat && !m.lim.seat.got ? uiSeatTag(m.lim.seat) : null), h('div', { class: 'ui-seg ui-seg-seat', role: 'group', 'aria-label': 'Platz' },
       [['open', 'offen'], ['got', 'erhalten']].map(([v, l]) => h('button', { class: S.seat === v ? 'ui-on' : '', type: 'button', 'aria-pressed': String(S.seat === v), onclick: () => PL.setSeat(c, v) }, l)))));
     rows.push(row('Wenig Aufwand', uiSwitch(S.easy, 'Wenig Aufwand', on => PL.setEasy(c, on)),
       uiHelp('Für Module, die du nur nebenbei machst: Übungen und Tutorien zählen nicht für Überschneidungen und Aufwand.', 'Wenig Aufwand')));
@@ -63,7 +63,7 @@ function uiEventsBlock(m) {
 function uiLimBlock(m) {
   const L = m.lim;
   return h('div', { class: 'ui-lim' },
-    h('p', null, h('b', { text: '🔒 ' + L.short })), h('p', { class: 'ui-meta', text: L.reg }),
+    h('p', null, uiSeatTag(L.seat), ' ', h('b', { text: L.short })), h('p', { class: 'ui-meta', text: L.reg }),
     L.groups ? h('p', { class: 'ui-meta ui-wrap', text: L.groups }) : null,
     L.at ? h('p', { class: 'ui-meta', text: 'Stand ' + uiFmt.dateY(L.at) }) : null,
     h('button', { class: 'ui-linkbtn', type: 'button', onclick: e => { const p = e.currentTarget.closest('.ui-panel-body'); if (p) p.scrollTop = 0; } }, 'Status ändern ↑'));

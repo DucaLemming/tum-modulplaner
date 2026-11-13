@@ -47,3 +47,8 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 @media (prefers-reduced-motion: reduce) {
   #ui *, .ui-sheet-root * { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
+#ui .ui-seat-full, .ui-sheet-root .ui-seat-full { color: #fff; background: var(--bad); border-color: var(--bad); }
+#ui .ui-seat-part, .ui-sheet-root .ui-seat-part { color: #6b4a0e; background: #fdf0d5; border-color: var(--warn); }
+#ui .ui-seat-free, #ui .ui-seat-got, .ui-sheet-root .ui-seat-free, .ui-sheet-root .ui-seat-got { color: var(--ok); background: #e8f5ee; border-color: var(--ok); }
+#ui .ui-seat-old, .ui-sheet-root .ui-seat-old { color: var(--muted); }
+#ui .ui-seat-unknown, .ui-sheet-root .ui-seat-unknown { color: var(--muted); }

@@ -53,6 +53,9 @@ def main():
         pg.evaluate("c => { PL.setInPlan(c, true); PL.setSemester(c, 4); }", pg.evaluate("Object.keys(M).find(c => M[c].ects > 0 && !marked[c] && (M[c].lv || []).some(e => e.d && e.v) && (M[c].turnus || '').includes('Sommer'))"))
         pg.evaluate("uiNav('woche/4')"); pg.wait_for_timeout(150)
         check(pg.locator("#ui .ui-wk-head .ui-tag", has_text="Zeiten: Vorjahr").count() == 1, "unpublished semester: tag Zeiten: Vorjahr (Review focus 3)")
+        un = pg.evaluate("PL.week(4, 'sem').untimed")
+        if un:
+            check(un[0]["name"] in pg.locator("#ui .ui-wk-untimed").inner_text(), "Ohne Zeit shows code and name")
         check(no_hscroll(pg), "no horizontal scroll")
         pg.evaluate(f"uiNav('woche/{s}')"); pg.wait_for_timeout(150)
         shot(pg, "woche_desktop")

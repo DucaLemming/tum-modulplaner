@@ -63,6 +63,19 @@
     const r = RULE_BR.find(([p]) => txt.startsWith(p)); return r ? r[1] : '';
   }
 
+  /* seat state of a limited module for its planned semester (or the semester it would be planned in) */
+  function seatInfo(c) {
+    if (!isLimMod(c)) return null;
+    const i = limInfo(c, sem[c] || undefined); if (!i) return null;
+    const cur = typeof limCur === 'function' ? limCur(i) : !i.vj && !i.other, free = Math.max(0, (i.tot || 0) - (i.occ || 0));
+    const known = (i.g || []).some(g => g[3] != null);
+    const state = !cur ? 'old' : i.full ? 'full' : i.part ? 'part' : known ? 'free' : 'unknown';
+    const text = state === 'full' ? 'voll' : state === 'part' ? 'teils voll' : state === 'free' ? free + ' von ' + i.tot + ' frei' : state === 'unknown' ? i.tot + ' Plätze, Belegung unbekannt' : (i.full ? 'im ' + (i.vj ? 'Vorjahr' : termLabel(i.t)) + ' voll' : 'Plätze offen (' + (i.vj ? 'Vorjahr' : termLabel(i.t)) + ')');
+    return { state, text, free, tot: i.tot || 0, occ: i.occ || 0, term: i.t, cur, got: !!marked[c] && limGot(c) };
+  }
+  const nameOf = c => M[c] ? c + ' ' + M[c].name : c;
+  const codeInText = txt => { let best = null; for (const c in M) { const n = M[c].name; if (n && n.length > 3 && txt.includes(n) && (!best || n.length > M[best].name.length)) best = c; } return best; };
+
   /* ---------- issues ---------- */
   const CF_TYPE = { LV: 'Überschneidung', PF: 'Überschneidung', PFK: 'Überschneidung', LF: 'Überschneidung', PR: 'Überschneidung', PT: 'Überschneidung', PB: 'Überschneidung',
     WG: 'Weg', RF: 'Reihenfolge', T: 'Reihenfolge', DEP: 'Angebot' };
@@ -73,21 +86,22 @@
     R.bad.concat(R.open).forEach(txt => { const i = txt.indexOf(':'); push({ type: 'Regel', sem: 0, title: i > 0 ? txt.slice(0, i) : txt, detail: i > 0 ? txt.slice(i + 1).trim() : '', full: txt, bad: R.bad.includes(txt), ref: ruleBracket(txt) }); });
     (eoList || []).forEach((g, gi) => {
       const cs = g.codes.filter(c => M[c]); if (cs.length < 2) return;
-      push({ type: 'Entscheidung', sem: 0, title: cs.join(' oder '), detail: cs.map(c => M[c].ects + ' ECTS' + (sem[c] ? ', ' + sem[c] + '. Sem.' : '')).join(' / '),
+      push({ type: 'Entscheidung', sem: 0, title: cs.map(nameOf).join(' oder '), detail: cs.map(c => M[c].ects + ' ECTS' + (sem[c] ? ', ' + sem[c] + '. Sem.' : '')).join(' / '),
         full: cs.map(c => c + ' ' + M[c].name).join(' oder '), codes: cs, action: 'compare', ref: gi });
     });
-    limPlan().filter(o => !limGot(o.c)).forEach(({ c, i }) => push({ type: 'Anmeldung', sem: sem[c] || 0, title: c + ' ' + M[c].name,
+    limPlan().filter(o => !limGot(o.c)).forEach(({ c, i }) => push({ type: 'Anmeldung', sem: sem[c] || 0, title: c + ' ' + M[c].name, seat: seatInfo(c),
       detail: limShort(i) + ' · ' + limReg(i), full: limShort(i) + ' · ' + limReg(i), codes: [c], action: 'seat', vj: !!i.vj }));
     const cf = computeConflicts();
     [1, 2, 3, 4].forEach(s => (cf[s] || []).forEach(w => {
       if (w.k === 'EO') return;
       const type = CF_TYPE[w.k] || 'Überschneidung';
       const codes = [...new Set([w.A && w.A.c, w.B && w.B.c, w.c].concat(w.cs || []).filter(c => c && M[c]))];
+      if (!codes.length) { const f = codeInText(w.txt); if (f) codes.push(f); }
       let title;
-      if (w.A && w.B && w.A.c && w.B.c) title = w.A.c + ' ' + w.A.t + ' ↔ ' + w.B.c + ' ' + w.B.t;
-      else { const i = w.txt.indexOf(':'); title = (i > 0 ? w.txt.slice(0, i) : w.txt) + (codes[0] ? ' · ' + M[codes[0]].name : ''); }
+      if (w.A && w.B && w.A.c && w.B.c) title = w.A.c + ' ' + M[w.A.c].name + ' (' + w.A.t + ') ↔ ' + w.B.c + ' ' + M[w.B.c].name + ' (' + w.B.t + ')';
+      else { const i = w.txt.indexOf(':'); title = (i > 0 && i < 30 ? w.txt.slice(0, i) : type) + (codes.length ? ': ' + codes.map(nameOf).join(', ') : ''); }
       const id = wKey(s, w), vj = [w.A, w.B].some(x => x && x.e && x.e.vj);
-      push({ id, type, sem: s, kind: w.k, title, detail: w.txt.length > 90 ? w.txt.slice(0, 89) + '…' : w.txt, full: w.txt, soft: clashSev(w) === 'soft', codes, vj,
+      push({ id, type, sem: s, kind: w.k, title, detail: w.txt, full: w.txt, soft: clashSev(w) === 'soft', codes, vj,
         wd: (w.A && w.A.wd) || 0, a: (w.A && w.A.a) || 0 });
     }));
     (typeof recNotes !== 'undefined' ? recNotes : []).forEach(txt => {
@@ -102,7 +116,7 @@
   const modules = K(() => Object.keys(M).map(code => {
     const m = M[code];
     return { code, name: m.name, ects: m.ects, bracket: marked[code] || primaryBracket(code) || m.primary, brackets: m.brackets || [], turn: turnOf(code),
-      lang: m.sprache || '', inPlan: !!marked[code], sem: sem[code] || 0, cat: marked[code] ? semCat(code) : '', limited: isLimMod(code),
+      lang: m.sprache || '', inPlan: !!marked[code], sem: sem[code] || 0, cat: marked[code] ? semCat(code) : '', limited: isLimMod(code), seat: marked[code] ? seatInfo(code) : null,
       neu: !!m.neu, dep: !!m.dep, nogo: isNogo(code), eth: isEth(code), done: !!done[code] };
   }));
   function search(q) {
@@ -151,7 +165,7 @@
     const events = list.map(e => evRow(c, e, term)), G = {}, gl = grpList(c);
     Object.keys(gl).forEach(gk => G[gk] = { names: gl[gk], chosen: grpChosenSet(c, gk) });
     let lim = null;
-    if (isLimMod(c)) { const i = limInfo(c); if (i) lim = { short: limShort(i), reg: limReg(i), groups: (typeof limGroupsTxt === 'function' ? limGroupsTxt(i, 20) : ''), full: !!i.full, vj: !!i.vj, term: i.t, at: typeof LIMD !== 'undefined' ? LIMD : '' }; }
+    if (isLimMod(c)) { const i = limInfo(c, sem[c] || undefined); if (i) lim = { short: limShort(i), reg: limReg(i), groups: (typeof limGroupsTxt === 'function' ? limGroupsTxt(i, 20) : ''), full: !!i.full, vj: !!i.vj, term: i.t, seat: seatInfo(c), at: typeof LIMD !== 'undefined' ? LIMD : '' }; }
     const g = eoOf(c);
     const before = (m.prereqs || []).filter(x => M[x]);
     const after = Object.keys(M).filter(x => (M[x].prereqs || []).includes(c));
@@ -180,7 +194,7 @@
     for (let s = 0; s <= 4; s++) {
       const L = all.filter(c => (sem[c] || 0) === s), st = semStats(L), term = s ? termOf(s) : '';
       const cards = L.map(c => ({ code: c, name: M[c].name, ects: M[c].ects, bracket: marked[c], color: color(marked[c]), cat: semCat(c), done: !!done[c],
-        limited: isLimMod(c), block: typeof blkOut === 'function' ? !!blkOut(c) : false, issue: iss.some(i => !i.hidden && i.sem === s && i.codes.includes(c)) }));
+        limited: isLimMod(c), seat: seatInfo(c), block: typeof blkOut === 'function' ? !!blkOut(c) : false, issue: iss.some(i => !i.hidden && i.sem === s && i.codes.includes(c)) }));
       cards.sort((a, b) => CAT_ORDER[a.cat] - CAT_ORDER[b.cat] || ORDER.indexOf(a.bracket) - ORDER.indexOf(b.bracket) || a.name.localeCompare(b.name));
       out.push({ s, term, label: s ? termLabel(term) : 'Ohne Semester', pub: s ? termPub(term) : true, E: st.E, effortSure: st.es, effortAll: st.ea,
         issues: iss.filter(i => !i.hidden && i.sem === s).length, cards,
@@ -401,6 +415,10 @@
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
     addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
     openExtra: () => { try { openExtra(); } catch (e) { console.error(e); } },
+    seatInfo: K(seatInfo),
+    syncLink: () => { try { return window.TUMSYNC && TUMSYNC.link ? TUMSYNC.link() : null; } catch (e) { return null; } },
+    syncWeb: () => /^https?:$/.test(location.protocol),
+    qrSvg: t => { try { return window.TUMSYNC && TUMSYNC.qr ? TUMSYNC.qr(t) : ''; } catch (e) { return ''; } },
     openSync: () => { const b = document.getElementById('syncBtn'); if (b) b.click(); },
     syncStatus: () => { try { return window.TUMSYNC ? TUMSYNC.status() : 'off'; } catch (e) { return 'off'; } },
     openUpdate: () => { try { openUpdate(); } catch (e) { console.error(e); } },

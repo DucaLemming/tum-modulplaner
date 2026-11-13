@@ -1,6 +1,11 @@
 /* UI rework: Module. Searchable, filterable list of all modules, grouped by bracket. */
 const uiModuleFilter = { q: '', brackets: new Set(), ects: new Set(), turn: new Set(), plan: '', limited: '', dep: '', timing: new Set(), eth: false, lang: new Set() };
 const uiModuleMore = {};
+/* collapsed groups, per device; default: all collapsed. Active filters open every group. */
+const uiMGroups = (() => { try { const v = JSON.parse(localStorage.getItem('tum-ui-mgroups') || 'null'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } })();
+function uiMGroupOpen(b) { return uiMGroups[b] === true; }
+function uiMGroupSet(b, on) { uiMGroups[b] = on; try { localStorage.setItem('tum-ui-mgroups', JSON.stringify(uiMGroups)); } catch (e) {} uiRender(true); }
+function uiModuleFiltered(F) { return F.brackets.size || F.ects.size || F.turn.size || F.plan || F.limited || F.dep || F.timing.size || F.eth || F.lang.size; }
 function uiModuleFilterSet(p, silent) {
   for (const k in p) {
     const v = p[k];
@@ -70,7 +75,7 @@ function uiModuleRow(m) {
       h('span', { class: 'ui-mrow-name', text: m.name, title: m.name }),
       h('span', { class: 'ui-mrow-icons' },
         m.inPlan ? h('span', { class: 'ui-planmark', title: 'Im Plan' + (m.sem ? ', ' + m.sem + '. Semester' : '') }, h('span', { class: 'ui-dot', style: { background: PL.color(m.bracket) } }), m.sem ? String(m.sem) : '') : null,
-        m.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null,
+        m.seat ? uiSeatTag(m.seat) : m.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null,
         m.neu ? h('span', { class: 'ui-tag', text: 'neu' }) : null,
         m.dep ? h('span', { class: 'ui-tag', text: 'eingestellt?' }) : null,
         m.nogo ? h('span', { title: 'Nicht für mich', text: '⛔' }) : null),
@@ -101,11 +106,21 @@ uiScreens.module = {
     } else {
       const groups = {}; list.forEach(m => (groups[m.bracket] = groups[m.bracket] || []).push(m));
       const ids = PL.brackets().rows.map(r => r.id).concat(['extern', 'zusatz']).concat(Object.keys(groups).filter(b => !PL.brackets().rows.some(r => r.id === b) && b !== 'extern' && b !== 'zusatz'));
-      ids.forEach(b => {
-        const L = groups[b]; if (!L || !L.length) return;
+      const forced = !!uiModuleFiltered(F), shown = ids.filter(b => groups[b] && groups[b].length);
+      if (!forced && shown.length > 1) {
+        const allOpen = shown.every(uiMGroupOpen);
+        c.lastChild.appendChild(h('button', { class: 'ui-chip ui-chip-all', type: 'button', onclick: () => { shown.forEach(b => uiMGroups[b] = !allOpen); uiMGroupSet(shown[0], !allOpen); } }, allOpen ? 'Alle zuklappen' : 'Alle aufklappen'));
+      }
+      shown.forEach(b => {
+        const L = groups[b], open = forced || uiMGroupOpen(b), inP = L.filter(m => m.inPlan).length;
         L.sort((x, y) => x.name.localeCompare(y.name));
         const n = uiModuleMore[b] || 100;
-        box.appendChild(h('div', { class: 'ui-mgroup-h' }, h('span', { class: 'ui-dot', style: { background: PL.color(b) } }), h('span', { class: 'ui-mgroup-n', text: PL.label(b) }), h('span', { class: 'ui-meta', text: String(L.length) })));
+        box.appendChild(h('button', { class: 'ui-mgroup-h ui-mgroup-btn', type: 'button', 'aria-expanded': String(open), 'data-group': b, disabled: forced,
+          onclick: () => uiMGroupSet(b, !open) },
+          h('span', { class: 'ui-mgroup-chev', 'aria-hidden': 'true', text: open ? '▾' : '▸' }),
+          h('span', { class: 'ui-dot', style: { background: PL.color(b) } }), h('span', { class: 'ui-mgroup-n', text: PL.label(b) }),
+          inP ? h('span', { class: 'ui-meta', text: inP + ' im Plan · ' }) : null, h('span', { class: 'ui-meta', text: L.length + ' Module' })));
+        if (!open) return;
         L.slice(0, n).forEach(m => box.appendChild(uiModuleRow(m)));
         if (L.length > n) box.appendChild(h('button', { class: 'ui-btn ui-more', type: 'button', onclick: () => { uiModuleMore[b] = n + 100; uiRender(true); } }, 'Weitere ' + Math.min(100, L.length - n) + ' anzeigen'));
       });

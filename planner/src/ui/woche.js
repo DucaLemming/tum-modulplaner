@@ -52,11 +52,6 @@ function uiWeekShow(it) {
   if (uiWeekView.cf) return it.clash;
   return true;
 }
-function uiWeekLegend(anchor) {
-  const R = [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet'], ['Überschneidung', 'roter Rand und ⚡'],
-    ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'], ['Fahrt', 'schmaler schraffierter Streifen mit Minuten']];
-  uiSheet('Legende', h('dl', { class: 'ui-legend' }, R.map(([a, b]) => [h('dt', { text: a }), h('dd', { text: b })])), { kind: 'popover', anchor });
-}
 uiScreens.woche = {
   render(c, r) {
     const s = r.sem || 1, W = PL.week(s, uiWeekMode[s] || 'sem');
@@ -74,7 +69,7 @@ uiScreens.woche = {
       !W.pub ? h('span', { class: 'ui-tag', text: 'Zeiten: Vorjahr' }) : null,
       h('div', { class: 'ui-head-x' },
         h('button', { class: 'ui-btn', type: 'button', 'aria-haspopup': 'true', onclick: e => uiFilterPop(e.currentTarget, 'Anzeige', () => [tog('alt', 'Alternativen zeigen'), tog('hid', 'Ausgeblendete zeigen'), tog('cf', 'nur Überschneidungen'), tog('list', 'Liste')]) }, 'Anzeige ▾'),
-        h('button', { class: 'ui-iconbtn ui-help-btn', type: 'button', 'aria-label': 'Legende', onclick: e => uiWeekLegend(e.currentTarget) }, '?'),
+        uiHelpBtn('woche'),
         h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => uiBlockForm(null, { wd: uiWeekDay || 1 }) }, '＋ Termin'))));
     const phone = window.innerWidth < 720;
     const td = new Date().getDay(); if (!uiWeekDay) uiWeekDay = td >= 1 && td <= 5 ? td : 1;
@@ -111,7 +106,7 @@ uiScreens.woche = {
       c.appendChild(wrap);
     } else c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(W.days.map(dayObj), { onDraw: draw })));
     if (W.untimed.length) c.appendChild(h('div', { class: 'ui-wk-untimed' }, h('span', { class: 'ui-meta', text: 'Ohne Zeit' }),
-      W.untimed.map(u => h('button', { class: 'ui-chip', type: 'button', onclick: () => uiOpenModule(u.code) }, u.code + ' · ' + u.tag))));
+      W.untimed.map(u => h('button', { class: 'ui-chip ui-untimed', type: 'button', onclick: () => uiOpenModule(u.code) }, h('b', { text: u.code + ' ' + u.name }), h('span', { class: 'ui-meta', text: ' · ' + u.tag })))));
     const iss = W.issues.filter(i => !i.hidden);
     c.appendChild(h('details', { class: 'ui-wk-cf', open: iss.length > 0 && iss.length <= 6 }, h('summary', { class: 'ui-h2', text: 'Überschneidungen in dieser Woche (' + iss.length + ')' }),
       h('div', { class: 'ui-issues' }, iss.map(uiIssueCard), !iss.length ? h('p', { class: 'ui-meta', text: 'Keine.' }) : null)));

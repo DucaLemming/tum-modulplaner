@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from helpers import check, finish, open_planner, example_plan, import_plan, no_hscroll, shot
 
-CARDS = "#ui .ui-s-uebersicht .ui-issue"
+CARDS = "#ui .ui-s-uebersicht .ui-issues-open > .ui-issue"
 
 
 def chip_alle(pg):
@@ -40,15 +40,17 @@ def main():
             pg.locator(CARDS).first.locator(".ui-issue-more").click()
             pg.locator(".ui-sheet-root .ui-menu-item", has_text="Ausblenden").click(); pg.wait_for_timeout(100)
             check(pg.locator(CARDS).count() == n - 1, "Ausblenden removes one card")
-            check("1 ausgeblendet · anzeigen" in pg.locator("#ui .ui-hidden-link").inner_text(), "footer: 1 ausgeblendet · anzeigen")
-            first = pg.locator(CARDS).first.locator("button.ui-issue-detail")
-            if first.count():
-                short = first.inner_text(); first.click(); pg.wait_for_timeout(50)
-                check(len(pg.locator(CARDS).first.locator(".ui-issue-detail").inner_text()) > len(short), "tap on the detail line shows the full text")
+            check(pg.locator("#ui .ui-hidden-link").inner_text().strip() == "Ausgeblendet (1)", "hidden card moves to Ausgeblendet (1)")
+            pg.locator("#ui .ui-hidden-link").click(); pg.wait_for_timeout(50)
+            pg.locator("#ui .ui-hidden-sec .ui-issue-show").click(); pg.wait_for_timeout(100)
+            check(pg.locator(CARDS).count() == n and pg.locator("#ui .ui-hidden-sec").count() == 0, "Einblenden brings it back")
+            full = pg.evaluate("PL.issues().filter(i => !i.hidden && i.detail).map(i => i.detail)")
+            shown = pg.locator(CARDS + " .ui-issue-detail").all_inner_texts()
+            check(sorted(full) == sorted(shown) and not any(t.endswith("…") for t in shown), "warnings show their full text")
             lim = pg.evaluate("Object.keys(M).find(c => !marked[c] && isLimMod(c) && M[c].ects > 0)")
             pg.evaluate("c => PL.setInPlan(c, true)", lim); pg.wait_for_timeout(100); chip_alle(pg)
             card = pg.locator(CARDS + '[data-type="Anmeldung"]', has_text=lim)
-            check(card.count() == 1, f"limited module {lim}: Anmeldung card")
+            check(card.count() == 1 and card.locator(".ui-seat").count() == 1, f"limited module {lim}: Anmeldung card with seat state")
             card.locator(".ui-issue-act .ui-btn").click(); pg.wait_for_timeout(100)
             check(pg.locator(CARDS + '[data-type="Anmeldung"]', has_text=lim).count() == 0, "Platz erhalten removes the card")
             pg.locator('#ui .ui-checks .ui-seg button[aria-label="4. Semester prüfen"]').click(); pg.wait_for_timeout(100)

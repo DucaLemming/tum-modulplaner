@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from helpers import check, finish, open_planner, reload, example_plan, import_plan, no_hscroll, shot
 
-NAV = [("uebersicht", "Übersicht"), ("module", "Module"), ("plan", "Plan"), ("woche", "Woche"), ("pruefungen", "Prüfungen")]
+NAV = [("uebersicht", "Übersicht"), ("module", "Module"), ("plan", "Plan"), ("woche", "Woche"), ("pruefungen", "Prüfungen"), ("einstellungen", "Einstellungen")]
 
 
 def main():
@@ -21,9 +21,11 @@ def main():
             _, pg = open_planner(p, size, browser=br)
             import_plan(pg, example_plan(pg))
             items = pg.locator("#ui .ui-nav-item:visible")
-            check(items.count() == 5 and [items.nth(i).inner_text().split("\n")[0].strip() for i in range(5)] == [l for _, l in NAV], "five navigation entries visible with the right labels")
+            k = 6 if size == "desktop" else 5
+            check(items.count() == k and [items.nth(i).inner_text().split("\n")[0].strip() for i in range(k)] == [l for _, l in NAV][:k], f"{k} navigation entries visible with the right labels")
+            check((pg.locator("#ui .ui-top-settings").is_visible()) == (size == "phone"), "phone: Einstellungen in the top bar")
             for n, lab in NAV:
-                pg.locator(f'#ui .ui-nav-item[data-nav="{n}"]').click()
+                pg.locator(f'#ui .ui-nav-item[data-nav="{n}"]' if size == "desktop" or n != "einstellungen" else "#ui .ui-top-settings").click()
                 pg.wait_for_timeout(100)
                 ok = pg.evaluate("location.hash").startswith("#/" + n) and pg.locator(f'[data-ui-screen="{n}"]').first.is_visible()
                 check(ok, f"{lab}: hash and screen")

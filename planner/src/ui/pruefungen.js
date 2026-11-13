@@ -18,6 +18,7 @@ uiScreens.pruefungen = {
     c.appendChild(h('div', { class: 'ui-head' }, h('h1', { class: 'ui-title', text: 'Prüfungen' }),
       h('div', { class: 'ui-head-x' },
         h('div', { class: 'ui-seg ui-ex-sem', role: 'tablist', 'aria-label': 'Semester' }, [1, 2, 3, 4].map(i => h('button', { class: i === s ? 'ui-on' : '', type: 'button', role: 'tab', 'aria-selected': String(i === s), onclick: () => uiNav('pruefungen/' + i) }, i + '.'))),
+        uiHelpBtn('pruefungen'),
         wide ? h('div', { class: 'ui-seg ui-ex-view', role: 'group', 'aria-label': 'Ansicht' }, [['list', 'Liste'], ['cal', 'Kalender']].map(([v, l]) => h('button', { class: uiExView === v ? 'ui-on' : '', type: 'button', 'aria-pressed': String(uiExView === v), onclick: () => { uiExView = v; uiRender(true); } }, l))) : null)));
     c.appendChild(h('p', { class: 'ui-meta ui-ex-term', text: X.label }));
     if (!rows) c.appendChild(h('p', { class: 'ui-empty ui-card', text: 'Keine Prüfungstermine bekannt.' }));

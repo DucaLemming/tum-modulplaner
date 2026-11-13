@@ -67,3 +67,9 @@
 #ui .ui-top-sync .ui-sync-t { display: none; }
 #ui .ui-nav-foot .ui-sync { width: 100%; font-size: var(--fs-meta); }
 @media (max-width: 1199px) { #ui .ui-sync { min-height: 44px; min-width: 44px; } }
+#ui .ui-qmark { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1.8px solid currentColor; border-radius: 50%; font-weight: 700; font-size: 14px; }
+@media (max-width: 719px) { #ui .ui-head:has(> .ui-head-x:empty) { display: none; } }
+/* Einstellungen: rail and tablet tabs; on the phone in the top bar (bottom bar keeps five entries) */
+#ui .ui-top-settings { display: none; }
+@media (max-width: 719px) { #ui .ui-nav-item[data-nav="einstellungen"] { display: none; } #ui .ui-top-settings { display: inline-flex; } }
+@media (min-width: 720px) and (max-width: 1199px) { #ui .ui-nav-item { padding: 0 var(--s2); } }

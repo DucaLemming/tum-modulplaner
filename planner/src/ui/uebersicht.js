@@ -1,7 +1,7 @@
 /* UI rework: Übersicht. Progress, Offene Punkte (the single inbox), Bereiche. */
 const UI_ISSUE_ICON = { Regel: '⚠', Entscheidung: '⇄', Anmeldung: '🔒', 'Überschneidung': '⚡', Weg: '🚆', Reihenfolge: '↕', Angebot: 'ⓘ', Datenupdate: '↻' };
 const UI_ISSUE_ORDER = ['Regel', 'Entscheidung', 'Anmeldung', 'Überschneidung', 'Weg', 'Reihenfolge', 'Angebot', 'Datenupdate'];
-const uiIssueView = { sem: 0, type: '', showHidden: false, open: new Set() };
+const uiIssueView = { sem: 0, type: '', showHidden: false };
 function uiSortIssues(L) {
   return L.map((x, i) => [x, i]).sort((A, B) => {
     const a = A[0], b = B[0], d = UI_ISSUE_ORDER.indexOf(a.type) - UI_ISSUE_ORDER.indexOf(b.type);
@@ -18,23 +18,23 @@ function uiIssueGo(x) {
   else if (x.codes[0]) uiOpenModule(x.codes[0]);
 }
 function uiIssueCard(x) {
-  const open = uiIssueView.open.has(x.id), hasMore = x.full && x.full !== x.detail;
   const actions = { compare: ['Vergleichen', () => uiCompareSheet(x.ref)], seat: ['Platz erhalten', () => PL.setSeat(x.codes[0], 'got')], ack: ['OK', () => PL.ackUpdateNotes()] };
   const A = x.action && actions[x.action];
-  const more = h('button', { class: 'ui-iconbtn ui-issue-more', type: 'button', 'aria-label': 'Weitere Aktionen',
-    onclick: e => { e.stopPropagation(); uiMenuSheet(x.title, [[x.hidden ? 'Einblenden' : 'Ausblenden', () => PL.hideIssue(x.id, !x.hidden)]], e.currentTarget); } }, uiIcon('more', 20));
-  const detail = x.detail || x.full ? h(hasMore ? 'button' : 'span', { class: 'ui-issue-detail' + (open ? ' ui-open' : ''), type: hasMore ? 'button' : null, 'aria-expanded': hasMore ? String(open) : null,
-    onclick: hasMore ? e => { e.stopPropagation(); if (open) uiIssueView.open.delete(x.id); else uiIssueView.open.add(x.id); uiRender(true); } : null }, open ? x.full : (x.detail || x.full)) : null;
+  const side = x.hidden
+    ? h('button', { class: 'ui-btn ui-issue-show', type: 'button', onclick: () => PL.hideIssue(x.id, false) }, 'Einblenden')
+    : [h('button', { class: 'ui-iconbtn ui-issue-more', type: 'button', 'aria-label': 'Weitere Aktionen',
+        onclick: e => { e.stopPropagation(); uiMenuSheet(x.title, [['Ausblenden (kommt unter „Ausgeblendet“)', () => PL.hideIssue(x.id, true)]], e.currentTarget); } }, uiIcon('more', 20)),
+      h('button', { class: 'ui-iconbtn ui-issue-go', type: 'button', 'aria-label': 'Öffnen', onclick: () => uiIssueGo(x) }, uiIcon('chev', 20))];
+  const detail = x.detail && x.detail !== x.title ? h('p', { class: 'ui-issue-detail', text: x.detail }) : null;
   return h('div', { class: 'ui-issue ui-card' + (x.soft ? ' ui-soft' : '') + (x.hidden ? ' ui-hid' : '') + (x.bad || (x.type === 'Überschneidung' && !x.soft) ? ' ui-issue-bad' : ''), 'data-type': x.type },
     h('div', { class: 'ui-issue-main' },
       h('div', { class: 'ui-issue-top' }, h('span', { class: 'ui-issue-ic', 'aria-hidden': 'true', text: UI_ISSUE_ICON[x.type] || '•' }),
         h('span', { class: 'ui-issue-type', text: x.type + (x.sem ? ' · ' + x.sem + '. Sem.' : '') }), x.vj ? h('span', { class: 'ui-tag', text: 'Vorjahr' }) : null,
-        x.soft && x.type === 'Überschneidung' ? h('span', { class: 'ui-tag', text: 'unsicher' }) : null),
+        x.soft && x.type === 'Überschneidung' ? h('span', { class: 'ui-tag', text: 'unsicher' }) : null, x.seat ? uiSeatTag(x.seat) : null),
       h('p', { class: 'ui-issue-tl' }, h('button', { class: 'ui-issue-title', type: 'button', onclick: () => uiIssueGo(x) }, x.title)),
-      detail ? h('p', { class: 'ui-issue-dl' }, detail) : null,
-      A ? h('div', { class: 'ui-issue-act' }, h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: e => { e.stopPropagation(); A[1](); } }, A[0])) : null),
-    h('div', { class: 'ui-issue-side' }, more,
-      h('button', { class: 'ui-iconbtn ui-issue-go', type: 'button', 'aria-label': 'Öffnen', onclick: () => uiIssueGo(x) }, uiIcon('chev', 20))));
+      detail,
+      A && !x.hidden ? h('div', { class: 'ui-issue-act' }, h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: e => { e.stopPropagation(); A[1](); } }, A[0])) : null),
+    h('div', { class: 'ui-issue-side' }, side));
 }
 function uiProgress() {
   const T = PL.totals(), max = Math.max(120, T.sure + T.seatOpen + T.optional), w = v => (100 * v / max).toFixed(2) + '%';
@@ -66,22 +66,25 @@ function uiBrackets() {
   return h('section', { class: 'ui-brackets ui-card', 'aria-label': 'Bereiche' }, h('h2', { class: 'ui-h2', text: 'Bereiche' }), rows);
 }
 function uiInbox() {
-  const all = uiSortIssues(PL.issues()), vis = all.filter(x => !x.hidden), nh = all.length - vis.length, V = uiIssueView;
-  const base = V.showHidden ? all : vis;
+  const all = uiSortIssues(PL.issues()), vis = all.filter(x => !x.hidden), hid = all.filter(x => x.hidden), V = uiIssueView;
   const pass = x => (!V.sem || x.sem === V.sem) && (!V.type || x.type === V.type);
-  const L = base.filter(pass);
+  const L = vis.filter(pass);
   const chip = (lab, on, f, n) => h('button', { class: 'ui-chip' + (on ? ' ui-on' : ''), type: 'button', 'aria-pressed': String(on), onclick: () => { f(); uiRender(true); } }, lab, n != null ? h('span', { class: 'ui-chip-n', text: String(n) }) : null);
-  const types = UI_ISSUE_ORDER.filter(t => base.some(x => x.type === t));
+  const types = UI_ISSUE_ORDER.filter(t => vis.some(x => x.type === t));
   const chips = h('div', { class: 'ui-chips' },
-    chip('Alle', !V.sem && !V.type, () => { V.sem = 0; V.type = ''; }, base.length),
-    [1, 2, 3, 4].map(s => chip(s + '.', V.sem === s, () => { V.sem = V.sem === s ? 0 : s; }, base.filter(x => x.sem === s).length)),
-    types.map(t => chip(t, V.type === t, () => { V.type = V.type === t ? '' : t; }, base.filter(x => x.type === t).length)));
+    chip('Alle', !V.sem && !V.type, () => { V.sem = 0; V.type = ''; }, vis.length),
+    [1, 2, 3, 4].map(s => chip(s + '.', V.sem === s, () => { V.sem = V.sem === s ? 0 : s; }, vis.filter(x => x.sem === s).length)),
+    types.map(t => chip(t, V.type === t, () => { V.type = V.type === t ? '' : t; }, vis.filter(x => x.type === t).length)));
   const checks = PL.checks();
   const muted = [1, 2, 3, 4].filter(s => !checks[s - 1] && (!V.sem || V.sem === s)).map(s => h('div', { class: 'ui-issue-muted ui-card', text: 'Überschneidungen im ' + s + '. Sem. nicht geprüft' }));
+  const hd = hid.length ? h('details', { class: 'ui-hidden-sec', open: V.showHidden }, h('summary', { class: 'ui-hidden-link' }, 'Ausgeblendet (' + hid.length + ')'),
+    h('p', { class: 'ui-meta', text: 'Ausgeblendete Punkte zählen nicht im Zähler oben. „Einblenden“ holt sie zurück.' }),
+    h('div', { class: 'ui-issues' }, hid.map(uiIssueCard))) : null;
+  if (hd) hd.addEventListener('toggle', () => { V.showHidden = hd.open; });
   return h('section', { class: 'ui-inbox', 'aria-label': 'Offene Punkte' },
     h('h2', { class: 'ui-h2', text: 'Offene Punkte (' + vis.length + ')' }), chips,
-    h('div', { class: 'ui-issues' }, L.map(uiIssueCard), muted, !L.length && !muted.length ? h('p', { class: 'ui-empty', text: 'Keine offenen Punkte.' }) : null),
-    nh ? h('button', { class: 'ui-linkbtn ui-hidden-link', type: 'button', onclick: () => { V.showHidden = !V.showHidden; uiRender(true); } }, nh + ' ausgeblendet · ' + (V.showHidden ? 'verbergen' : 'anzeigen')) : null,
+    h('div', { class: 'ui-issues ui-issues-open' }, L.map(uiIssueCard), muted, !L.length && !muted.length ? h('p', { class: 'ui-empty', text: 'Keine offenen Punkte.' }) : null),
+    hd,
     h('div', { class: 'ui-checks' }, h('span', { class: 'ui-meta', text: 'Überschneidungen prüfen' }),
       h('div', { class: 'ui-seg', role: 'group', 'aria-label': 'Überschneidungen prüfen' }, [1, 2, 3, 4].map(s => h('button', { class: checks[s - 1] ? 'ui-on' : '', type: 'button', 'aria-pressed': String(checks[s - 1]),
         'aria-label': s + '. Semester prüfen', onclick: () => PL.setCheck(s, !checks[s - 1]) }, s + '.')))));

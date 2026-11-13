@@ -11,6 +11,7 @@ function uiEventSheet(code, key, anchor) {
     body.append(
       h('p', { class: 'ui-meta', text: [e.wd ? uiFmt.wd(e.wd) + ' ' + e.v + (e.b ? '–' + e.b : '') : 'ohne Zeit', e.room, e.grp].filter(Boolean).join(' · ') }),
       h('button', { class: 'ui-linkbtn', type: 'button', onclick: () => { close(); uiOpenModule(code); } }, 'Details zum Modul ›'),
+      (() => { const same = m.events.filter(x => x.key === key && x.d); return same.length > 1 ? h('p', { class: 'ui-warnbox', text: 'Teilnahme und „Erledigt“ gelten für alle ' + same.length + ' Termine mit gleichem Wochentag, gleicher Zeit und Gruppe: ' + same.map(x => uiFmt.date(x.d)).join(', ') + ' Für einzelne Tage gibt es „Fällt aus …“.' }) : null; })(),
       h('div', { class: 'ui-field' }, h('span', { text: 'Teilnahme' }),
         h('div', { class: 'ui-seg ui-att', role: 'group', 'aria-label': 'Teilnahme' }, UI_ATT.map(([v, l]) => h('button', { class: (e.status === v ? 'ui-on' : '') + (e.def === v ? ' ui-def' : ''), type: 'button', 'aria-pressed': String(e.status === v),
           onclick: () => { PL.setAttendance(code, key, e.status === v ? null : v); draw(); } }, l, e.def === v ? h('span', { class: 'ui-defdot', 'aria-label': '(Standard)', text: ' •' }) : null)))));

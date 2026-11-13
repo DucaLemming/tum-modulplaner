@@ -36,3 +36,9 @@
 .ui-sheet-root .ui-fopt:hover { background: var(--bg); }
 .ui-sheet-root .ui-fbox { width: 20px; height: 20px; border: 1.5px solid var(--line); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; flex: none; }
 .ui-sheet-root .ui-fopt.ui-on .ui-fbox { background: var(--accent); border-color: var(--accent); }
+#ui .ui-mgroup-btn { width: 100%; border: 0; border-bottom: 1px solid var(--line); text-align: left; cursor: pointer; font: inherit; font-weight: 600; min-height: 48px; color: var(--ink); }
+#ui .ui-mgroup-btn:hover:not(:disabled) { background: var(--accent-weak); }
+#ui .ui-mgroup-btn:disabled { cursor: default; color: var(--ink); }
+#ui .ui-mgroup-btn:disabled .ui-mgroup-chev { display: none; }
+#ui .ui-mgroup-chev { width: 14px; color: var(--accent); }
+#ui .ui-mgroup-btn[aria-expanded="false"] { position: static; }

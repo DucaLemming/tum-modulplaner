@@ -296,6 +296,6 @@
     setInterval(()=>{if(!document.hidden&&ready&&status!=='choose')sync('timer');},60000);
     window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('syDlg')&&status!=='choose')closeDlg();});
   }
-  window.TUMSYNC={sync,ready:()=>ready,status:()=>status,snapshot,isSynced,meta:()=>meta,cfg:()=>cfg&&Object.assign({},cfg,{token:cfg.token?'***':''})};
+  window.TUMSYNC={link:()=>cfg&&cfg.repo&&cfg.token&&/^https?:$/.test(location.protocol)?connectLink():null,web:()=>/^https?:$/.test(location.protocol),qr:qrSvg,sync,ready:()=>ready,status:()=>status,snapshot,isSynced,meta:()=>meta,cfg:()=>cfg&&Object.assign({},cfg,{token:cfg.token?'***':''})};
   try{init();}catch(e){console.error('Sync',e);}
 })();
