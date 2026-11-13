@@ -140,7 +140,9 @@
     let mand = false; try { mand = mandAll(c, e); } catch (x) {}
     return { key: ekeyG(e), t: e.t, n: e.n || '', wd, v: e.v || '', b: e.b || '', d: e.d || '', room: room || (e.o || ''), camp, grp: e.grp || '', gk: e.gk || '',
       status: st, def: stDefault(c, e), mand, nt: e.nt || '', one: !!(e.one || (typeof ONEOFF !== 'undefined' && ONEOFF.has(e.t))), vj: !!e.vj,
-      chosen: typeof grpOK === 'function' ? !!grpOK(c, e) : true, ovr: !!(ovr[c] && ovr[c][ekeyG(e)]) };
+      chosen: typeof grpOK === 'function' ? !!grpOK(c, e) : true, ovr: !!(ovr[c] && ovr[c][ekeyG(e)]), ovrO: (ovr[c] && ovr[c][ekeyG(e)]) || null,
+      dates: (() => { try { return mandDates(c, e).slice(); } catch (x) { return []; } })(), cancelled: (() => { try { return ausfDl(c, e).slice(); } catch (x) { return []; } })(),
+      mandDates: (() => { try { return (typeof mandDl === 'function' ? mandDl(c, e) : []).slice(); } catch (x) { return []; } })() };
   }
   const module = K(c => {
     const m = M[c]; if (!m) return null;
