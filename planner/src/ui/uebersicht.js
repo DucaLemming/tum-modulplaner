@@ -23,15 +23,15 @@ function uiIssueCard(x) {
   const A = x.action && actions[x.action];
   const more = h('button', { class: 'ui-iconbtn ui-issue-more', type: 'button', 'aria-label': 'Weitere Aktionen',
     onclick: e => { e.stopPropagation(); uiMenuSheet(x.title, [[x.hidden ? 'Einblenden' : 'Ausblenden', () => PL.hideIssue(x.id, !x.hidden)]], e.currentTarget); } }, uiIcon('more', 20));
-  const detail = x.detail || x.full ? h(hasMore ? 'button' : 'p', { class: 'ui-issue-detail' + (open ? ' ui-open' : ''), type: hasMore ? 'button' : null, 'aria-expanded': hasMore ? String(open) : null,
+  const detail = x.detail || x.full ? h(hasMore ? 'button' : 'span', { class: 'ui-issue-detail' + (open ? ' ui-open' : ''), type: hasMore ? 'button' : null, 'aria-expanded': hasMore ? String(open) : null,
     onclick: hasMore ? e => { e.stopPropagation(); if (open) uiIssueView.open.delete(x.id); else uiIssueView.open.add(x.id); uiRender(true); } : null }, open ? x.full : (x.detail || x.full)) : null;
   return h('div', { class: 'ui-issue ui-card' + (x.soft ? ' ui-soft' : '') + (x.hidden ? ' ui-hid' : '') + (x.bad || (x.type === 'Überschneidung' && !x.soft) ? ' ui-issue-bad' : ''), 'data-type': x.type },
     h('div', { class: 'ui-issue-main' },
       h('div', { class: 'ui-issue-top' }, h('span', { class: 'ui-issue-ic', 'aria-hidden': 'true', text: UI_ISSUE_ICON[x.type] || '•' }),
         h('span', { class: 'ui-issue-type', text: x.type + (x.sem ? ' · ' + x.sem + '. Sem.' : '') }), x.vj ? h('span', { class: 'ui-tag', text: 'Vorjahr' }) : null,
         x.soft && x.type === 'Überschneidung' ? h('span', { class: 'ui-tag', text: 'unsicher' }) : null),
-      h('button', { class: 'ui-issue-title', type: 'button', onclick: () => uiIssueGo(x) }, x.title),
-      detail,
+      h('p', { class: 'ui-issue-tl' }, h('button', { class: 'ui-issue-title', type: 'button', onclick: () => uiIssueGo(x) }, x.title)),
+      detail ? h('p', { class: 'ui-issue-dl' }, detail) : null,
       A ? h('div', { class: 'ui-issue-act' }, h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: e => { e.stopPropagation(); A[1](); } }, A[0])) : null),
     h('div', { class: 'ui-issue-side' }, more,
       h('button', { class: 'ui-iconbtn ui-issue-go', type: 'button', 'aria-label': 'Öffnen', onclick: () => uiIssueGo(x) }, uiIcon('chev', 20))));

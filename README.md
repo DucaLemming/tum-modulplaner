@@ -43,6 +43,9 @@ Why no login: tested on 12.11.2026, every endpoint the updater uses (semesters, 
 | Path | What it is |
 |---|---|
 | `planner/TUM_Modulplaner.html` | The planner. Updated by the workflow. Download this one. |
+| `planner/src/` | Sources injected into the planner by `scripts/build.py`: `api.js` (facade `PL`), `ui/*.js` (screens of the new UI), `css/*.css`, `sync.js`, `qrcode.js`. See section 10. |
+| `scripts/build.py` | Injects the sources from `planner/src/` into the planner (`scripts/embed.py` is a wrapper kept for old instructions). |
+| `tests/` | Playwright tests (plain scripts, each prints `ALL OK`). See section 10. |
 | `scripts/run_update.py` | Opens the planner and an empty TUMonline page in headless Chromium, runs the planner's own updater (job, fetch, apply) and writes the new file and the report. |
 | `scripts/check_planner.py` | Sanity check before the new file replaces the old one. |
 | `.github/workflows/update.yml` | The schedule and the steps above. |
@@ -72,7 +75,7 @@ Tab **Actions** → **Modulplaner auto-update** → **Run workflow** → **Run w
 |---|---|
 | Time or frequency | `.github/workflows/update.yml`, line `cron: "17 3 * * *"` (minute hour day month weekday, in UTC). Weekly on Mondays: `"17 3 * * 1"`. |
 | Pause the automatic runs | Actions → Modulplaner auto-update → **⋯** → **Disable workflow** (enable again the same way). |
-| New planner version (new features from a chat with Claude) | Upload the new `TUM_Modulplaner.html` to `planner/` (Add file → Upload files). This also updates the updater, because it is part of the planner. The next run fills in fresh data. |
+| New planner version | Change the sources in `planner/src/` and run `python scripts/build.py` (section 10). Only a new engine or updater means uploading a new `TUM_Modulplaner.html` to `planner/`; the next run fills in fresh data. |
 | Start semester | Comes from `plan/Modulplan.txt` ("Startsemester: WiSe 2026") or from the planner itself. |
 
 Load on TUMonline: one run sends roughly 6,000 GET requests, 3 at a time, with pauses and retries on errors. Daily is fine; outside registration periods weekly would be enough.
@@ -116,3 +119,25 @@ Code: `planner/src/sync.js` (and `planner/src/qrcode.js`, MIT, Kazuhiko Arase), 
 - No login, no stored passwords or tokens for TUMonline.
 - Only GET requests. It never registers for anything, never sends a course wish (Belegwunsch) and never changes a preference.
 - The update workflow does not read or change your plan in the browser, your Google Drive or your calendar. (Your plan reaches this repo only through the device sync you switch on yourself, section 8.)
+
+## 10. Development
+
+The planner is one HTML file. Its old part (module data `DATA`, the planner logic called "the engine", the updater) is never edited by hand: the nightly workflow rewrites the file with fresh data every day. New code lives in `planner/src/` and reaches the file only through the build:
+
+```
+git pull --rebase origin main      # always first: the workflow commits a new planner every night
+python scripts/build.py            # injects uiCss, tumQr, tumSync, uiApi, uiApp before </body>
+python tests/test_build.py         # and every other test file below; each prints ALL OK
+```
+
+| Where | What |
+|---|---|
+| `planner/src/api.js` | `window.PL`: read models (`PL.totals()`, `PL.issues()`, `PL.week(s)`, ...) and actions (`PL.setInPlan()`, `PL.setSemester()`, ...). The only file that touches engine globals; every action calls the same engine functions as the old handler. |
+| `planner/src/ui/` | `h.js` (DOM helper), `boot.js` (wraps the old page in `#legacy`, creates `#ui`), `router.js` (hash routes `#/uebersicht`, `#/module`, `#/plan`, `#/woche/2`, `#/pruefungen/3`, each with optional `/m/<CODE>`), `sheet.js`, `nav.js`, one file per screen, `menu.js`, `help.js`. Screens call only `PL`. |
+| `planner/src/css/` | `tokens.css` (colours, sizes), `base.css`, one file per screen. All selectors under `#ui` or `.ui-sheet-root`. |
+| `tests/test_parity.py` | The text export must be identical with and without the new UI, also after the same changes done through `PL` and through the engine. |
+| `tests/test_api.py` | `PL` against the old UI (oracle) and the stored `tum_*` keys. |
+| `tests/test_ui_*.py` | One per screen, phone (390 px) and desktop (1440 px); `--shots DIR` saves screenshots. |
+
+Rules: the stored plan format (`tum_*` keys) does not change; device-only settings of the new UI use keys starting with `tum-ui` (not synced). The old view stays reachable through Menü > `Alte Ansicht` until it is removed on request. Tests need Playwright with Chromium (`pip install playwright && python -m playwright install chromium`) and pass without `plan/Modulplan.txt`.
+

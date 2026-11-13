@@ -38,9 +38,10 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 #ui .ui-seg > button:last-child, .ui-sheet-root .ui-seg > button:last-child { border-right: 0; }
 #ui .ui-seg > button.ui-on, .ui-sheet-root .ui-seg > button.ui-on { background: var(--accent); color: #fff; }
 @media (max-width: 1199px) {
-  #ui .ui-btn, #ui .ui-chip, #ui .ui-iconbtn, #ui .ui-seg > button, #ui input, #ui select,
+  #ui .ui-btn, #ui .ui-chip, #ui .ui-iconbtn, #ui .ui-seg > button, #ui input:not([type=checkbox]):not([type=radio]), #ui select,
   .ui-sheet-root .ui-btn, .ui-sheet-root .ui-chip, .ui-sheet-root .ui-iconbtn, .ui-sheet-root .ui-seg > button, .ui-sheet-root input, .ui-sheet-root select { min-height: var(--tap); }
   #ui .ui-iconbtn, .ui-sheet-root .ui-iconbtn { width: var(--tap); height: var(--tap); }
+  #ui .ui-seg > button, .ui-sheet-root .ui-seg > button { min-width: var(--tap); }
   #ui input, #ui select, .ui-sheet-root input, .ui-sheet-root select { font-size: var(--fs-card); }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -151,6 +151,8 @@ Top-level JS objects and functions (`M`, `BR`, `mark()`, `setSem()`, `renderPlan
 
 ### 4.1 Document layout (in order inside the file)
 
+> Describes the old UI (before v87). Since v87 `scripts/build.py` adds the blocks `uiCss`, `uiApi` and `uiApp` before `</body>`, and at runtime the old markup is moved into `<div id="legacy">` next to the new `<div id="ui">`. See repo `README.md` section 10.
+
 - `<style>`: all CSS. Design tokens are CSS vars in `:root` (`--ink, --muted, --line, --bg, --panel, --head, --accent, --warn`).
 - `<body>`:
   - `<header>`: title, buttons (`#catBtn` Katalog, `#wkBtn` Wochenansicht, `#semBtn` Semesterplan, hidden because the planner stays open), search box (`#q`, results `#results`).
@@ -198,6 +200,8 @@ Event entries (in `lvt` and `lv`): `t` type (VO, UE, PR, SE, VI, …), `n` name 
 `DATA.tree` = `{nodes, edges, lanes}`: `nodes[code] = {lane, ord, ects}` (lane = bracket, `ord` = order within the lane), `edges = [[prereqCode, moduleCode], …]`, `lanes` = left-to-right lane order. Layout is computed in JS (`layout()`).
 
 ### 4.3 JS function map
+
+> Describes the engine and the old UI (before v87). The new screens use these functions only through `PL` in `planner/src/api.js`.
 
 | Function | Role |
 |---|---|
@@ -356,6 +360,7 @@ Behaviour notes:
 - v84: block modules whose block reaches into the first or last lecture week (span at most 21 days, starting before or ending after the lecture period, e.g. MW1846 06.04.-13.04.2027) count as blocks outside the lectures: no weekly effort, not shown in the normal semester week (`blkMod(c)`, wraps `blkOut` and `wkOutside`). Clash checks stay date-exact. Semester plan rows: seat-open modules show their fallback semesters ("sonst 3/4."), and each semester lists the fallback candidates from other semesters in a "↪ Ersatz" row (not counted).
 - v85: the "ohne Zeit" row in the week view uses the same marks as the grid: module code label, grey badge "optional" / "optional · Platz offen" / "⇄ Alternative", dashed hatched style for optional modules.
 - v86 (13.11.2026): device sync through GitHub (header button "☁ Sync"), see repo `README.md` section 8. First feature kept as a source file: `planner/src/sync.js`, embedded with `scripts/embed.py` as `<script id="tumSync">` before `</body>` (plus `tumQr`). It hooks `Storage.prototype.setItem/removeItem` for the `tum_*` keys, so no save function of the planner had to change. Own keys: `tum-sync` (repo, branch, path, token), `tum-sync-meta` (updatedAt, baseAt, sha, dirty).
+- v87 (13.11.2026): new UI with five screens (Übersicht, Module, Plan, Woche, Prüfungen), module detail panel and menu, for phone and desktop; design in `docs/superpowers/specs/2026-11-13-ui-rework-design.md`. The engine is unchanged: the new screens talk only to the facade `PL` (`planner/src/api.js`), built in with `scripts/build.py` (replaces `embed.py`). Old view under Menü > `Alte Ansicht` (key `tum-ui-mode`). New device-only keys: `tum-ui-mode`, `tum-ui-woche`, `tum-ui-disc`, `tum-ui-sem-woche`, `tum-ui-sem-pruefungen`.
 - v51: weekly work hours target adjustable in the week view (0 = tile off), stored in the plan file as `Arbeitsziel:`.
 - v50: place status for limited modules (geplant / beworben, unsicher / Platz erhalten) with "falls Plätze klappen" ECTS in the overview, candidate semesters ("auch möglich in") shown in the semester plan, week view and export, modules can be ticked off as completed (always count as sure), "auf keinen Fall" marker for modules you heard badly about (tree, search, plan, export), own appointments with a date range, compact key-figure row in the week view, disclaimer in the header. The alternative groups and the status "abgelehnt" from v49 were removed again: after a rejection you simply apply again in a later semester (candidate chips).
 
