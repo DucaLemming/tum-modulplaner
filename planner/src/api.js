@@ -164,7 +164,8 @@
       alt: g ? { codes: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].filter(Boolean), rank: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].indexOf(c), cnt: g.cnt, group: eoList.indexOf(g) } : null,
       fallbacks: typeof optsOf === 'function' ? optsOf(c).slice(1).map(o => o.s) : [], before, after, dep: m.dep ? (typeof depTxt === 'function' ? depTxt(c) : 'eingestellt?') : '', link: m.link || '',
       color: color(marked[c] || primaryBracket(c)), turn: turnOf(c), lang: m.sprache || '', camp: (() => { try { const l = modLoc(c); return (l && l.camp) || ''; } catch (e) { return ''; } })(),
-      eth: isEth(c), neu: !!m.neu };
+      eth: isEth(c), neu: !!m.neu, exs: m.exs || '',
+      effort: (() => { try { return typeof effortS === 'function' ? effortS(c) : effort(c); } catch (e) { return null; } })() };
   });
 
   /* ---------- semesters ---------- */
