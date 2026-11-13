@@ -57,3 +57,13 @@
   #ui .ui-panel-dim, #ui.ui-has-panel .ui-panel-dim { display: none; }
 }
 @media (max-width: 719px) { #ui .ui-head .ui-title { display: none; } #ui .ui-head:empty { display: none; } }
+#ui .ui-disc { display: flex; align-items: center; gap: var(--s3); padding: var(--s2) var(--s4); background: #fff7e6; color: #5c3d0a; border-bottom: 1px solid #f0d9a8; font-size: var(--fs-meta); }
+#ui .ui-disc span { flex: 1; min-width: 0; }
+#ui .ui-sync { display: inline-flex; align-items: center; gap: var(--s2); border: 0; background: none; color: var(--muted); cursor: pointer; min-height: 40px; min-width: 40px; padding: 0 var(--s2); border-radius: var(--r); }
+#ui .ui-sync:hover { background: var(--bg); }
+#ui .ui-sync-ok { color: var(--ok); }
+#ui .ui-sync-err, #ui .ui-sync-choose { color: var(--bad); }
+#ui .ui-sync-pending, #ui .ui-sync-busy { color: var(--warn); }
+#ui .ui-top-sync .ui-sync-t { display: none; }
+#ui .ui-nav-foot .ui-sync { width: 100%; font-size: var(--fs-meta); }
+@media (max-width: 1199px) { #ui .ui-sync { min-height: 44px; min-width: 44px; } }

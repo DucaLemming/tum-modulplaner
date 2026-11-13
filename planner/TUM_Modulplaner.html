@@ -3612,6 +3612,16 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
   #ui .ui-panel-dim, #ui.ui-has-panel .ui-panel-dim { display: none; }
 }
 @media (max-width: 719px) { #ui .ui-head .ui-title { display: none; } #ui .ui-head:empty { display: none; } }
+#ui .ui-disc { display: flex; align-items: center; gap: var(--s3); padding: var(--s2) var(--s4); background: #fff7e6; color: #5c3d0a; border-bottom: 1px solid #f0d9a8; font-size: var(--fs-meta); }
+#ui .ui-disc span { flex: 1; min-width: 0; }
+#ui .ui-sync { display: inline-flex; align-items: center; gap: var(--s2); border: 0; background: none; color: var(--muted); cursor: pointer; min-height: 40px; min-width: 40px; padding: 0 var(--s2); border-radius: var(--r); }
+#ui .ui-sync:hover { background: var(--bg); }
+#ui .ui-sync-ok { color: var(--ok); }
+#ui .ui-sync-err, #ui .ui-sync-choose { color: var(--bad); }
+#ui .ui-sync-pending, #ui .ui-sync-busy { color: var(--warn); }
+#ui .ui-top-sync .ui-sync-t { display: none; }
+#ui .ui-nav-foot .ui-sync { width: 100%; font-size: var(--fs-meta); }
+@media (max-width: 1199px) { #ui .ui-sync { min-height: 44px; min-width: 44px; } }
 /* UI rework: sheets, popovers, dialogs */
 .ui-sheet-root { color: var(--ink); font: 400 var(--fs-body)/1.4 var(--font); }
 .ui-sheet-root .ui-sheet-wrap { position: fixed; inset: 0; z-index: 1000; }
@@ -3633,6 +3643,15 @@ body[data-ui="old"] .ui-sheet-root .ui-backbtn { display: block; position: fixed
 .ui-sheet-root .ui-row { display: flex; gap: var(--s2); align-items: center; flex-wrap: wrap; }
 @keyframes ui-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes ui-fade { from { opacity: 0; } to { opacity: 1; } }
+.ui-sheet-root .ui-settings, .ui-sheet-root .ui-imp, .ui-sheet-root .ui-helpdoc { display: flex; flex-direction: column; gap: var(--s2); }
+.ui-sheet-root .ui-h3 { font-size: var(--fs-body); font-weight: 600; margin: var(--s3) 0 0; }
+.ui-sheet-root .ui-h3:first-child { margin-top: 0; }
+.ui-sheet-root .ui-trow { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); flex-wrap: wrap; padding: var(--s1) 0; border-bottom: 1px solid var(--line); }
+.ui-sheet-root .ui-trow input[type=number] { width: 80px; }
+.ui-sheet-root .ui-workgoal { width: 90px; }
+.ui-sheet-root .ui-list { margin: 0; padding-left: var(--s4); }
+.ui-sheet-root .ui-meta { color: var(--muted); font-size: var(--fs-meta); }
+.ui-sheet-root p { margin: 0; overflow-wrap: anywhere; }
 /* UI rework: Übersicht */
 #ui .ui-h2 { font-size: var(--fs-card); font-weight: 600; margin: 0 0 var(--s3); }
 #ui .ui-linkbtn, .ui-sheet-root .ui-linkbtn { border: 0; background: none; color: var(--accent); font-weight: 600; cursor: pointer; padding: var(--s2) 0; min-height: 36px; text-align: left; }
@@ -6900,6 +6919,10 @@ var qrcode = function() {
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
     addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
     openExtra: () => { try { openExtra(); } catch (e) { console.error(e); } },
+    openSync: () => { const b = document.getElementById('syncBtn'); if (b) b.click(); },
+    syncStatus: () => { try { return window.TUMSYNC ? TUMSYNC.status() : 'off'; } catch (e) { return 'off'; } },
+    openUpdate: () => { try { openUpdate(); } catch (e) { console.error(e); } },
+    eventTypes: () => (typeof EVT !== 'undefined' ? EVT : []).map(r => ({ k: r[0], name: r[1], text: r[2] || '' })),
     label, color, dataDate: () => (DATA.terms && DATA.terms.at) || ''
   };
 })();
@@ -7927,6 +7950,113 @@ uiScreens.pruefungen = {
       X.undated.map(u => h('button', { class: 'ui-exl-row ui-exl-open', type: 'button', onclick: () => uiExOpen(u.code) }, h('span', { class: 'ui-exl-m' }, h('span', { class: 'ui-meta', text: u.code }), h('span', { class: 'ui-exl-n', text: u.name }), u.known ? h('span', { class: 'ui-meta', text: u.known }) : null)))));
   }
 };
+/* UI rework: Menü (⋯): Sync, export, import, data update, settings, help, old view. Sync status icon, first-open disclaimer. */
+const UI_DISC = 'Ohne Gewähr: Alle Angaben können falsch oder veraltet sein. Prüfe alles selbst in TUMonline und in der SPO.';
+const UI_SYNC_TXT = { off: 'Sync aus', ok: 'synchronisiert', busy: 'synchronisiert gerade', pending: 'Änderungen warten', err: 'Sync-Fehler', choose: 'Sync: Auswahl nötig' };
+function uiMenuOpen(anchor) {
+  const d = PL.dataDate();
+  uiMenuSheet('Menü', [
+    ['Sync', () => PL.openSync()],
+    ['Plan exportieren', () => uiExport()],
+    ['Plan importieren', () => uiImportPick()],
+    ['Moduldaten aktualisieren' + (d ? ' (Stand: ' + uiFmt.dateY(d) + ')' : ''), () => PL.openUpdate()],
+    ['Einstellungen', () => uiSettings()],
+    ['Hilfe', () => uiHelpSheet()],
+    ['Alte Ansicht', () => uiSetMode('old')]
+  ], anchor);
+}
+async function uiExport() {
+  const t = await PL.exportText(); if (!t) return;
+  const a = h('a', { href: URL.createObjectURL(new Blob([t.replace(/\r?\n/g, '\r\n')], { type: 'text/plain;charset=utf-8' })), download: 'Modulplan.txt' });
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function uiImportPick() {
+  const f = h('input', { type: 'file', accept: '.txt,.md,text/plain', class: 'ui-sr', 'aria-label': 'Plan-Datei wählen' });
+  f.addEventListener('change', () => { const file = f.files && f.files[0]; f.remove(); if (!file) return; const r = new FileReader(); r.onload = () => uiImportPreview(String(r.result || ''), file.name); r.readAsText(file, 'utf-8'); });
+  uiSheetRoot().appendChild(f); f.click();
+}
+function uiImportPreview(text, name) {
+  const P = PL.importPreview(text), empty = !PL.semesters().some(S => S.cards.length);
+  let close;
+  const go = how => { close(); PL.importApply(text, how); };
+  const body = h('div', { class: 'ui-imp' },
+    h('p', { class: 'ui-meta', text: name || '' }),
+    P.modules ? h('p', null, h('b', { text: P.modules + ' Module' }), ', ' + P.ects + ' ECTS. ' + [1, 2, 3, 4].map(s => s + '. Sem: ' + P.perSem[s]).join(' · ') + (P.perSem[0] ? ' · ohne Semester: ' + P.perSem[0] : ''))
+      : h('p', { text: 'Keine Module in der Datei erkannt.' }),
+    P.unknown.length ? h('p', { class: 'ui-meta', text: 'Unbekannt: ' + P.unknown.join(', ') }) : null,
+    P.notes.length ? h('ul', { class: 'ui-list ui-meta' }, P.notes.slice(0, 12).map(n => h('li', { text: n }))) : null,
+    P.modules ? h('div', { class: 'ui-actions' }, empty
+      ? h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => go('replace') }, 'Importieren')
+      : [h('button', { class: 'ui-btn', type: 'button', onclick: () => go('merge') }, 'Zusammenführen'), h('button', { class: 'ui-btn ui-btn-primary', type: 'button', onclick: () => go('replace') }, 'Aktuellen Plan ersetzen')]) : null);
+  close = uiSheet('Plan importieren', body, { kind: 'dialog' });
+}
+function uiSettings() {
+  const body = h('div', { class: 'ui-settings' });
+  const draw = () => {
+    const S = PL.settings(); body.innerHTML = '';
+    const year = h('input', { type: 'number', min: '2020', max: '2040', value: String(S.startYear), 'aria-label': 'Jahr', onchange: e => { PL.setStart(null, +e.target.value); draw(); } });
+    body.append(
+      h('h3', { class: 'ui-h3', text: 'Startsemester' }),
+      h('div', { class: 'ui-row' }, h('select', { 'aria-label': 'Startsemester', onchange: e => { PL.setStart(e.target.value, null); draw(); } },
+        [['W', 'Wintersemester'], ['S', 'Sommersemester']].map(([v, l]) => h('option', { value: v, selected: S.startSem === v }, l))), year),
+      h('h3', { class: 'ui-h3', text: 'Arbeitsziel' }),
+      h('label', { class: 'ui-row' }, h('input', { type: 'number', min: '0', max: '40', step: '0.5', class: 'ui-workgoal', value: String(S.workGoal), 'aria-label': 'Arbeitsziel Stunden pro Woche', onchange: e => PL.setWorkGoal(+e.target.value) }), 'h pro Woche'),
+      h('h3', { class: 'ui-h3', text: 'Fahrzeiten' }),
+      h('div', { class: 'ui-travel' }, S.travel.map(t => h('label', { class: 'ui-trow' }, h('span', { text: t.a + ' ↔ ' + t.b }),
+        h('span', { class: 'ui-row' }, h('input', { type: 'number', min: '0', max: '240', value: t.min == null ? '' : String(t.min), 'aria-label': 'Minuten ' + t.a + ' ' + t.b, onchange: e => PL.setTravel(t.a, t.b, e.target.value) }), 'min')))),
+      h('h3', { class: 'ui-h3', text: 'Eigene Termine' }),
+      S.blocks.length ? h('div', { class: 'ui-blocks' }, S.blocks.map(b => h('div', { class: 'ui-trow' },
+        h('span', { text: b.l + ' · ' + UI_WD[b.wd] + ' ' + b.v + '–' + b.b + (b.sems && b.sems.length ? ' · Sem ' + b.sems.join(', ') : '') }),
+        h('span', { class: 'ui-row' }, h('button', { class: 'ui-btn', type: 'button', onclick: () => { close(); uiBlockForm(b.i); } }, 'Bearbeiten'),
+          h('button', { class: 'ui-btn ui-btn-danger', type: 'button', onclick: async () => { if (await uiConfirm('Termin „' + b.l + '“ löschen?', 'Löschen')) { PL.removeBlock(b.i); draw(); } } }, 'Löschen')))))
+        : h('p', { class: 'ui-meta', text: 'Keine eigenen Termine.' }),
+      h('button', { class: 'ui-btn', type: 'button', onclick: () => { close(); uiBlockForm(null); } }, '＋ Termin'));
+  };
+  draw();
+  const close = uiSheet('Einstellungen', body, { kind: 'dialog' });
+}
+function uiSyncIcon() {
+  const st = PL.syncStatus();
+  return h('button', { class: 'ui-sync ui-sync-' + st, type: 'button', 'aria-label': 'Sync: ' + (UI_SYNC_TXT[st] || st), title: UI_SYNC_TXT[st] || st, onclick: () => PL.openSync() },
+    uiIcon('cloud', 22), h('span', { class: 'ui-sync-t', text: UI_SYNC_TXT[st] || st }));
+}
+function uiSyncPaint() {
+  if (!uiEl) return;
+  const st = PL.syncStatus();
+  uiEl.querySelectorAll('.ui-nav-foot, .ui-top-sync').forEach(x => { const b = x.firstChild; if (b && b.classList.contains('ui-sync-' + st)) return; x.innerHTML = ''; x.appendChild(uiSyncIcon()); });
+}
+function uiDisclaimer(ui) {
+  let seen = false; try { seen = localStorage.getItem('tum-ui-disc') === '1'; } catch (e) {}
+  const slot = ui.querySelector('.ui-discslot'); if (seen || !slot) return;
+  slot.appendChild(h('div', { class: 'ui-disc', role: 'note' }, h('span', { text: UI_DISC }),
+    h('button', { class: 'ui-btn', type: 'button', onclick: () => { try { localStorage.setItem('tum-ui-disc', '1'); } catch (e) {} slot.innerHTML = ''; } }, 'Verstanden')));
+}
+function uiInitExtras(ui) {
+  uiDisclaimer(ui);
+  setTimeout(uiSyncPaint, 0);
+  setInterval(uiSyncPaint, 2000);
+}
+function uiAfterRender() { uiSyncPaint(); }
+/* UI rework: Hilfe. Kürzel, legend, counting rules, disclaimer. */
+function uiHelpSheet() {
+  const T = PL.eventTypes();
+  const body = h('div', { class: 'ui-helpdoc' },
+    h('h3', { class: 'ui-h3', text: 'Kürzel' }),
+    h('dl', { class: 'ui-legend' }, T.map(t => [h('dt', { text: t.k }), h('dd', null, h('b', { text: t.name }), t.text ? ' · ' + t.text : '')])),
+    h('h3', { class: 'ui-h3', text: 'Woche: Farben und Zeichen' }),
+    h('dl', { class: 'ui-legend' }, [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet'],
+      ['Überschneidung', 'roter Rand und ⚡'], ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'], ['Fahrt', 'schmaler schraffierter Streifen mit Minuten'],
+      ['Platz offen', 'gestreift: zählt, sobald du den Platz hast']].map(([a, b]) => [h('dt', { text: a }), h('dd', { text: b })])),
+    h('h3', { class: 'ui-h3', text: 'Was zählt' }),
+    h('ul', { class: 'ui-list' },
+      h('li', { text: 'Zählt: das Modul ist im Plan und zählt mit seinen ECTS.' }),
+      h('li', { text: 'Platz offen: ein begrenztes Modul zählt erst, sobald du den Platz hast.' }),
+      h('li', { text: 'Optional: das Modul steht im Plan, zählt aber nicht.' }),
+      h('li', { text: 'Alternative: von mehreren Modulen einer Entscheidung zählt nur das erste.' })),
+    h('h3', { class: 'ui-h3', text: 'Ohne Gewähr' }),
+    h('p', { class: 'ui-disc-text', text: UI_DISC }));
+  uiSheet('Hilfe', body, { kind: 'dialog' });
+}
 uiBoot();
 </script>
 </body></html>

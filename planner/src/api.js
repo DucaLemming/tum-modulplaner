@@ -401,6 +401,10 @@
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
     addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
     openExtra: () => { try { openExtra(); } catch (e) { console.error(e); } },
+    openSync: () => { const b = document.getElementById('syncBtn'); if (b) b.click(); },
+    syncStatus: () => { try { return window.TUMSYNC ? TUMSYNC.status() : 'off'; } catch (e) { return 'off'; } },
+    openUpdate: () => { try { openUpdate(); } catch (e) { console.error(e); } },
+    eventTypes: () => (typeof EVT !== 'undefined' ? EVT : []).map(r => ({ k: r[0], name: r[1], text: r[2] || '' })),
     label, color, dataDate: () => (DATA.terms && DATA.terms.at) || ''
   };
 })();
