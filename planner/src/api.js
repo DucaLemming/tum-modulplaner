@@ -255,6 +255,7 @@
       wkSem = s;
       let W = null;
       if (mode === 'pre' || mode === 'post') { const R = wkBlockInfo(s); if (R[mode] && R[mode].mon != null) W = { s, mode, mon: R[mode].mon }; }
+      else if (mode !== 'sem' && /^\d+$/.test(String(mode))) W = { s, mode: 'kw', mon: +mode };   /* a concrete calendar week: day number of its Monday */
       WKW = W; wkF = Object.assign({}, wkF, { alt: true, hid: true });
       return f(W);
     } finally { wkSem = sv.wkSem; WKW = sv.WKW; wkF = sv.wkF; }
@@ -269,7 +270,23 @@
       for (let i = 0; i < it.length; i++) for (let j = i + 1; j < it.length; j++) if (itemsClash(it[i], it[j])) { it[i].cf = true; it[j].cf = true; const sv = (it[i].e && it[i].e.vj) || (it[j].e && it[j].e.vj) ? 1 : 2; it[i].cfs = Math.max(it[i].cfs || 0, sv); it[j].cfs = Math.max(it[j].cfs || 0, sv); }
       try { limFirstClashes(s, it).forEach(r => { r.A.lf = r.F; r.B.lf2 = r.F; }); } catch (e) {}
       const CAND = typeof altItemsFor === 'function' ? altItemsFor(s, it) : [];
-      const all = it.concat(CAND);
+      /* typical week: only what repeats (3 or more dates inside the lecture period); single dates go to a list */
+      const LP0 = lectPeriod(tm), A0 = monNum(LP0.a), B0 = monNum(LP0.b) + 6;
+      const datesOf = x => x.oc ? occDays(x.oc, x.wd) : null;
+      const isSingle = x => { if (W || !x.c || !x.e) return false; const D = datesOf(x); return !!D && (D.length < 3 || D.every(n => n < A0 || n > B0)); };
+      const all0 = it.concat(CAND), SG = all0.filter(isSingle), all = all0.filter(x => !SG.includes(x));
+      const singles = [];
+      SG.forEach(x => { if (x.ghost) return; const hid = !!x.cand || !!(typeof wkHidden === 'function' && wkHidden(x));
+        (datesOf(x) || []).forEach(n => singles.push({ code: x.c, t: x.t, title: M[x.c].name, wd: x.wd, a: x.a, b: x.b, date: isoOf(n), mon: n - ((wdOfN(n) + 6) % 7),
+          clash: !!x.cf, soft: x.cfs === 1, cand: !!x.cand, hiddenByDefault: hid, key: ekeyG(x.e), outside: n < A0 || n > B0 })); });
+      singles.sort((p, q) => p.date.localeCompare(q.date) || p.a - q.a);
+      /* calendar weeks of the semester: lecture period plus any week with dates before or after it */
+      let lo = A0, hi = B0 - 6;
+      it.forEach(x => { if (!x.c || !x.e) return; (datesOf(x) || []).forEach(n => { const m = n - ((wdOfN(n) + 6) % 7); if (m < lo) lo = m; if (m > hi) hi = m; }); });
+      lo = Math.max(lo, A0 - 70); hi = Math.min(hi, B0 + 70);
+      const weeks = [];
+      for (let m = lo; m <= hi; m += 7) weeks.push({ mon: m, kw: typeof isoWeek === 'function' ? isoWeek(m) : 0, from: isoOf(m), to: isoOf(m + 5), kind: m < A0 ? 'vor' : m > B0 - 6 ? 'nach' : 'vl',
+        singles: singles.filter(o => o.mon === m && !o.cand && !o.hiddenByDefault).length });
       const days = [1, 2, 3, 4, 5]; if (all.some(x => x.wd === 6)) days.push(6);
       const vis = all.filter(x => days.includes(x.wd) && wkShow(x));
       /* day summary (unterwegs, Fahrt) */
@@ -321,7 +338,7 @@
         const o = HL[dd];
         if (o && o.hin > 0) items.push({ id: 'trh' + dd, kind: 'travel', title: 'Zuhause → ' + o.first.loc.camp, a: o.hs, b: o.hs + o.hin, min: o.hin, counts: true, hiddenByDefault: false });
         if (o && o.zur > 0) items.push({ id: 'trz' + dd, kind: 'travel', title: o.last.loc.camp + ' → Zuhause', a: o.last.b, b: o.last.b + o.zur, min: o.zur, counts: true, hiddenByDefault: false });
-        return { wd: dd, summary: DI[dd] || '', label: o ? fm(o.hs) + ' bis ' + fm(o.last.b + o.zur) + ' · Fahrt ' + hm(o.tot) : '', detail: WD2[dd] || '',
+        return { wd: dd, date: W ? isoOf(W.mon + dd - 1) : null, singles: singles.filter(o => o.wd === dd && !o.cand && !o.hiddenByDefault).length, summary: DI[dd] || '', label: o ? fm(o.hs) + ' bis ' + fm(o.last.b + o.zur) + ' · Fahrt ' + hm(o.tot) : '', detail: WD2[dd] || '',
           free: FD[dd] || 0, clash: items.some(x => x.clash && !x.hiddenByDefault), items };
       });
       const untimed = [];
@@ -335,7 +352,7 @@
       });
       const modes = ['sem']; try { const R = wkBlockInfo(s); if (R.pre && R.pre.mon != null) modes.unshift('pre'); if (R.post && R.post.mon != null) modes.push('post'); } catch (e) {}
       const src = [...new Set(vis.filter(x => x.e && x.e.vj).map(x => x.e.vj))].sort();
-      return { s, term: tm, label: termLabel(tm), pub: tpub, source: src.map(termLabel).join(', '), mode: W ? W.mode : 'sem', week: W ? W.mon : null, modes,
+      return { s, term: tm, label: termLabel(tm), pub: tpub, source: src.map(termLabel).join(', '), mode: W ? (W.mode === 'kw' ? W.mon : W.mode) : 'sem', week: W ? W.mon : null, modes, weeks, singles,
         figures: { ects: lp, work: WH.h, free: FT / 60, goal: WORK_GOAL }, days: dayOut, untimed, issues: iss };
     });
   });

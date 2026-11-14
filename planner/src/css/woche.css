@@ -69,3 +69,11 @@
 #ui .ui-histline { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
 #ui .ui-ev-brk-t { color: var(--ink); position: relative; z-index: 1; }
 #ui .ui-ev-cap { border-color: var(--bad); }
+#ui .ui-wk-pick { display: inline-flex; align-items: center; gap: 2px; }
+#ui .ui-wk-sgl { font-weight: 400; font-size: 11px; color: var(--accent); }
+#ui .ui-wk-singles { margin-top: var(--s3); }
+#ui .ui-sgl-list { display: flex; flex-direction: column; gap: 2px; }
+#ui .ui-sgl-row { display: grid; grid-template-columns: 76px 92px auto minmax(0, 1fr) auto auto; gap: var(--s2); align-items: center; min-height: 36px; padding: 4px var(--s2); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); text-align: left; font: inherit; cursor: pointer; }
+#ui .ui-sgl-row:hover { border-color: var(--accent); }
+#ui .ui-sgl-clash { border-left: 3px solid var(--bad); }
+@media (max-width: 719px) { #ui .ui-sgl-row { grid-template-columns: 70px 1fr auto; min-height: var(--tap); } #ui .ui-sgl-row .ui-ellip { display: none; } }

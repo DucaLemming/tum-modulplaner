@@ -103,11 +103,14 @@ def oracle(pg, label):
         W = pg.evaluate(f"PL.week({s}, 'sem')")
         n_old = pg.evaluate("document.querySelectorAll('#wkDlg .wkev:not(.wkjob)').length")
         n_new = sum(1 for d in W["days"] for i in d["items"] if i["kind"] == "ev" and not i["hiddenByDefault"])
-        check(n_old == n_new, f"week {s}: {n_new} event blocks = old {n_old}")
+        # the old view draws single dates into the typical week; the new one lists them below the grid
+        # (old merges or repeats a single date that shares its slot with a regular block, so only bounds are exact)
+        n_sgl = sum(1 for o in W["singles"] if not o["hiddenByDefault"])
+        check(n_new <= n_old <= n_new + n_sgl, f"week {s}: {n_new} regular blocks <= old {n_old} <= plus {n_sgl} single dates")
         ects = pg.evaluate("document.querySelector('#wkDlg .wkects b').textContent")
         check(ects.startswith(f"{W['figures']['ects']} ECTS"), f"week {s}: ECTS figure {W['figures']['ects']} = '{ects}'")
         dh = pg.evaluate("[...document.querySelectorAll('#wkDlg .wkdh')].map(e => e.textContent)")
-        check(len(dh) == len(W["days"]) and all(d["summary"] in t for d, t in zip(W["days"], dh)), f"week {s}: day summaries in the day headers")
+        check(len(dh) == len(W["days"]) and all(d["summary"] in t for d, t in zip(W["days"], dh) if not d["singles"]), f"week {s}: day summaries in the day headers (days without single dates)")
     pg.evaluate("closeWeek()")
     for s in (1, 2, 3):
         pg.evaluate(f"openExam({s})")

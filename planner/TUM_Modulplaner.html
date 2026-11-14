@@ -3990,6 +3990,14 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 #ui .ui-histline { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
 #ui .ui-ev-brk-t { color: var(--ink); position: relative; z-index: 1; }
 #ui .ui-ev-cap { border-color: var(--bad); }
+#ui .ui-wk-pick { display: inline-flex; align-items: center; gap: 2px; }
+#ui .ui-wk-sgl { font-weight: 400; font-size: 11px; color: var(--accent); }
+#ui .ui-wk-singles { margin-top: var(--s3); }
+#ui .ui-sgl-list { display: flex; flex-direction: column; gap: 2px; }
+#ui .ui-sgl-row { display: grid; grid-template-columns: 76px 92px auto minmax(0, 1fr) auto auto; gap: var(--s2); align-items: center; min-height: 36px; padding: 4px var(--s2); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); text-align: left; font: inherit; cursor: pointer; }
+#ui .ui-sgl-row:hover { border-color: var(--accent); }
+#ui .ui-sgl-clash { border-left: 3px solid var(--bad); }
+@media (max-width: 719px) { #ui .ui-sgl-row { grid-template-columns: 70px 1fr auto; min-height: var(--tap); } #ui .ui-sgl-row .ui-ellip { display: none; } }
 /* UI rework: Prüfungen */
 #ui .ui-ex-term { margin: calc(-1 * var(--s2)) 0 var(--s3); }
 #ui .ui-exl, #ui .ui-ex-undated { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
@@ -6876,6 +6884,7 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
       wkSem = s;
       let W = null;
       if (mode === 'pre' || mode === 'post') { const R = wkBlockInfo(s); if (R[mode] && R[mode].mon != null) W = { s, mode, mon: R[mode].mon }; }
+      else if (mode !== 'sem' && /^\d+$/.test(String(mode))) W = { s, mode: 'kw', mon: +mode };   /* a concrete calendar week: day number of its Monday */
       WKW = W; wkF = Object.assign({}, wkF, { alt: true, hid: true });
       return f(W);
     } finally { wkSem = sv.wkSem; WKW = sv.WKW; wkF = sv.wkF; }
@@ -6890,7 +6899,23 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
       for (let i = 0; i < it.length; i++) for (let j = i + 1; j < it.length; j++) if (itemsClash(it[i], it[j])) { it[i].cf = true; it[j].cf = true; const sv = (it[i].e && it[i].e.vj) || (it[j].e && it[j].e.vj) ? 1 : 2; it[i].cfs = Math.max(it[i].cfs || 0, sv); it[j].cfs = Math.max(it[j].cfs || 0, sv); }
       try { limFirstClashes(s, it).forEach(r => { r.A.lf = r.F; r.B.lf2 = r.F; }); } catch (e) {}
       const CAND = typeof altItemsFor === 'function' ? altItemsFor(s, it) : [];
-      const all = it.concat(CAND);
+      /* typical week: only what repeats (3 or more dates inside the lecture period); single dates go to a list */
+      const LP0 = lectPeriod(tm), A0 = monNum(LP0.a), B0 = monNum(LP0.b) + 6;
+      const datesOf = x => x.oc ? occDays(x.oc, x.wd) : null;
+      const isSingle = x => { if (W || !x.c || !x.e) return false; const D = datesOf(x); return !!D && (D.length < 3 || D.every(n => n < A0 || n > B0)); };
+      const all0 = it.concat(CAND), SG = all0.filter(isSingle), all = all0.filter(x => !SG.includes(x));
+      const singles = [];
+      SG.forEach(x => { if (x.ghost) return; const hid = !!x.cand || !!(typeof wkHidden === 'function' && wkHidden(x));
+        (datesOf(x) || []).forEach(n => singles.push({ code: x.c, t: x.t, title: M[x.c].name, wd: x.wd, a: x.a, b: x.b, date: isoOf(n), mon: n - ((wdOfN(n) + 6) % 7),
+          clash: !!x.cf, soft: x.cfs === 1, cand: !!x.cand, hiddenByDefault: hid, key: ekeyG(x.e), outside: n < A0 || n > B0 })); });
+      singles.sort((p, q) => p.date.localeCompare(q.date) || p.a - q.a);
+      /* calendar weeks of the semester: lecture period plus any week with dates before or after it */
+      let lo = A0, hi = B0 - 6;
+      it.forEach(x => { if (!x.c || !x.e) return; (datesOf(x) || []).forEach(n => { const m = n - ((wdOfN(n) + 6) % 7); if (m < lo) lo = m; if (m > hi) hi = m; }); });
+      lo = Math.max(lo, A0 - 70); hi = Math.min(hi, B0 + 70);
+      const weeks = [];
+      for (let m = lo; m <= hi; m += 7) weeks.push({ mon: m, kw: typeof isoWeek === 'function' ? isoWeek(m) : 0, from: isoOf(m), to: isoOf(m + 5), kind: m < A0 ? 'vor' : m > B0 - 6 ? 'nach' : 'vl',
+        singles: singles.filter(o => o.mon === m && !o.cand && !o.hiddenByDefault).length });
       const days = [1, 2, 3, 4, 5]; if (all.some(x => x.wd === 6)) days.push(6);
       const vis = all.filter(x => days.includes(x.wd) && wkShow(x));
       /* day summary (unterwegs, Fahrt) */
@@ -6942,7 +6967,7 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
         const o = HL[dd];
         if (o && o.hin > 0) items.push({ id: 'trh' + dd, kind: 'travel', title: 'Zuhause → ' + o.first.loc.camp, a: o.hs, b: o.hs + o.hin, min: o.hin, counts: true, hiddenByDefault: false });
         if (o && o.zur > 0) items.push({ id: 'trz' + dd, kind: 'travel', title: o.last.loc.camp + ' → Zuhause', a: o.last.b, b: o.last.b + o.zur, min: o.zur, counts: true, hiddenByDefault: false });
-        return { wd: dd, summary: DI[dd] || '', label: o ? fm(o.hs) + ' bis ' + fm(o.last.b + o.zur) + ' · Fahrt ' + hm(o.tot) : '', detail: WD2[dd] || '',
+        return { wd: dd, date: W ? isoOf(W.mon + dd - 1) : null, singles: singles.filter(o => o.wd === dd && !o.cand && !o.hiddenByDefault).length, summary: DI[dd] || '', label: o ? fm(o.hs) + ' bis ' + fm(o.last.b + o.zur) + ' · Fahrt ' + hm(o.tot) : '', detail: WD2[dd] || '',
           free: FD[dd] || 0, clash: items.some(x => x.clash && !x.hiddenByDefault), items };
       });
       const untimed = [];
@@ -6956,7 +6981,7 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
       });
       const modes = ['sem']; try { const R = wkBlockInfo(s); if (R.pre && R.pre.mon != null) modes.unshift('pre'); if (R.post && R.post.mon != null) modes.push('post'); } catch (e) {}
       const src = [...new Set(vis.filter(x => x.e && x.e.vj).map(x => x.e.vj))].sort();
-      return { s, term: tm, label: termLabel(tm), pub: tpub, source: src.map(termLabel).join(', '), mode: W ? W.mode : 'sem', week: W ? W.mon : null, modes,
+      return { s, term: tm, label: termLabel(tm), pub: tpub, source: src.map(termLabel).join(', '), mode: W ? (W.mode === 'kw' ? W.mon : W.mode) : 'sem', week: W ? W.mon : null, modes, weeks, singles,
         figures: { ects: lp, work: WH.h, free: FT / 60, goal: WORK_GOAL }, days: dayOut, untimed, issues: iss };
     });
   });
@@ -8012,9 +8037,15 @@ uiScreens.woche = {
     const SS = PL.semesters();
     const semSel = h('select', { class: 'ui-wk-sem', 'aria-label': 'Semester', onchange: e => uiNav('woche/' + e.target.value) },
       [1, 2, 3, 4].map(i => h('option', { value: String(i), selected: i === s }, i + '. Sem · ' + SS[i].label)));
-    const modeLab = { pre: 'Blockwoche davor', sem: 'Semesterwoche', post: 'Blockwoche danach' };
-    const modeSel = W.modes.length > 1 ? h('select', { class: 'ui-wk-mode', 'aria-label': 'Woche', onchange: e => { uiWeekMode[s] = e.target.value; uiRender(true); } },
-      W.modes.map(m => h('option', { value: m, selected: m === W.mode }, modeLab[m]))) : null;
+    /* week picker: the typical week (only what repeats) or a concrete calendar week */
+    const cur = W.mode === 'sem' ? 'sem' : W.week, setWk = (v, top) => { uiWeekMode[s] = v; uiRender(true); if (top) setTimeout(() => { document.querySelectorAll('.ui-screen').forEach(x => { x.scrollTop = 0; }); window.scrollTo(0, 0); }, 0); };
+    const wkLab = k => 'KW ' + k.kw + ' · ' + uiFmt.date(k.from) + '–' + uiFmt.date(k.to) + (k.kind === 'vor' ? ' · vor VL' : k.kind === 'nach' ? ' · nach VL' : '') + (k.singles ? ' · ' + k.singles + ' einzeln' : '');
+    const wi = W.weeks.findIndex(k => k.mon === cur);
+    const modeSel = h('div', { class: 'ui-wk-pick' },
+      cur !== 'sem' ? h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'Woche davor', disabled: wi <= 0, onclick: () => setWk(W.weeks[wi - 1].mon) }, '‹') : null,
+      h('select', { class: 'ui-wk-mode', 'aria-label': 'Woche', onchange: e => setWk(e.target.value === 'sem' ? 'sem' : +e.target.value) },
+        h('option', { value: 'sem', selected: cur === 'sem' }, 'Typische Woche'), W.weeks.map(k => h('option', { value: String(k.mon), selected: k.mon === cur }, wkLab(k)))),
+      cur !== 'sem' ? h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'Woche danach', disabled: wi < 0 || wi >= W.weeks.length - 1, onclick: () => setWk(W.weeks[wi + 1].mon) }, '›') : null);
     const tog = (k, lab) => [lab, uiWeekView[k], () => { uiWeekView[k] = !uiWeekView[k]; uiWeekSave(); }];
     c.appendChild(h('div', { class: 'ui-head ui-wk-head' },
       h('h1', { class: 'ui-title ui-sr', text: 'Woche' }), semSel, modeSel,
@@ -8028,7 +8059,7 @@ uiScreens.woche = {
     const td = new Date().getDay(); if (!uiWeekDay) uiWeekDay = td >= 1 && td <= 5 ? td : 1;
     if (!W.days.some(d => d.wd === uiWeekDay)) uiWeekDay = 1;
     const dayObj = d => ({ wd: d.wd, clash: d.clash,
-      title: h('b', { text: UI_WD[d.wd] }),
+      title: h('b', { text: UI_WD[d.wd] + (d.date ? ' ' + uiFmt.date(d.date) : '') }, d.singles ? h('span', { class: 'ui-wk-sgl', title: d.singles + ' Einzeltermine an diesem Wochentag (Liste unten)', text: ' +' + d.singles + ' einzeln' }) : null),
       sub: d.label || d.detail ? h('button', { class: 'ui-tg-sum', type: 'button', 'aria-expanded': 'false', onclick: e => { const b = e.currentTarget; const o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', String(o)); b.textContent = o ? [d.label, d.detail, uiFmt.num(d.free / 60, 1) + ' h frei'].filter(Boolean).join(' · ') : (d.label || d.detail); } }, d.label || d.detail) : null,
       items: d.items.filter(uiWeekShow).map(it => ({ a: it.a, b: it.b, travel: it.kind === 'travel', node: uiEvNode(it, s) })) });
     const draw = (body, wd, lo) => {
@@ -8058,6 +8089,14 @@ uiScreens.woche = {
     } else c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(W.days.map(dayObj), { onDraw: draw })));
     if (W.untimed.length) c.appendChild(h('div', { class: 'ui-wk-untimed' }, h('span', { class: 'ui-meta', text: 'Ohne Zeit' }),
       W.untimed.map(u => h('button', { class: 'ui-chip ui-untimed', type: 'button', onclick: () => uiOpenModule(u.code) }, h('b', { text: u.code + ' ' + u.name }), h('span', { class: 'ui-meta', text: ' · ' + u.tag })))));
+    const SG = W.singles.filter(o => (!o.cand || uiWeekView.alt) && (!o.hiddenByDefault || uiWeekView.hid));
+    if (W.mode === 'sem' && SG.length) c.appendChild(h('details', { class: 'ui-wk-singles', open: SG.length <= 12 },
+      h('summary', { class: 'ui-h2', text: 'Einzeltermine (' + SG.length + ')' }),
+      h('p', { class: 'ui-meta', text: 'Finden nur an einzelnen Tagen statt und sind deshalb nicht in der typischen Woche. Antippen zeigt die Kalenderwoche.' }),
+      h('div', { class: 'ui-sgl-list' }, SG.map(o => h('button', { class: 'ui-sgl-row' + (o.clash ? ' ui-sgl-clash' : ''), type: 'button', onclick: () => setWk(o.mon, true) },
+        h('span', { class: 'ui-sgl-d', text: UI_WD[o.wd] + ' ' + uiFmt.date(o.date) }), h('span', { class: 'ui-sgl-t', text: uiFmt.time(o.a) + '–' + uiFmt.time(o.b) }),
+        h('b', { text: o.code + ' ' + o.t }), h('span', { class: 'ui-ellip', text: o.title }),
+        o.outside ? h('span', { class: 'ui-tag', text: 'außerhalb VL' }) : null, o.cand ? h('span', { class: 'ui-tag', text: 'Alternative' }) : null, o.clash ? h('span', { class: 'ui-tag ' + (o.soft ? '' : 'ui-tag-bad'), text: '⚡' }) : null)))));
     const iss = W.issues.filter(i => !i.hidden);
     c.appendChild(h('details', { class: 'ui-wk-cf', open: iss.length > 0 && iss.length <= 6 }, h('summary', { class: 'ui-h2', text: 'Überschneidungen in dieser Woche (' + iss.length + ')' }),
       h('div', { class: 'ui-issues' }, iss.map(uiIssueCard), !iss.length ? h('p', { class: 'ui-meta', text: 'Keine.' }) : null)));
@@ -8311,7 +8350,7 @@ const UI_LEGEND = {
     ['Aufwand-Balken', 'grün bis 30, gelb bis 36, rot darüber; blasser Teil: mit unsicheren Modulen']]],
   woche: ['Woche', [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet (sichtbar mit Anzeige > Ausgeblendete zeigen)'],
     ['Überschneidung', 'roter Rand und ⚡'], ['unsichere Überschneidung', 'gelber Rand (Vorjahreszeiten)'], ['3/3, 2/3, ≠, neu (bei Vorjahreszeiten)', 'wie oft der Termin in den letzten Semestern derselben Art gleich lag'], ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'],
-    ['☕ Pause N min (in Arbeitsblöcken)', 'gesetzliche Pause (ArbZG): ab mehr als 6 h Arbeit 30 min, ab mehr als 9 h 45 min; Lücken ab 15 min zwischen Blöcken zählen mit'], ['Fahrt', 'schmaler schraffierter Streifen links mit Minuten'], ['Punkt unter dem Tag (Handy)', 'an diesem Tag gibt es eine Überschneidung']]],
+    ['☕ Pause N min (in Arbeitsblöcken)', 'gesetzliche Pause (ArbZG): ab mehr als 6 h Arbeit 30 min, ab mehr als 9 h 45 min; Lücken ab 15 min zwischen Blöcken zählen mit'], ['Fahrt', 'schmaler schraffierter Streifen links mit Minuten'], ['Punkt unter dem Tag (Handy)', 'an diesem Tag gibt es eine Überschneidung'], ['Typische Woche', 'nur Termine, die sich wiederholen (mindestens 3 Termine in der Vorlesungszeit)'], ['+N einzeln', 'Einzeltermine an diesem Wochentag, aufgelistet unter dem Raster'], ['KW …', 'eine echte Kalenderwoche mit allen Terminen, auch einzelnen und Blöcken']]],
   pruefungen: ['Prüfungen', [['geschätzt', 'noch kein Termin, aus dem Vorjahr geschätzt'], ['↻ Wiederholung (gelb schraffiert)', 'Wiederholungsprüfung, zählt nicht für Überschneidungen'], ['⚡ Überschneidung', 'zwei Prüfungen zur selben Zeit'],
     ['gleicher Tag', 'zwei Prüfungen am selben Tag'], ['roter linker Rand', 'Überschneidung']]],
   modul: ['Modul', [['Teilnahme-Etikett hervorgehoben', 'von der Voreinstellung abweichend'], ['Vorjahr', 'Zeit aus dem Vorjahr'], ['stabil 3/3', 'gleicher Wochentag und Beginn (bei Blöcken: gleiche Lage vor, in oder nach der Vorlesungszeit) in den letzten 3 Semestern derselben Art'], ['meist 2/3', 'in 2 von 3 Semestern gleich wie zuletzt'], ['wechselt', 'zuletzt anders als in den Semestern davor'], ['neu', 'erst ein Semester dieser Art bekannt'], ['läuft in beiden', 'laut Turnus nur ein Semester, es gab aber Termine im Winter und im Sommer'], ['❗', 'Anwesenheitspflicht'], ['blasse Terminzeile', 'gehört zu einer nicht gewählten Gruppe']]],

@@ -66,9 +66,15 @@ uiScreens.woche = {
     const SS = PL.semesters();
     const semSel = h('select', { class: 'ui-wk-sem', 'aria-label': 'Semester', onchange: e => uiNav('woche/' + e.target.value) },
       [1, 2, 3, 4].map(i => h('option', { value: String(i), selected: i === s }, i + '. Sem · ' + SS[i].label)));
-    const modeLab = { pre: 'Blockwoche davor', sem: 'Semesterwoche', post: 'Blockwoche danach' };
-    const modeSel = W.modes.length > 1 ? h('select', { class: 'ui-wk-mode', 'aria-label': 'Woche', onchange: e => { uiWeekMode[s] = e.target.value; uiRender(true); } },
-      W.modes.map(m => h('option', { value: m, selected: m === W.mode }, modeLab[m]))) : null;
+    /* week picker: the typical week (only what repeats) or a concrete calendar week */
+    const cur = W.mode === 'sem' ? 'sem' : W.week, setWk = (v, top) => { uiWeekMode[s] = v; uiRender(true); if (top) setTimeout(() => { document.querySelectorAll('.ui-screen').forEach(x => { x.scrollTop = 0; }); window.scrollTo(0, 0); }, 0); };
+    const wkLab = k => 'KW ' + k.kw + ' · ' + uiFmt.date(k.from) + '–' + uiFmt.date(k.to) + (k.kind === 'vor' ? ' · vor VL' : k.kind === 'nach' ? ' · nach VL' : '') + (k.singles ? ' · ' + k.singles + ' einzeln' : '');
+    const wi = W.weeks.findIndex(k => k.mon === cur);
+    const modeSel = h('div', { class: 'ui-wk-pick' },
+      cur !== 'sem' ? h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'Woche davor', disabled: wi <= 0, onclick: () => setWk(W.weeks[wi - 1].mon) }, '‹') : null,
+      h('select', { class: 'ui-wk-mode', 'aria-label': 'Woche', onchange: e => setWk(e.target.value === 'sem' ? 'sem' : +e.target.value) },
+        h('option', { value: 'sem', selected: cur === 'sem' }, 'Typische Woche'), W.weeks.map(k => h('option', { value: String(k.mon), selected: k.mon === cur }, wkLab(k)))),
+      cur !== 'sem' ? h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'Woche danach', disabled: wi < 0 || wi >= W.weeks.length - 1, onclick: () => setWk(W.weeks[wi + 1].mon) }, '›') : null);
     const tog = (k, lab) => [lab, uiWeekView[k], () => { uiWeekView[k] = !uiWeekView[k]; uiWeekSave(); }];
     c.appendChild(h('div', { class: 'ui-head ui-wk-head' },
       h('h1', { class: 'ui-title ui-sr', text: 'Woche' }), semSel, modeSel,
@@ -82,7 +88,7 @@ uiScreens.woche = {
     const td = new Date().getDay(); if (!uiWeekDay) uiWeekDay = td >= 1 && td <= 5 ? td : 1;
     if (!W.days.some(d => d.wd === uiWeekDay)) uiWeekDay = 1;
     const dayObj = d => ({ wd: d.wd, clash: d.clash,
-      title: h('b', { text: UI_WD[d.wd] }),
+      title: h('b', { text: UI_WD[d.wd] + (d.date ? ' ' + uiFmt.date(d.date) : '') }, d.singles ? h('span', { class: 'ui-wk-sgl', title: d.singles + ' Einzeltermine an diesem Wochentag (Liste unten)', text: ' +' + d.singles + ' einzeln' }) : null),
       sub: d.label || d.detail ? h('button', { class: 'ui-tg-sum', type: 'button', 'aria-expanded': 'false', onclick: e => { const b = e.currentTarget; const o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', String(o)); b.textContent = o ? [d.label, d.detail, uiFmt.num(d.free / 60, 1) + ' h frei'].filter(Boolean).join(' · ') : (d.label || d.detail); } }, d.label || d.detail) : null,
       items: d.items.filter(uiWeekShow).map(it => ({ a: it.a, b: it.b, travel: it.kind === 'travel', node: uiEvNode(it, s) })) });
     const draw = (body, wd, lo) => {
@@ -112,6 +118,14 @@ uiScreens.woche = {
     } else c.appendChild(h('div', { class: 'ui-wk-grid' }, uiTimeGrid(W.days.map(dayObj), { onDraw: draw })));
     if (W.untimed.length) c.appendChild(h('div', { class: 'ui-wk-untimed' }, h('span', { class: 'ui-meta', text: 'Ohne Zeit' }),
       W.untimed.map(u => h('button', { class: 'ui-chip ui-untimed', type: 'button', onclick: () => uiOpenModule(u.code) }, h('b', { text: u.code + ' ' + u.name }), h('span', { class: 'ui-meta', text: ' · ' + u.tag })))));
+    const SG = W.singles.filter(o => (!o.cand || uiWeekView.alt) && (!o.hiddenByDefault || uiWeekView.hid));
+    if (W.mode === 'sem' && SG.length) c.appendChild(h('details', { class: 'ui-wk-singles', open: SG.length <= 12 },
+      h('summary', { class: 'ui-h2', text: 'Einzeltermine (' + SG.length + ')' }),
+      h('p', { class: 'ui-meta', text: 'Finden nur an einzelnen Tagen statt und sind deshalb nicht in der typischen Woche. Antippen zeigt die Kalenderwoche.' }),
+      h('div', { class: 'ui-sgl-list' }, SG.map(o => h('button', { class: 'ui-sgl-row' + (o.clash ? ' ui-sgl-clash' : ''), type: 'button', onclick: () => setWk(o.mon, true) },
+        h('span', { class: 'ui-sgl-d', text: UI_WD[o.wd] + ' ' + uiFmt.date(o.date) }), h('span', { class: 'ui-sgl-t', text: uiFmt.time(o.a) + '–' + uiFmt.time(o.b) }),
+        h('b', { text: o.code + ' ' + o.t }), h('span', { class: 'ui-ellip', text: o.title }),
+        o.outside ? h('span', { class: 'ui-tag', text: 'außerhalb VL' }) : null, o.cand ? h('span', { class: 'ui-tag', text: 'Alternative' }) : null, o.clash ? h('span', { class: 'ui-tag ' + (o.soft ? '' : 'ui-tag-bad'), text: '⚡' }) : null)))));
     const iss = W.issues.filter(i => !i.hidden);
     c.appendChild(h('details', { class: 'ui-wk-cf', open: iss.length > 0 && iss.length <= 6 }, h('summary', { class: 'ui-h2', text: 'Überschneidungen in dieser Woche (' + iss.length + ')' }),
       h('div', { class: 'ui-issues' }, iss.map(uiIssueCard), !iss.length ? h('p', { class: 'ui-meta', text: 'Keine.' }) : null)));
