@@ -5,6 +5,7 @@ Per module, season (W/S) and course type (VO, UE, PR, ...), the last three semes
 with dates are compared with the newest one:
   weekly slots   series with at least 4 dates over at least 3 weeks inside the lecture period: (weekday, start)
   block dates    everything else (short series, single dates, series outside the lecture period),
+                 where single dates during the lecture period are ignored if the type also has weekly slots,
                  classified as before (vor), during (in) or after (nach) the lecture period
 Two semesters count as the same when the block phases are equal and the weekly slots are equal
 (or, with 3 or more slots such as parallel practical groups, overlap by at least 70 %).
@@ -78,6 +79,8 @@ def signature(courses, typ, lp):
                     ph.add(phase(a, lp)); ph.add(phase(z, lp))
             for o in g.get("o", []):
                 ph.add(phase(dt.date.fromisoformat(o[0][:10]), lp))
+    if slots:
+        ph.discard("in")   # single extra or moved dates next to a weekly slot are not a block
     return frozenset(slots), frozenset(ph)
 
 
