@@ -282,7 +282,7 @@
         HL[dd] = { first, last, hin, zur, hs, tot };
         DI[dd] = `unterwegs ${fm(hs)}–${fm(last.b + zur)} · Fahrt ${Math.floor(tot / 60)}:${String(tot % 60).padStart(2, '0')} h`;
       });
-      const WH = workHours(s), WD2 = {};
+      const WH = workHours(s), WD2 = {}, BW = typeof blockWork === 'function' ? blockWork(s) : {};
       if (!W) Object.keys(WH.det).forEach(d => { const r = WH.det[d]; WD2[d] = 'Arbeit ' + hm(r.net) + ' h' + (r.brk ? ' (Pause ' + r.brk + ' min)' : '') + (r.cap ? ' · über 10 h' : ''); });
       const FD = {}; let FT = 0;
       days.forEach(dd => { FD[dd] = freeDay(vis.filter(x => x.wd === dd && !x.ign && !x.cand && !x.one && !(typeof wkHidden === 'function' && wkHidden(x)))); FT += FD[dd]; });
@@ -300,6 +300,7 @@
         });
         const items = L.filter(x => wkShow(x)).map((x, n) => {
           if (x.bl) return { id: 'b' + x.bi + '-' + dd, kind: 'own', title: x.bl.l || 'Eigener Termin', t: 'JOB', a: x.a, b: x.b, room: x.loc && x.loc.camp || '', fill: '#e3e7ec',
+            work: BW[x.bi] ? { brk: BW[x.bi].brk, net: BW[x.bi].net, dur: BW[x.bi].dur, day: (WH.det[dd] || {}).brk || 0, cap: !!(WH.det[dd] || {}).cap } : null,
             clash: !!x.cf, soft: x.cfs === 1, counts: true, hiddenByDefault: false, bi: x.bi, status: 'vor', key: '' };
           const c = x.c, A = [x, ...(x.mg || [])].filter(m => m.e), cat = semCat(c), st = evStatus(c, x.e);
           let mand = false; try { mand = A.some(m => mandAll(c, m.e)); } catch (e) {}

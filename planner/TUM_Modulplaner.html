@@ -3988,6 +3988,10 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 #ui .ui-wk-grid, #ui .ui-board-one { touch-action: pan-y; }
 #ui .ui-ev .ui-stab { position: absolute; right: 2px; bottom: 2px; }
 #ui .ui-histline { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+#ui .ui-ev-brk { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(45deg, rgba(77,90,102,.22) 0 4px, transparent 4px 8px); border-top: 1px dashed #8a96a3; border-bottom: 1px dashed #8a96a3; pointer-events: none; }
+#ui .ui-ev-brk-t { color: var(--ink); position: relative; z-index: 1; }
+#ui .ui-ev-cap { border-color: var(--bad); }
+#ui .ui-agenda-row .ui-ev-brk { display: none; }
 /* UI rework: Prüfungen */
 #ui .ui-ex-term { margin: calc(-1 * var(--s2)) 0 var(--s3); }
 #ui .ui-exl, #ui .ui-ex-undated { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
@@ -6901,7 +6905,7 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
         HL[dd] = { first, last, hin, zur, hs, tot };
         DI[dd] = `unterwegs ${fm(hs)}–${fm(last.b + zur)} · Fahrt ${Math.floor(tot / 60)}:${String(tot % 60).padStart(2, '0')} h`;
       });
-      const WH = workHours(s), WD2 = {};
+      const WH = workHours(s), WD2 = {}, BW = typeof blockWork === 'function' ? blockWork(s) : {};
       if (!W) Object.keys(WH.det).forEach(d => { const r = WH.det[d]; WD2[d] = 'Arbeit ' + hm(r.net) + ' h' + (r.brk ? ' (Pause ' + r.brk + ' min)' : '') + (r.cap ? ' · über 10 h' : ''); });
       const FD = {}; let FT = 0;
       days.forEach(dd => { FD[dd] = freeDay(vis.filter(x => x.wd === dd && !x.ign && !x.cand && !x.one && !(typeof wkHidden === 'function' && wkHidden(x)))); FT += FD[dd]; });
@@ -6919,6 +6923,7 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
         });
         const items = L.filter(x => wkShow(x)).map((x, n) => {
           if (x.bl) return { id: 'b' + x.bi + '-' + dd, kind: 'own', title: x.bl.l || 'Eigener Termin', t: 'JOB', a: x.a, b: x.b, room: x.loc && x.loc.camp || '', fill: '#e3e7ec',
+            work: BW[x.bi] ? { brk: BW[x.bi].brk, net: BW[x.bi].net, dur: BW[x.bi].dur, day: (WH.det[dd] || {}).brk || 0, cap: !!(WH.det[dd] || {}).cap } : null,
             clash: !!x.cf, soft: x.cfs === 1, counts: true, hiddenByDefault: false, bi: x.bi, status: 'vor', key: '' };
           const c = x.c, A = [x, ...(x.mg || [])].filter(m => m.e), cat = semCat(c), st = evStatus(c, x.e);
           let mand = false; try { mand = A.some(m => mandAll(c, m.e)); } catch (e) {}
@@ -7118,6 +7123,7 @@ function h(tag, attrs, ...kids) {
 const uiFmt = {
   num: (v, d) => (d ? Number(v).toFixed(d) : String(Math.round(v))).replace('.', ','),
   hours: v => uiFmt.num(v, 1) + ' h',
+  hm: m => Math.floor(m / 60) + ':' + String(Math.round(m % 60)).padStart(2, '0'),
   date: iso => { if (!iso) return ''; const p = String(iso).slice(0, 10).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' : iso; },
   dateY: iso => { if (!iso) return ''; const p = String(iso).slice(0, 10).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : iso; },
   wd: n => ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][n] || '',
@@ -7976,8 +7982,17 @@ function uiTimeGrid(days, o) {
   return h('div', { class: 'ui-tg', style: { '--n': String(days.length) } }, h('div', { class: 'ui-tg-hcol' }, h('div', { class: 'ui-tg-head' }), hours), cols);
 }
 function uiEvNode(it, s) {
-  if (it.kind === 'own') return h('button', { class: 'ui-ev ui-ev-own' + (it.clash ? ' ui-ev-clash' : ''), type: 'button', onclick: () => uiBlockForm(it.bi) },
-    h('b', { class: 'ui-ev-l1', text: it.title }), h('span', { class: 'ui-ev-l3', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) }));
+  if (it.kind === 'own') {
+    /* work block: break required by law (ArbZG §4: more than 6 h -> 30 min, more than 9 h -> 45 min; gaps of 15 min or more between blocks count) */
+    const w = it.work, brk = w ? w.brk : 0, span = it.b - it.a;
+    const why = brk >= 45 ? 'mehr als 9 h Arbeit: 45 min Pause' : brk >= 30 ? 'mehr als 6 h Arbeit: 30 min Pause' : 'mit 30 min Pause blieben weniger als 6 h, also höchstens 6 h arbeiten und ' + brk + ' min Pause';
+    const tip = w ? (brk ? 'Pause in diesem Block: ' + brk + ' min (' + why + ', spätestens nach 6 h), netto ' + uiFmt.hm(w.net) + ' h'
+      : w.day ? 'Pause des Tages liegt in einem anderen Block oder in der Lücke zwischen den Blöcken' : 'keine Pause nötig (bis 6 h am Tag)') + (w.cap ? '. Achtung: über 10 h Arbeit am Tag' : '') : '';
+    return h('button', { class: 'ui-ev ui-ev-own' + (it.clash ? ' ui-ev-clash' : '') + (w && w.cap ? ' ui-ev-cap' : ''), type: 'button', onclick: () => uiBlockForm(it.bi), title: tip || null, 'data-tip': tip || null },
+      h('b', { class: 'ui-ev-l1', text: it.title }), h('span', { class: 'ui-ev-l3', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) }),
+      brk ? h('span', { class: 'ui-ev-l3 ui-ev-brk-t', text: '☕ Pause ' + brk + ' min · netto ' + uiFmt.hm(w.net) + ' h' }) : null,
+      brk && span > 0 ? h('i', { class: 'ui-ev-brk', 'aria-hidden': 'true', style: { top: (100 * Math.min(360, (span - brk) / 2) / span).toFixed(2) + '%', height: (100 * brk / span).toFixed(2) + '%' } }) : null);
+  }
   if (it.kind === 'travel') return h('div', { class: 'ui-ev-travel' + (it.clash ? ' ui-ev-clash' : ''), title: it.title + ' · ' + it.min + ' min' }, h('span', { text: it.min + "'" }));
   const st = { onl: 'online', rec: 'rec', skip: 'skip', done: 'done' }[it.status] || 'vor';
   return h('button', { class: 'ui-ev ui-ev-' + st + (it.clash ? ' ui-ev-clash' : '') + (it.soft ? ' ui-ev-soft' : '') + (it.tag ? ' ui-ev-faint' : '') + (it.hiddenByDefault ? ' ui-ev-hidden' : ''),
@@ -8299,7 +8314,7 @@ const UI_LEGEND = {
     ['Aufwand-Balken', 'grün bis 30, gelb bis 36, rot darüber; blasser Teil: mit unsicheren Modulen']]],
   woche: ['Woche', [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet (sichtbar mit Anzeige > Ausgeblendete zeigen)'],
     ['Überschneidung', 'roter Rand und ⚡'], ['unsichere Überschneidung', 'gelber Rand (Vorjahreszeiten)'], ['3/3, 2/3, ≠, neu (bei Vorjahreszeiten)', 'wie oft der Termin in den letzten Semestern derselben Art gleich lag'], ['Pflicht', '❗'], ['optional, Alternative', 'schraffiert mit Etikett'], ['Eigener Termin', 'grau'],
-    ['Fahrt', 'schmaler schraffierter Streifen links mit Minuten'], ['Punkt unter dem Tag (Handy)', 'an diesem Tag gibt es eine Überschneidung']]],
+    ['☕ Pause N min (in Arbeitsblöcken)', 'gesetzliche Pause (ArbZG): ab mehr als 6 h Arbeit 30 min, ab mehr als 9 h 45 min; Lücken ab 15 min zwischen Blöcken zählen mit; schraffierter Streifen = Vorschlag, wo sie liegt'], ['Fahrt', 'schmaler schraffierter Streifen links mit Minuten'], ['Punkt unter dem Tag (Handy)', 'an diesem Tag gibt es eine Überschneidung']]],
   pruefungen: ['Prüfungen', [['geschätzt', 'noch kein Termin, aus dem Vorjahr geschätzt'], ['↻ Wiederholung (gelb schraffiert)', 'Wiederholungsprüfung, zählt nicht für Überschneidungen'], ['⚡ Überschneidung', 'zwei Prüfungen zur selben Zeit'],
     ['gleicher Tag', 'zwei Prüfungen am selben Tag'], ['roter linker Rand', 'Überschneidung']]],
   modul: ['Modul', [['Teilnahme-Etikett hervorgehoben', 'von der Voreinstellung abweichend'], ['Vorjahr', 'Zeit aus dem Vorjahr'], ['stabil 3/3', 'gleicher Wochentag und Beginn (bei Blöcken: gleiche Lage vor, in oder nach der Vorlesungszeit) in den letzten 3 Semestern derselben Art'], ['meist 2/3', 'in 2 von 3 Semestern gleich wie zuletzt'], ['wechselt', 'zuletzt anders als in den Semestern davor'], ['neu', 'erst ein Semester dieser Art bekannt'], ['läuft in beiden', 'laut Turnus nur ein Semester, es gab aber Termine im Winter und im Sommer'], ['❗', 'Anwesenheitspflicht'], ['blasse Terminzeile', 'gehört zu einer nicht gewählten Gruppe']]],

@@ -24,6 +24,7 @@ function h(tag, attrs, ...kids) {
 const uiFmt = {
   num: (v, d) => (d ? Number(v).toFixed(d) : String(Math.round(v))).replace('.', ','),
   hours: v => uiFmt.num(v, 1) + ' h',
+  hm: m => Math.floor(m / 60) + ':' + String(Math.round(m % 60)).padStart(2, '0'),
   date: iso => { if (!iso) return ''; const p = String(iso).slice(0, 10).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' : iso; },
   dateY: iso => { if (!iso) return ''; const p = String(iso).slice(0, 10).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : iso; },
   wd: n => ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][n] || '',
