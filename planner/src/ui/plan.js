@@ -7,8 +7,16 @@ function uiCardTag(k) {
   if (k.cat === 'u') return ['Platz offen', 'ui-tag-seat'];
   return null;
 }
+const UI_OFFER = { ok: ['✓', 'angeboten'], old: ['?', 'zuletzt vor Jahren'], turnus: ['?', 'nur laut Turnus'], no: ['✕', 'nicht angeboten'] };
+/* Four small marks 1 2 3 4 on a card: where the module can go (PL.offer) */
+function uiOfferDots(of) {
+  return h('span', { class: 'ui-offer', 'aria-label': 'Angeboten in: ' + of.filter(o => o.level === 'ok').map(o => o.s + '.').join(' ') },
+    of.map(o => h('span', { class: 'ui-offer-d ui-offer-' + o.level + (o.cur ? ' ui-offer-cur' : ''), 'data-tip': o.s + '. Sem: ' + o.why, title: o.s + '. Sem: ' + o.why, text: String(o.s) })));
+}
 function uiPlanMenu(k, anchor) {
-  const E = [1, 2, 3, 4].filter(s => s !== (PL.module(k.code).state.sem || 0)).map(s => ['Verschieben nach ' + s + '.', () => PL.setSemester(k.code, s)]);
+  const of = PL.offer(k.code);
+  const E = [1, 2, 3, 4].filter(s => s !== (PL.module(k.code).state.sem || 0)).map(s => { const o = of[s - 1];
+    return ['Verschieben nach ' + s + '.  ' + UI_OFFER[o.level][0] + ' ' + UI_OFFER[o.level][1], () => PL.setSemester(k.code, s), o.level === 'no' ? 'ui-btn-muted' : ''] });
   if (PL.module(k.code).state.sem) E.push(['Ohne Semester', () => PL.setSemester(k.code, 0)]);
   if (k.cat !== 'x') E.push(k.cat === 'o' || k.cat === 'ou' ? ['Zählt', () => PL.setStatus(k.code, 'count')] : ['Optional', () => PL.setStatus(k.code, 'optional')]);
   E.push(['Details', () => uiOpenModule(k.code)]);
@@ -21,9 +29,9 @@ function uiPlanCard(k) {
     h('button', { class: 'ui-pcard-main', type: 'button', onclick: () => { if (uiPlanDragged) return; uiOpenModule(k.code); } },
       h('span', { class: 'ui-pcard-top' }, h('span', { class: 'ui-meta', text: k.code }), h('b', { class: 'ui-pcard-ects', text: k.ects + ' ECTS' })),
       h('span', { class: 'ui-pcard-name', text: k.name, title: k.name }),
-      tag || k.limited || k.issue || k.block ? h('span', { class: 'ui-row ui-pcard-tags' }, tag ? h('span', { class: 'ui-tag ' + tag[1], text: tag[0] }) : null,
+      h('span', { class: 'ui-row ui-pcard-tags' }, uiOfferDots(k.offer), tag ? h('span', { class: 'ui-tag ' + tag[1], text: tag[0] }) : null,
         k.seat ? uiSeatTag(k.seat) : k.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null, k.block ? h('span', { class: 'ui-tag', text: 'Block' }) : null,
-        k.issue ? h('span', { class: 'ui-tag ui-tag-bad', text: '⚡' }) : null) : null),
+        k.issue ? h('span', { class: 'ui-tag ui-tag-bad', text: '⚡' }) : null)),
     h('button', { class: 'ui-iconbtn ui-pcard-more', type: 'button', 'aria-label': 'Aktionen für ' + k.code, onclick: e => uiPlanMenu(k, e.currentTarget) }, uiIcon('more', 20)));
   return card;
 }
@@ -45,6 +53,18 @@ function uiPlanCol(S) {
     !S.cards.length ? h('p', { class: 'ui-empty', text: S.s ? 'Keine Module.' : '' }) : null);
   return h('section', { class: 'ui-pcol', 'data-sem': String(S.s), 'aria-label': S.s ? S.s + '. Semester' : 'Ohne Semester' }, head, L);
 }
+/* While dragging: each column shows whether the module is offered there (green), uncertain (yellow) or not (grey) */
+function uiPlanMarkCols(board, code) {
+  const of = code ? PL.offer(code) : [];
+  board.querySelectorAll('.ui-pcol').forEach(col => {
+    col.classList.remove('ui-drop-ok', 'ui-drop-maybe', 'ui-drop-no'); const old = col.querySelector('.ui-drop-hint'); if (old) old.remove();
+    if (!code) return;
+    const s = +col.dataset.sem, o = of[s - 1]; if (!o || o.cur) return;
+    const lv = o.level === 'ok' ? 'ok' : o.level === 'no' ? 'no' : 'maybe';
+    col.classList.add('ui-drop-' + lv);
+    col.querySelector('.ui-pcol-h').appendChild(h('div', { class: 'ui-drop-hint', text: UI_OFFER[o.level][0] + ' ' + o.why }));
+  });
+}
 function uiPlanDnD(board) {
   if (!(window.matchMedia && matchMedia('(pointer: fine)').matches) || window.innerWidth < 720) return;
   board.addEventListener('pointerdown', e => {
@@ -56,6 +76,7 @@ function uiPlanDnD(board) {
         if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 6) return;
         uiPlanDragged = true; const r = card.getBoundingClientRect();
         ghost = card.cloneNode(true); ghost.classList.add('ui-ghost'); ghost.style.width = r.width + 'px'; document.getElementById('ui').appendChild(ghost); card.classList.add('ui-dragging');
+        uiPlanMarkCols(board, code);
       }
       ghost.style.left = (ev.clientX + 8) + 'px'; ghost.style.top = (ev.clientY + 8) + 'px';
       const el = document.elementFromPoint(ev.clientX, ev.clientY), col = el && el.closest('.ui-pcol');
@@ -63,7 +84,7 @@ function uiPlanDnD(board) {
     };
     const up = () => {
       document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up);
-      if (ghost) { ghost.remove(); card.classList.remove('ui-dragging'); if (over) { over.classList.remove('ui-drop'); const s = +over.dataset.sem; if (s !== +card.closest('.ui-pcol').dataset.sem) PL.setSemester(code, s); } }
+      if (ghost) { ghost.remove(); card.classList.remove('ui-dragging'); uiPlanMarkCols(board, null); if (over) { over.classList.remove('ui-drop'); const s = +over.dataset.sem; if (s !== +card.closest('.ui-pcol').dataset.sem) PL.setSemester(code, s); } }
       setTimeout(() => { uiPlanDragged = false; }, 0);
     };
     document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);

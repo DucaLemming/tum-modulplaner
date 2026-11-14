@@ -32,3 +32,15 @@
 #ui .ui-board-one { display: block; overflow: visible; }
 #ui .ui-board-one .ui-pcol { max-height: none; min-width: 0; }
 #ui .ui-board-one .ui-pcol-l { overflow: visible; }
+
+#ui .ui-offer { display: inline-flex; gap: 2px; margin-right: auto; }
+#ui .ui-offer-d { width: 16px; height: 16px; border-radius: 4px; font-size: 10px; font-weight: 600; line-height: 16px; text-align: center; border: 1px solid transparent; }
+#ui .ui-offer-ok { background: var(--ok); color: #fff; }
+#ui .ui-offer-old, #ui .ui-offer-turnus { border: 1px dashed var(--warn); color: var(--warn); }
+#ui .ui-offer-no { color: var(--line); border-color: var(--line); text-decoration: line-through; }
+#ui .ui-offer-cur { outline: 2px solid var(--ink); outline-offset: 1px; }
+#ui .ui-pcol.ui-drop-ok { background: #eef8f1; border-color: var(--ok); }
+#ui .ui-pcol.ui-drop-maybe { background: #fdf6e7; border-color: var(--warn); border-style: dashed; }
+#ui .ui-pcol.ui-drop-no { background: var(--bg); opacity: .55; }
+#ui .ui-drop-hint { font-size: 12px; font-weight: 600; }
+#ui .ui-drop-ok .ui-drop-hint { color: var(--ok); } #ui .ui-drop-maybe .ui-drop-hint { color: var(--warn); } #ui .ui-drop-no .ui-drop-hint { color: var(--muted); }

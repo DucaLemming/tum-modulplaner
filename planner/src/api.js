@@ -167,6 +167,31 @@
     const o = {}; ['W', 'S'].forEach(s => { if (r[s]) o[s] = r[s].terms.map(termShort); });
     return o;
   }
+  /* In which plan semesters is the module offered? Real data first (past semesters in TUMHIST, current
+     semesters in M[c].lvt), the Turnus of the module description only when there is no data at all.
+     level: 'ok' (courses in that season, newest at most 2 years old), 'old' (only older courses),
+     'turnus' (no course data, the description says so), 'no' (no courses in that season). */
+  function offer(c) {
+    const m = M[c]; if (!m) return [];
+    const T = new Set(), L = m.lvt || {};
+    Object.keys(L).forEach(k => { if ((L[k] || []).length) T.add(k); });
+    ['W', 'S'].forEach(se => { const r = HS[c] && HS[c][se]; if (r) r.terms.forEach(k => T.add(k)); });
+    const pub = ((DATA.terms || {}).pub || []).slice().sort(), newest = pub[pub.length - 1] || '';
+    const ny = +newest.slice(0, 4) || 0, tu = m.turnus || '';
+    const tW = /winter/i.test(tu), tS = /sommer/i.test(tu), any = T.size > 0;
+    return [1, 2, 3, 4].map(s => {
+      const se = termOf(s).slice(-1), ks = [...T].filter(k => k.slice(-1) === se).sort().reverse();
+      const sl = se === 'W' ? 'WiSe' : 'SoSe', turnusYes = (!tW && !tS) || (se === 'W' ? tW : tS);
+      let level, why;
+      if (ks.length) {
+        const recent = +ks[0].slice(0, 4) >= ny - 2;
+        level = recent ? 'ok' : 'old';
+        why = (recent ? 'angeboten' : 'zuletzt vor Jahren') + ': ' + ks.slice(0, 3).map(termShort).join(', ') + (turnusYes ? '' : ' (laut Turnus nur ' + (tW ? 'WiSe' : 'SoSe') + ')');
+      } else if (!any) { level = turnusYes ? 'turnus' : 'no'; why = turnusYes ? (tW || tS ? 'keine Termindaten, laut Turnus im ' + sl : 'keine Termindaten, Turnus unregelmäßig') : 'laut Turnus nicht im ' + sl; }
+      else { level = 'no'; why = 'kein Termin im ' + sl + ' in den letzten Jahren' + (turnusYes && (tW || tS) ? ' (obwohl laut Turnus)' : ''); }
+      return { s, level, why, cur: sem[c] === s };
+    });
+  }
   function evRow(c, e, term) {
     const st = evStatus(c, e), wd = e.d ? wdOf(e.d) : 0;
     let room = '', camp = '';
@@ -213,7 +238,7 @@
     const out = [];
     for (let s = 0; s <= 4; s++) {
       const L = all.filter(c => (sem[c] || 0) === s), st = semStats(L), term = s ? termOf(s) : '';
-      const cards = L.map(c => ({ code: c, name: M[c].name, ects: M[c].ects, bracket: marked[c], color: color(marked[c]), cat: semCat(c), done: !!done[c],
+      const cards = L.map(c => ({ code: c, name: M[c].name, ects: M[c].ects, bracket: marked[c], color: color(marked[c]), cat: semCat(c), done: !!done[c], offer: offer(c),
         limited: isLimMod(c), seat: seatInfo(c), block: typeof blkOut === 'function' ? !!blkOut(c) : false, issue: iss.some(i => !i.hidden && i.sem === s && i.codes.includes(c)) }));
       cards.sort((a, b) => CAT_ORDER[a.cat] - CAT_ORDER[b.cat] || ORDER.indexOf(a.bracket) - ORDER.indexOf(b.bracket) || a.name.localeCompare(b.name));
       out.push({ s, term, label: s ? termLabel(term) : 'Ohne Semester', pub: s ? termPub(term) : true, E: st.E, effortSure: st.es, effortAll: st.ea,
@@ -430,7 +455,7 @@
   window.PL = {
     on(f) { subs.add(f); return () => subs.delete(f); },
     _notify: notify, _known: known, _batch(f) { depth++; try { return f(); } finally { depth--; if (!depth && pending) { pending = false; notify(); } } },
-    totals, brackets, rules, issues, checks, modules, search, filters, module, semesters, week, exams, settings, exportText,
+    totals, brackets, rules, issues, checks, modules, search, filters, module, semesters, week, exams, settings, exportText, offer,
     setInPlan, setBracket, setSemester, setStatus, setSeat, setEasy, setAttendance, setGroup, setVariant, toggleMandatory, toggleMandatoryDate,
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
     addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,

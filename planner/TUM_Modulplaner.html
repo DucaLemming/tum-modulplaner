@@ -3675,6 +3675,7 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 .ui-sheet-root .ui-legenddoc { display: flex; flex-direction: column; gap: var(--s2); }
 .ui-sheet-root .ui-devlink-more > summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 36px; display: flex; align-items: center; }
 .ui-sheet-root .ui-tip { position: fixed; z-index: 3000; max-width: 280px; padding: 6px 10px; border-radius: 6px; background: #16202a; color: #fff; font-size: 12px; line-height: 1.35; box-shadow: var(--e2); pointer-events: none; }
+#ui .ui-menu-item.ui-btn-muted, .ui-sheet-root .ui-menu-item.ui-btn-muted { color: var(--muted); }
 /* UI rework: Übersicht */
 #ui .ui-h2 { font-size: var(--fs-card); font-weight: 600; margin: 0 0 var(--s3); }
 #ui .ui-linkbtn, .ui-sheet-root .ui-linkbtn { border: 0; background: none; color: var(--accent); font-weight: 600; cursor: pointer; padding: var(--s2) 0; min-height: 36px; text-align: left; }
@@ -3906,6 +3907,18 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 #ui .ui-board-one { display: block; overflow: visible; }
 #ui .ui-board-one .ui-pcol { max-height: none; min-width: 0; }
 #ui .ui-board-one .ui-pcol-l { overflow: visible; }
+
+#ui .ui-offer { display: inline-flex; gap: 2px; margin-right: auto; }
+#ui .ui-offer-d { width: 16px; height: 16px; border-radius: 4px; font-size: 10px; font-weight: 600; line-height: 16px; text-align: center; border: 1px solid transparent; }
+#ui .ui-offer-ok { background: var(--ok); color: #fff; }
+#ui .ui-offer-old, #ui .ui-offer-turnus { border: 1px dashed var(--warn); color: var(--warn); }
+#ui .ui-offer-no { color: var(--line); border-color: var(--line); text-decoration: line-through; }
+#ui .ui-offer-cur { outline: 2px solid var(--ink); outline-offset: 1px; }
+#ui .ui-pcol.ui-drop-ok { background: #eef8f1; border-color: var(--ok); }
+#ui .ui-pcol.ui-drop-maybe { background: #fdf6e7; border-color: var(--warn); border-style: dashed; }
+#ui .ui-pcol.ui-drop-no { background: var(--bg); opacity: .55; }
+#ui .ui-drop-hint { font-size: 12px; font-weight: 600; }
+#ui .ui-drop-ok .ui-drop-hint { color: var(--ok); } #ui .ui-drop-maybe .ui-drop-hint { color: var(--warn); } #ui .ui-drop-no .ui-drop-hint { color: var(--muted); }
 /* UI rework: Woche, time grid, event sheet */
 #ui .ui-s-woche { max-width: none; }
 #ui .ui-wk-head { gap: var(--s2) var(--s3); }
@@ -6773,6 +6786,31 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
     const o = {}; ['W', 'S'].forEach(s => { if (r[s]) o[s] = r[s].terms.map(termShort); });
     return o;
   }
+  /* In which plan semesters is the module offered? Real data first (past semesters in TUMHIST, current
+     semesters in M[c].lvt), the Turnus of the module description only when there is no data at all.
+     level: 'ok' (courses in that season, newest at most 2 years old), 'old' (only older courses),
+     'turnus' (no course data, the description says so), 'no' (no courses in that season). */
+  function offer(c) {
+    const m = M[c]; if (!m) return [];
+    const T = new Set(), L = m.lvt || {};
+    Object.keys(L).forEach(k => { if ((L[k] || []).length) T.add(k); });
+    ['W', 'S'].forEach(se => { const r = HS[c] && HS[c][se]; if (r) r.terms.forEach(k => T.add(k)); });
+    const pub = ((DATA.terms || {}).pub || []).slice().sort(), newest = pub[pub.length - 1] || '';
+    const ny = +newest.slice(0, 4) || 0, tu = m.turnus || '';
+    const tW = /winter/i.test(tu), tS = /sommer/i.test(tu), any = T.size > 0;
+    return [1, 2, 3, 4].map(s => {
+      const se = termOf(s).slice(-1), ks = [...T].filter(k => k.slice(-1) === se).sort().reverse();
+      const sl = se === 'W' ? 'WiSe' : 'SoSe', turnusYes = (!tW && !tS) || (se === 'W' ? tW : tS);
+      let level, why;
+      if (ks.length) {
+        const recent = +ks[0].slice(0, 4) >= ny - 2;
+        level = recent ? 'ok' : 'old';
+        why = (recent ? 'angeboten' : 'zuletzt vor Jahren') + ': ' + ks.slice(0, 3).map(termShort).join(', ') + (turnusYes ? '' : ' (laut Turnus nur ' + (tW ? 'WiSe' : 'SoSe') + ')');
+      } else if (!any) { level = turnusYes ? 'turnus' : 'no'; why = turnusYes ? (tW || tS ? 'keine Termindaten, laut Turnus im ' + sl : 'keine Termindaten, Turnus unregelmäßig') : 'laut Turnus nicht im ' + sl; }
+      else { level = 'no'; why = 'kein Termin im ' + sl + ' in den letzten Jahren' + (turnusYes && (tW || tS) ? ' (obwohl laut Turnus)' : ''); }
+      return { s, level, why, cur: sem[c] === s };
+    });
+  }
   function evRow(c, e, term) {
     const st = evStatus(c, e), wd = e.d ? wdOf(e.d) : 0;
     let room = '', camp = '';
@@ -6819,7 +6857,7 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
     const out = [];
     for (let s = 0; s <= 4; s++) {
       const L = all.filter(c => (sem[c] || 0) === s), st = semStats(L), term = s ? termOf(s) : '';
-      const cards = L.map(c => ({ code: c, name: M[c].name, ects: M[c].ects, bracket: marked[c], color: color(marked[c]), cat: semCat(c), done: !!done[c],
+      const cards = L.map(c => ({ code: c, name: M[c].name, ects: M[c].ects, bracket: marked[c], color: color(marked[c]), cat: semCat(c), done: !!done[c], offer: offer(c),
         limited: isLimMod(c), seat: seatInfo(c), block: typeof blkOut === 'function' ? !!blkOut(c) : false, issue: iss.some(i => !i.hidden && i.sem === s && i.codes.includes(c)) }));
       cards.sort((a, b) => CAT_ORDER[a.cat] - CAT_ORDER[b.cat] || ORDER.indexOf(a.bracket) - ORDER.indexOf(b.bracket) || a.name.localeCompare(b.name));
       out.push({ s, term, label: s ? termLabel(term) : 'Ohne Semester', pub: s ? termPub(term) : true, E: st.E, effortSure: st.es, effortAll: st.ea,
@@ -7036,7 +7074,7 @@ window.TUMHIST={"at":"2026-11-14","m":{"AR30012":{"W":{"terms":["2026W","2025W",
   window.PL = {
     on(f) { subs.add(f); return () => subs.delete(f); },
     _notify: notify, _known: known, _batch(f) { depth++; try { return f(); } finally { depth--; if (!depth && pending) { pending = false; notify(); } } },
-    totals, brackets, rules, issues, checks, modules, search, filters, module, semesters, week, exams, settings, exportText,
+    totals, brackets, rules, issues, checks, modules, search, filters, module, semesters, week, exams, settings, exportText, offer,
     setInPlan, setBracket, setSemester, setStatus, setSeat, setEasy, setAttendance, setGroup, setVariant, toggleMandatory, toggleMandatoryDate,
     toggleCancelled, setOverride, linkAlternative, unlinkAlternative, rankAlternative, decide, setFallbacks, hideIssue, ackUpdateNotes, setCheck,
     addBlock, editBlock, removeBlock, examRetake, examSave, examReset, setTravel, setWorkGoal, setStart, exclude, setExam, importPreview, importApply, addExtra,
@@ -7793,8 +7831,16 @@ function uiCardTag(k) {
   if (k.cat === 'u') return ['Platz offen', 'ui-tag-seat'];
   return null;
 }
+const UI_OFFER = { ok: ['✓', 'angeboten'], old: ['?', 'zuletzt vor Jahren'], turnus: ['?', 'nur laut Turnus'], no: ['✕', 'nicht angeboten'] };
+/* Four small marks 1 2 3 4 on a card: where the module can go (PL.offer) */
+function uiOfferDots(of) {
+  return h('span', { class: 'ui-offer', 'aria-label': 'Angeboten in: ' + of.filter(o => o.level === 'ok').map(o => o.s + '.').join(' ') },
+    of.map(o => h('span', { class: 'ui-offer-d ui-offer-' + o.level + (o.cur ? ' ui-offer-cur' : ''), 'data-tip': o.s + '. Sem: ' + o.why, title: o.s + '. Sem: ' + o.why, text: String(o.s) })));
+}
 function uiPlanMenu(k, anchor) {
-  const E = [1, 2, 3, 4].filter(s => s !== (PL.module(k.code).state.sem || 0)).map(s => ['Verschieben nach ' + s + '.', () => PL.setSemester(k.code, s)]);
+  const of = PL.offer(k.code);
+  const E = [1, 2, 3, 4].filter(s => s !== (PL.module(k.code).state.sem || 0)).map(s => { const o = of[s - 1];
+    return ['Verschieben nach ' + s + '.  ' + UI_OFFER[o.level][0] + ' ' + UI_OFFER[o.level][1], () => PL.setSemester(k.code, s), o.level === 'no' ? 'ui-btn-muted' : ''] });
   if (PL.module(k.code).state.sem) E.push(['Ohne Semester', () => PL.setSemester(k.code, 0)]);
   if (k.cat !== 'x') E.push(k.cat === 'o' || k.cat === 'ou' ? ['Zählt', () => PL.setStatus(k.code, 'count')] : ['Optional', () => PL.setStatus(k.code, 'optional')]);
   E.push(['Details', () => uiOpenModule(k.code)]);
@@ -7807,9 +7853,9 @@ function uiPlanCard(k) {
     h('button', { class: 'ui-pcard-main', type: 'button', onclick: () => { if (uiPlanDragged) return; uiOpenModule(k.code); } },
       h('span', { class: 'ui-pcard-top' }, h('span', { class: 'ui-meta', text: k.code }), h('b', { class: 'ui-pcard-ects', text: k.ects + ' ECTS' })),
       h('span', { class: 'ui-pcard-name', text: k.name, title: k.name }),
-      tag || k.limited || k.issue || k.block ? h('span', { class: 'ui-row ui-pcard-tags' }, tag ? h('span', { class: 'ui-tag ' + tag[1], text: tag[0] }) : null,
+      h('span', { class: 'ui-row ui-pcard-tags' }, uiOfferDots(k.offer), tag ? h('span', { class: 'ui-tag ' + tag[1], text: tag[0] }) : null,
         k.seat ? uiSeatTag(k.seat) : k.limited ? h('span', { title: 'Teilnehmerzahl begrenzt', text: '🔒' }) : null, k.block ? h('span', { class: 'ui-tag', text: 'Block' }) : null,
-        k.issue ? h('span', { class: 'ui-tag ui-tag-bad', text: '⚡' }) : null) : null),
+        k.issue ? h('span', { class: 'ui-tag ui-tag-bad', text: '⚡' }) : null)),
     h('button', { class: 'ui-iconbtn ui-pcard-more', type: 'button', 'aria-label': 'Aktionen für ' + k.code, onclick: e => uiPlanMenu(k, e.currentTarget) }, uiIcon('more', 20)));
   return card;
 }
@@ -7831,6 +7877,18 @@ function uiPlanCol(S) {
     !S.cards.length ? h('p', { class: 'ui-empty', text: S.s ? 'Keine Module.' : '' }) : null);
   return h('section', { class: 'ui-pcol', 'data-sem': String(S.s), 'aria-label': S.s ? S.s + '. Semester' : 'Ohne Semester' }, head, L);
 }
+/* While dragging: each column shows whether the module is offered there (green), uncertain (yellow) or not (grey) */
+function uiPlanMarkCols(board, code) {
+  const of = code ? PL.offer(code) : [];
+  board.querySelectorAll('.ui-pcol').forEach(col => {
+    col.classList.remove('ui-drop-ok', 'ui-drop-maybe', 'ui-drop-no'); const old = col.querySelector('.ui-drop-hint'); if (old) old.remove();
+    if (!code) return;
+    const s = +col.dataset.sem, o = of[s - 1]; if (!o || o.cur) return;
+    const lv = o.level === 'ok' ? 'ok' : o.level === 'no' ? 'no' : 'maybe';
+    col.classList.add('ui-drop-' + lv);
+    col.querySelector('.ui-pcol-h').appendChild(h('div', { class: 'ui-drop-hint', text: UI_OFFER[o.level][0] + ' ' + o.why }));
+  });
+}
 function uiPlanDnD(board) {
   if (!(window.matchMedia && matchMedia('(pointer: fine)').matches) || window.innerWidth < 720) return;
   board.addEventListener('pointerdown', e => {
@@ -7842,6 +7900,7 @@ function uiPlanDnD(board) {
         if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 6) return;
         uiPlanDragged = true; const r = card.getBoundingClientRect();
         ghost = card.cloneNode(true); ghost.classList.add('ui-ghost'); ghost.style.width = r.width + 'px'; document.getElementById('ui').appendChild(ghost); card.classList.add('ui-dragging');
+        uiPlanMarkCols(board, code);
       }
       ghost.style.left = (ev.clientX + 8) + 'px'; ghost.style.top = (ev.clientY + 8) + 'px';
       const el = document.elementFromPoint(ev.clientX, ev.clientY), col = el && el.closest('.ui-pcol');
@@ -7849,7 +7908,7 @@ function uiPlanDnD(board) {
     };
     const up = () => {
       document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up);
-      if (ghost) { ghost.remove(); card.classList.remove('ui-dragging'); if (over) { over.classList.remove('ui-drop'); const s = +over.dataset.sem; if (s !== +card.closest('.ui-pcol').dataset.sem) PL.setSemester(code, s); } }
+      if (ghost) { ghost.remove(); card.classList.remove('ui-dragging'); uiPlanMarkCols(board, null); if (over) { over.classList.remove('ui-drop'); const s = +over.dataset.sem; if (s !== +card.closest('.ui-pcol').dataset.sem) PL.setSemester(code, s); } }
       setTimeout(() => { uiPlanDragged = false; }, 0);
     };
     document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
@@ -8235,7 +8294,7 @@ const UI_LEGEND = {
     ['Balken oben', 'dunkel: sicher, gestreift: zählt, sobald der Platz da ist, Umriss: optional, schwarzer Strich: 120 ECTS']]],
   module: ['Module', [['● 2', 'im Plan, im 2. Semester (Farbe = Bereich)'], ['✓', 'schon im Plan'], ['＋', 'zum Plan hinzufügen'], ['W / S / W+S', 'Angebot im Winter, im Sommer, in beiden'],
     ['Zahl rechts', 'ECTS'], ['🔒', 'Teilnehmerzahl begrenzt'], ['neu', 'neu in den Moduldaten'], ['eingestellt?', 'wird vielleicht nicht mehr angeboten'], ['⛔', 'als „Nicht für mich“ markiert']]],
-  plan: ['Plan', [['farbiger linker Rand', 'Bereich, für den das Modul zählt'], ['blass und gestrichelter Rand', 'zählt nicht: optional oder Alternative'], ['optional, Alternative, abgeschlossen', 'Status des Moduls'],
+  plan: ['Plan', [['1 2 3 4 auf der Karte', 'grün: in diesem Semester angeboten (laut Terminen der letzten Jahre, nicht nur laut Turnus), gelb gestrichelt: unsicher (nur Turnus oder nur alte Termine), durchgestrichen: nicht angeboten; umrandet: aktuelles Semester'], ['beim Ziehen', 'Spalten färben sich grün, gelb oder grau, je nachdem ob das Modul dort angeboten wird'], ['farbiger linker Rand', 'Bereich, für den das Modul zählt'], ['blass und gestrichelter Rand', 'zählt nicht: optional oder Alternative'], ['optional, Alternative, abgeschlossen', 'Status des Moduls'],
     ['Platz offen', 'zählt erst, sobald du den Platz hast'], ['⚡ (rot umrandet)', 'das Modul hat eine Überschneidung oder einen Hinweis'], ['ECTS-Balken', 'dunkel: sicher, gestreift: Platz offen, Umriss: optional; Strich in der Mitte: 30 ECTS'],
     ['Aufwand-Balken', 'grün bis 30, gelb bis 36, rot darüber; blasser Teil: mit unsicheren Modulen']]],
   woche: ['Woche', [['Vor Ort', 'durchgezogener Rand'], ['Online', 'gestrichelter Rand und 💻'], ['Aufzeichnung, Nicht, Erledigt', 'blass, zählt nicht, ausgeblendet (sichtbar mit Anzeige > Ausgeblendete zeigen)'],
