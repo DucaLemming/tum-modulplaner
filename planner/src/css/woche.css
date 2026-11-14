@@ -77,3 +77,4 @@
 #ui .ui-sgl-row:hover { border-color: var(--accent); }
 #ui .ui-sgl-clash { border-left: 3px solid var(--bad); }
 @media (max-width: 719px) { #ui .ui-sgl-row { grid-template-columns: 70px 1fr auto; min-height: var(--tap); } #ui .ui-sgl-row .ui-ellip { display: none; } }
+#ui .ui-wk-mode { width: 19em; max-width: 100%; }

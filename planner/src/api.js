@@ -273,7 +273,8 @@
       /* typical week: only what repeats (3 or more dates inside the lecture period); single dates go to a list */
       const LP0 = lectPeriod(tm), A0 = monNum(LP0.a), B0 = monNum(LP0.b) + 6;
       const datesOf = x => x.oc ? occDays(x.oc, x.wd) : null;
-      const isSingle = x => { if (W || !x.c || !x.e) return false; const D = datesOf(x); return !!D && (D.length < 3 || D.every(n => n < A0 || n > B0)); };
+      const isSgl = x => { if (!x.c || !x.e) return false; const D = datesOf(x); return !!D && (D.length < 3 || D.every(n => n < A0 || n > B0)); };
+      const isSingle = x => !W && isSgl(x);
       const all0 = it.concat(CAND), SG = all0.filter(isSingle), all = all0.filter(x => !SG.includes(x));
       const singles = [];
       SG.forEach(x => { if (x.ghost) return; const hid = !!x.cand || !!(typeof wkHidden === 'function' && wkHidden(x));
@@ -281,12 +282,15 @@
           clash: !!x.cf, soft: x.cfs === 1, cand: !!x.cand, hiddenByDefault: hid, key: ekeyG(x.e), outside: n < A0 || n > B0 })); });
       singles.sort((p, q) => p.date.localeCompare(q.date) || p.a - q.a);
       /* calendar weeks of the semester: lecture period plus any week with dates before or after it */
+      /* weeks and their single-date counts always from the whole semester, so the picker looks the same in every week */
+      const itS = W ? semItems(s) : it, perWk = {};
+      itS.forEach(x => { if (!isSgl(x) || (typeof wkHidden === 'function' && wkHidden(x))) return; (datesOf(x) || []).forEach(n => { const m = n - ((wdOfN(n) + 6) % 7); perWk[m] = (perWk[m] || 0) + 1; }); });
       let lo = A0, hi = B0 - 6;
-      it.forEach(x => { if (!x.c || !x.e) return; (datesOf(x) || []).forEach(n => { const m = n - ((wdOfN(n) + 6) % 7); if (m < lo) lo = m; if (m > hi) hi = m; }); });
+      itS.forEach(x => { if (!x.c || !x.e) return; (datesOf(x) || []).forEach(n => { const m = n - ((wdOfN(n) + 6) % 7); if (m < lo) lo = m; if (m > hi) hi = m; }); });
       lo = Math.max(lo, A0 - 70); hi = Math.min(hi, B0 + 70);
       const weeks = [];
       for (let m = lo; m <= hi; m += 7) weeks.push({ mon: m, kw: typeof isoWeek === 'function' ? isoWeek(m) : 0, from: isoOf(m), to: isoOf(m + 5), kind: m < A0 ? 'vor' : m > B0 - 6 ? 'nach' : 'vl',
-        singles: singles.filter(o => o.mon === m && !o.cand && !o.hiddenByDefault).length });
+        singles: perWk[m] || 0 });
       const days = [1, 2, 3, 4, 5]; if (all.some(x => x.wd === 6)) days.push(6);
       const vis = all.filter(x => days.includes(x.wd) && wkShow(x));
       /* day summary (unterwegs, Fahrt) */
