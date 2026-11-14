@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""One-off scrape of past semesters from TUMonline (read-only, no login).
+"""Past semesters from TUMonline (read-only, no login), kept in data/history.json.
 
-For every module of the planner: the three most recent semesters that actually list courses
-(decided from the course lists, not from the Turnus field), with type, groups and time slots.
-Past semesters do not change, so this runs once; the nightly update is not involved.
+For every module: the three most recent semesters with courses per season it runs in (winter
+and/or summer), decided from the course lists, not from the Turnus field. Looks back at most
+MAXBACK semesters. Semesters already stored are never fetched again (the past does not change),
+so a run only fetches what is missing: new modules, and a semester that became published.
+The nightly update calls this; on a normal night it finds nothing to do and makes no request.
 
 Usage: python scripts/history_scrape.py --planner planner/TUM_Modulplaner.html --out data/history.json [--limit N]
 """
@@ -12,7 +14,7 @@ from playwright.sync_api import sync_playwright
 
 ORIGIN = "https://campus.tum.de"
 BLANK = ORIGIN + "/__modulplaner_runner__"   # answered locally, never sent to TUMonline
-WANT, MAXBACK = 3, 9                          # semesters with courses per module; how many semesters to look back at most
+WANT, MAXBACK = 3, 10                         # semesters with courses per season; how many semesters to look back at most
 
 JS = r"""
 async ([mods, newest, WANT, MAXBACK]) => {
@@ -40,13 +42,16 @@ async ([mods, newest, WANT, MAXBACK]) => {
       const one = ap.filter(p => !ids.has(p.appointmentSeriesId)).map(p => [p.timestampFrom.value.slice(0, 16), p.timestampTo.value.slice(11, 16), p.resourceName || '']);
       return { n: (g.name || '').trim(), s: ser.map(s => s.slice(1)), o: one }; });
   }
-  async function one(mid) {
+  async function one(mid, rec) {
     const j = await get(MOD + mid + '/availableSemesters'), t = {};
     for (const r of (j && j.resource) || []) { const s = r.content.selectableSemesterLibDto; t[val(s.optionText)] = s.id; }
     const keys = Object.keys(t).filter(k => /^\d{4}[WS]$/.test(k) && k <= newest).sort().reverse().slice(0, MAXBACK);
-    const out = { avail: Object.keys(t).sort(), terms: {}, empty: [] };
+    const out = { avail: Object.keys(t).sort(), terms: Object.assign({}, rec.terms || {}), empty: (rec.empty || []).slice() };
+    const cnt = () => { const n = { W: 0, S: 0 }; for (const k in out.terms) n[k.slice(-1)]++; return n; };
+    const done = () => { const n = cnt(), seen = ['W', 'S'].filter(x => n[x]); return seen.length && seen.every(x => n[x] >= WANT); };
     for (const k of keys) {
-      if (Object.keys(out.terms).length >= WANT) break;
+      if (done()) break;
+      if (k in out.terms || out.empty.includes(k)) continue;
       const l = await get(MOD + mid + '/' + t[k] + '/courseGroupings/courses'), cs = [];
       for (const g of ((l && l.resource) || []).map(r => r.content.cmNodeListItemDto)) {
         const c = await get(MOD + mid + '/' + t[k] + '/courseGroupings/courses/' + g.id);
@@ -57,14 +62,31 @@ async ([mods, newest, WANT, MAXBACK]) => {
       for (const c of cs) { try { c.g = await groups(c.id); } catch (e) { c.err = e.message; } }
       out.terms[k] = cs;
     }
+    out.empty.sort();
     return out;
   }
   const res = {}, q = mods.slice();
-  const worker = async () => { while (q.length) { const [code, mid] = q.shift(); try { res[code] = await one(mid); } catch (e) { res[code] = { err: e.message }; } } };
+  const worker = async () => { while (q.length) { const [code, mid, rec] = q.shift(); try { res[code] = await one(mid, rec || {}); } catch (e) { res[code] = { err: e.message }; } } };
   await Promise.all([worker(), worker(), worker()]);
   return { res, nreq };
 }
 """
+
+def needs(rec, newest):
+    """True if the stored record misses a semester that the rules above would fetch."""
+    if not rec or "err" in rec or "avail" not in rec:
+        return True
+    terms, checked = rec.get("terms", {}), set(rec.get("terms", {})) | set(rec.get("empty", []))
+    n = {"W": 0, "S": 0}
+    for k in terms: n[k[-1]] += 1
+    for k in sorted((k for k in rec["avail"] if re.fullmatch(r"\d{4}[WS]", k) and k <= newest), reverse=True)[:MAXBACK]:
+        seen = [x for x in "WS" if n[x]]
+        if seen and all(n[x] >= WANT for x in seen):
+            return False
+        if k not in checked:
+            return True
+    return False
+
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--planner", required=True); ap.add_argument("--out", required=True); ap.add_argument("--limit", type=int, default=0)
@@ -78,14 +100,21 @@ def main():
         info = pl.evaluate("() => ({ids: updModuleIds(DATA.modules), pub: DATA.terms.pub, tu: Object.fromEntries(Object.entries(DATA.modules).map(([c, m]) => [c, m.turnus || '']))})")
         pl.close()
         newest = sorted(info["pub"])[-1]
-        mods = [[c, i] for c, i in sorted(info["ids"].items()) if c not in done["modules"] or "err" in done["modules"][c]]
+        mods = [[c, i, {k: done["modules"][c].get(k) for k in ("terms", "empty")}] if c in done["modules"] else [c, i, {}]
+                for c, i in sorted(info["ids"].items()) if needs(done["modules"].get(c), newest)]
         if a.limit: mods = mods[:: max(1, len(mods) // a.limit)][: a.limit]
         print(f"newest published {newest}; modules to fetch {len(mods)} (already stored {len(done['modules'])})", flush=True)
+        if not mods:
+            br.close(); print("nothing to do"); return 0
         page = ctx.new_page(); page.route(BLANK, lambda r: r.fulfill(status=200, content_type="text/html", body="<!doctype html><title>runner</title>")); page.goto(BLANK)
         t0, nreq = time.time(), 0
         for i in range(0, len(mods), 30):
             r = page.evaluate(JS, [mods[i:i + 30], newest, WANT, MAXBACK]); nreq += r["nreq"]
-            for c, v in r["res"].items(): v["turnus"] = info["tu"].get(c, ""); done["modules"][c] = v
+            for c, v in r["res"].items():
+                v["turnus"] = info["tu"].get(c, "")
+                if "err" in v and c in done["modules"] and "err" not in done["modules"][c]:
+                    continue   # keep the good record, try again next run
+                done["modules"][c] = v
             done.update(at=time.strftime("%Y-%m-%d"), newest=newest)
             out.write_text(json.dumps(done, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
             errs = sum(1 for v in done["modules"].values() if "err" in v)
