@@ -69,8 +69,14 @@ uiScreens.woche = {
     /* week picker: the typical week (only what repeats) or a concrete calendar week */
     const cur = W.mode === 'sem' ? 'sem' : W.week, setWk = (v, top) => { uiWeekMode[s] = v; uiRender(true); if (top) setTimeout(() => { document.querySelectorAll('.ui-screen').forEach(x => { x.scrollTop = 0; }); window.scrollTo(0, 0); }, 0); };
     const wkLab = k => 'KW ' + k.kw + ' · ' + uiFmt.date(k.from) + '–' + uiFmt.date(k.to) + (k.kind === 'vor' ? ' · vor VL' : k.kind === 'nach' ? ' · nach VL' : '') + (k.singles ? ' · ' + k.singles + ' einzeln' : '');
-    const modeSel = h('select', { class: 'ui-wk-mode', 'aria-label': 'Woche', onchange: e => setWk(e.target.value === 'sem' ? 'sem' : +e.target.value) },
-      h('option', { value: 'sem', selected: cur === 'sem' }, 'Typische Woche'), W.weeks.map(k => h('option', { value: String(k.mon), selected: k.mon === cur }, wkLab(k))));
+    /* ‹ › always visible so the header never shifts: in the typical week › opens the first lecture week */
+    const wi = W.weeks.findIndex(k => k.mon === cur), firstVl = Math.max(0, W.weeks.findIndex(k => k.kind === 'vl'));
+    const prev = cur === 'sem' ? null : wi > 0 ? W.weeks[wi - 1].mon : null, next = cur === 'sem' ? (W.weeks[firstVl] || {}).mon : wi >= 0 && wi < W.weeks.length - 1 ? W.weeks[wi + 1].mon : null;
+    const modeSel = h('div', { class: 'ui-wk-pick' },
+      h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'Woche davor', disabled: prev == null, onclick: () => setWk(prev) }, '‹'),
+      h('select', { class: 'ui-wk-mode', 'aria-label': 'Woche', onchange: e => setWk(e.target.value === 'sem' ? 'sem' : +e.target.value) },
+        h('option', { value: 'sem', selected: cur === 'sem' }, 'Typische Woche'), W.weeks.map(k => h('option', { value: String(k.mon), selected: k.mon === cur }, wkLab(k)))),
+      h('button', { class: 'ui-iconbtn', type: 'button', 'aria-label': 'Woche danach', disabled: next == null, onclick: () => setWk(next) }, '›'));
     const tog = (k, lab) => [lab, uiWeekView[k], () => { uiWeekView[k] = !uiWeekView[k]; uiWeekSave(); }];
     c.appendChild(h('div', { class: 'ui-head ui-wk-head' },
       h('h1', { class: 'ui-title ui-sr', text: 'Woche' }), semSel, modeSel,
