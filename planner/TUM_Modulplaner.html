@@ -7988,7 +7988,7 @@ function uiEvNode(it, s) {
       : w.day ? 'Pause des Tages liegt in einem anderen Block oder in der Lücke zwischen den Blöcken' : 'keine Pause nötig (bis 6 h am Tag)') + (w.cap ? '. Achtung: über 10 h Arbeit am Tag' : '') : '';
     return h('button', { class: 'ui-ev ui-ev-own' + (it.clash ? ' ui-ev-clash' : '') + (w && w.cap ? ' ui-ev-cap' : ''), type: 'button', onclick: () => uiBlockForm(it.bi), title: tip || null, 'data-tip': tip || null },
       h('b', { class: 'ui-ev-l1', text: it.title }), h('span', { class: 'ui-ev-l3', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) }),
-      brk ? h('span', { class: 'ui-ev-l3 ui-ev-brk-t', text: '☕ Pause ' + brk + ' min · netto ' + uiFmt.hm(w.net) + ' h' }) : null);
+      w ? h('span', { class: 'ui-ev-l3 ui-ev-brk-t', text: (brk ? '☕ Pause ' + brk + ' min · ' : '') + 'netto ' + uiFmt.hm(w.net) + ' h' }) : null);
   }
   if (it.kind === 'travel') return h('div', { class: 'ui-ev-travel' + (it.clash ? ' ui-ev-clash' : ''), title: it.title + ' · ' + it.min + ' min' }, h('span', { text: it.min + "'" }));
   const st = { onl: 'online', rec: 'rec', skip: 'skip', done: 'done' }[it.status] || 'vor';
