@@ -26,6 +26,9 @@ body[data-ui="new"] { margin-right: 0 !important; overflow: hidden; }
 #ui .ui-meter > i, .ui-sheet-root .ui-meter > i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: inherit; }
 #ui .ui-tag, .ui-sheet-root .ui-tag { display: inline-flex; align-items: center; gap: 2px; padding: 0 6px; height: 20px; border-radius: var(--r-pill); background: var(--bg); border: 1px solid var(--line); color: var(--muted); font-size: 11px; font-weight: 600; white-space: nowrap; vertical-align: middle; }
 #ui .ui-tag-bad, .ui-sheet-root .ui-tag-bad { color: var(--bad); border-color: var(--bad); background: var(--bad-weak); }
+#ui .ui-tag-warn, .ui-sheet-root .ui-tag-warn, #ui .ui-stab-meist, .ui-sheet-root .ui-stab-meist { color: var(--warn); border-color: var(--warn); }
+#ui .ui-stab-stabil, .ui-sheet-root .ui-stab-stabil { color: var(--ok); border-color: var(--ok); }
+#ui .ui-stab-wechselt, .ui-sheet-root .ui-stab-wechselt { color: var(--bad); border-color: var(--bad); }
 #ui .ui-muted, .ui-sheet-root .ui-muted { color: var(--muted); }
 #ui .ui-meta, .ui-sheet-root .ui-meta { color: var(--muted); font-size: var(--fs-meta); }
 #ui .ui-sr, .ui-sheet-root .ui-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

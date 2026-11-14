@@ -10,6 +10,7 @@ function uiEventSheet(code, key, anchor) {
     const { m, e } = G; body.innerHTML = '';
     body.append(
       h('p', { class: 'ui-meta', text: [e.wd ? uiFmt.wd(e.wd) + ' ' + e.v + (e.b ? '–' + e.b : '') : 'ohne Zeit', e.room, e.grp].filter(Boolean).join(' · ') }),
+      e.stab ? h('p', { class: 'ui-meta ui-stabline' }, uiStabTag(e.stab), ' ' + e.stab.rows.map(r => r.label + ': ' + (r.desc || 'ohne Termine')).join(' · ')) : null,
       h('button', { class: 'ui-linkbtn', type: 'button', onclick: () => { close(); uiOpenModule(code); } }, 'Details zum Modul ›'),
       (() => { const same = m.events.filter(x => x.key === key && x.d); return same.length > 1 ? h('p', { class: 'ui-warnbox', text: 'Teilnahme und „Erledigt“ gelten für alle ' + same.length + ' Termine mit gleichem Wochentag, gleicher Zeit und Gruppe: ' + same.map(x => uiFmt.date(x.d)).join(', ') + ' Für einzelne Tage gibt es „Fällt aus …“.' }) : null; })(),
       h('div', { class: 'ui-field' }, h('span', { text: 'Teilnahme' }),

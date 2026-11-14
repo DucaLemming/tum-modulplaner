@@ -61,6 +61,23 @@ jobs:
           git pull -q --rebase origin main
           git push
 
+      - name: Past semesters (stability tags)
+        # Fetches only what data/history.json is missing (new modules, a newly published semester);
+        # on a normal night it makes no request. Then refreshes planner/src/history.js and the planner.
+        if: always()
+        run: |
+          git pull -q --rebase origin main
+          python scripts/history_scrape.py --planner planner/TUM_Modulplaner.html --out data/history.json
+          python scripts/history_summary.py
+          python scripts/build.py
+          git add data/history.json planner/src/history.js planner/TUM_Modulplaner.html
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "History update $(date -u +%Y-%m-%d)"
+          git pull -q --rebase origin main
+          git push
+
       - name: Keep the raw data for 30 days
         if: always()
         uses: actions/upload-artifact@v4

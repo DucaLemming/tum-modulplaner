@@ -101,7 +101,11 @@
       if (w.A && w.B && w.A.c && w.B.c) title = w.A.c + ' ' + M[w.A.c].name + ' (' + w.A.t + ') ↔ ' + w.B.c + ' ' + M[w.B.c].name + ' (' + w.B.t + ')';
       else { const i = w.txt.indexOf(':'); title = (i > 0 && i < 30 ? w.txt.slice(0, i) : type) + (codes.length ? ': ' + codes.map(nameOf).join(', ') : ''); }
       const id = wKey(s, w), vj = [w.A, w.B].some(x => x && x.e && x.e.vj);
-      push({ id, type, sem: s, kind: w.k, title, detail: w.txt, full: w.txt, soft: clashSev(w) === 'soft', codes, vj,
+      /* times from last year: how reliable are they? the weakest of the involved events */
+      let stab = null;
+      if (vj) { const R = { stabil: 3, meist: 2, neu: 1, wechselt: 0 }, L = [w.A, w.B].filter(x => x && x.c && x.e && x.e.vj).map(x => stabOf(x.c, termOf(s), x.e.t || x.t)).filter(Boolean);
+        if (L.length) stab = L.sort((p, q) => R[p.tag] - R[q.tag])[0]; }
+      push({ id, type, sem: s, kind: w.k, title, detail: w.txt, full: w.txt, soft: clashSev(w) === 'soft', codes, vj, stab,
         wd: (w.A && w.A.wd) || 0, a: (w.A && w.A.a) || 0 });
     }));
     (typeof recNotes !== 'undefined' ? recNotes : []).forEach(txt => {
@@ -147,13 +151,29 @@
     if (cat === 'x') { const g = eoOf(c); return `Zählt nicht: ${(g && (g.cnt || g.codes[0])) || ''} hat Vorrang (Entscheidung offen).`; }
     return 'Nicht im Plan.';
   };
+  /* Stability of past semesters (window.TUMHIST, scripts/history_summary.py): same season as the planned term */
+  const HS = (window.TUMHIST && window.TUMHIST.m) || {};
+  const termShort = t => t.slice(-1) === 'W' ? 'WiSe ' + t.slice(2, 4) + '/' + String(+t.slice(2, 4) + 1).padStart(2, '0') : 'SoSe ' + t.slice(2, 4);
+  function stabOf(c, term, typ) {
+    const r = HS[c] && term && HS[c][term.slice(-1)], v = r && r.t[typ];
+    if (!v) return null;
+    const [tag, k, n, ph, rows] = v;
+    const label = tag === 'stabil' ? 'stabil ' + k + '/' + n : tag === 'meist' ? 'meist ' + k + '/' + n : tag;
+    return { tag, k, n, ph, label, rows: rows.map(([t, d, s]) => ({ term: t, label: termShort(t), desc: d, same: !!s })),
+      tip: typ + ' bisher: ' + rows.map(([t, d]) => termShort(t) + ' ' + (d || 'ohne Termine')).join(' · ') };
+  }
+  function histOf(c) {
+    const r = HS[c]; if (!r) return null;
+    const o = {}; ['W', 'S'].forEach(s => { if (r[s]) o[s] = r[s].terms.map(termShort); });
+    return o;
+  }
   function evRow(c, e, term) {
     const st = evStatus(c, e), wd = e.d ? wdOf(e.d) : 0;
     let room = '', camp = '';
     try { const l = evLoc(c, e); if (l) { room = l.room || ''; camp = l.camp || ''; } } catch (x) {}
     let mand = false; try { mand = mandAll(c, e); } catch (x) {}
     return { key: ekeyG(e), t: e.t, n: e.n || '', wd, v: e.v || '', b: e.b || '', d: e.d || '', room: room || (e.o || ''), camp, grp: e.grp || '', gk: e.gk || '',
-      status: st, def: stDefault(c, e), mand, nt: e.nt || '', one: !!(e.one || (typeof ONEOFF !== 'undefined' && ONEOFF.has(e.t))), vj: !!e.vj,
+      status: st, def: stDefault(c, e), mand, nt: e.nt || '', one: !!(e.one || (typeof ONEOFF !== 'undefined' && ONEOFF.has(e.t))), vj: !!e.vj, stab: stabOf(c, term, e.t),
       chosen: typeof grpOK === 'function' ? !!grpOK(c, e) : true, ovr: !!(ovr[c] && ovr[c][ekeyG(e)]), ovrO: (ovr[c] && ovr[c][ekeyG(e)]) || null,
       dates: (() => { try { return mandDates(c, e).slice(); } catch (x) { return []; } })(), cancelled: (() => { try { return ausfDl(c, e).slice(); } catch (x) { return []; } })(),
       mandDates: (() => { try { return (typeof mandDl === 'function' ? mandDl(c, e) : []).slice(); } catch (x) { return []; } })() };
@@ -177,7 +197,7 @@
       state: { inPlan, bracket: marked[c] || primaryBracket(c), brackets: m.brackets || [], sem: sem[c] || 0,
         status: done[c] ? 'done' : opt[c] ? 'optional' : 'count', seat: isLimMod(c) && inPlan ? (limGot(c) ? 'got' : 'open') : null,
         easy: !!frei[c], cat, result: inPlan ? RESULT(c, cat) : 'Nicht im Plan.', nogo: isNogo(c), nogoReason: nogo[c] || '' },
-      term, termLabel: termLabel(term), src: LV.src || null, vj: events.some(e => e.vj) || (!!LV.src && LV.src !== term), events, groups: G,
+      term, termLabel: termLabel(term), src: LV.src || null, hist: histOf(c), vj: events.some(e => e.vj) || (!!LV.src && LV.src !== term), events, groups: G,
       variant: typeof optV0 === 'function' ? optV0(c) : null, variants, lim, exams,
       alt: g ? { codes: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].filter(Boolean), rank: [g.cnt, ...g.codes.filter(x => x !== g.cnt)].indexOf(c), cnt: g.cnt, group: eoList.indexOf(g) } : null,
       fallbacks: typeof optsOf === 'function' ? optsOf(c).slice(1).map(o => o.s) : [], before, after, dep: m.dep ? (typeof depTxt === 'function' ? depTxt(c) : 'eingestellt?') : '', link: m.link || '',
@@ -262,7 +282,7 @@
           let room = ''; try { room = (x.loc && (x.loc.room || x.loc.camp)) || x.e.o || ''; } catch (e) {}
           const hidden = !!x.cand || !!(typeof wkHidden === 'function' && wkHidden(x));
           return { id: c + '|' + ekeyG(x.e) + '|' + dd + '|' + n, kind: 'ev', code: c, t: x.mt && x.mt.length > 1 ? x.mt.join(' + ') : x.t, title: M[c].name, a: x.a, b: x.b, room,
-            fill: color(marked[c]), status: st, counts: !x.ign && !x.cand, clash: cf > 0, soft: cf === 1, mand, vj: !!(x.e && x.e.vj), one: !!x.one,
+            fill: color(marked[c]), status: st, counts: !x.ign && !x.cand, clash: cf > 0, soft: cf === 1, mand, vj: !!(x.e && x.e.vj), one: !!x.one, stab: stabOf(c, tm, x.t),
             tag: x.cand ? 'Alternative' : cat === 'x' ? 'Alternative' : (cat === 'o' || cat === 'ou') ? 'optional' : '', hiddenByDefault: hidden, cand: !!x.cand,
             key: ekeyG(x.e), keys: A.map(m => ekeyG(m.e)) };
         });

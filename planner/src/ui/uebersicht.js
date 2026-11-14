@@ -29,7 +29,7 @@ function uiIssueCard(x) {
   return h('div', { class: 'ui-issue ui-card' + (x.soft ? ' ui-soft' : '') + (x.hidden ? ' ui-hid' : '') + (x.bad || (x.type === 'Überschneidung' && !x.soft) ? ' ui-issue-bad' : ''), 'data-type': x.type },
     h('div', { class: 'ui-issue-main' },
       h('div', { class: 'ui-issue-top' }, h('span', { class: 'ui-issue-ic', 'aria-hidden': 'true', text: UI_ISSUE_ICON[x.type] || '•' }),
-        h('span', { class: 'ui-issue-type', text: x.type + (x.sem ? ' · ' + x.sem + '. Sem.' : '') }), x.vj ? h('span', { class: 'ui-tag', text: 'Vorjahr' }) : null,
+        h('span', { class: 'ui-issue-type', text: x.type + (x.sem ? ' · ' + x.sem + '. Sem.' : '') }), x.vj ? h('span', { class: 'ui-tag', text: 'Vorjahr' }) : null, x.stab ? uiStabTag(x.stab) : null,
         x.soft && x.type === 'Überschneidung' ? h('span', { class: 'ui-tag', text: 'unsicher' }) : null, x.seat ? uiSeatTag(x.seat) : null),
       h('p', { class: 'ui-issue-tl' }, h('button', { class: 'ui-issue-title', type: 'button', onclick: () => uiIssueGo(x) }, x.title)),
       detail,

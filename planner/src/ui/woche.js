@@ -43,7 +43,7 @@ function uiEvNode(it, s) {
     h('span', { class: 'ui-ev-l1' }, h('b', { text: it.code + ' ' + it.t }), it.clash ? ' ⚡' : '', it.mand ? ' ❗' : '', st === 'online' ? ' 💻' : ''),
     h('span', { class: 'ui-ev-l2', text: it.title }),
     h('span', { class: 'ui-ev-l3', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) + (it.room ? ' · ' + it.room : '') }),
-    it.tag ? h('span', { class: 'ui-tag', text: it.tag }) : null);
+    it.tag ? h('span', { class: 'ui-tag', text: it.tag }) : null, it.vj ? uiStabTag(it.stab, true) : null);
 }
 function uiWeekShow(it) {
   if (it.kind !== 'ev') return true;

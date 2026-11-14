@@ -38,6 +38,11 @@ function uiModulPlanBlock(m) {
   }
   return h('section', { class: 'ui-plan-block' }, rows, h('p', { class: 'ui-result', text: S.result }));
 }
+/* Tag for the stability of a course type over the last semesters of the same season (PL stab object) */
+function uiStabTag(st, short) {
+  if (!st) return null;
+  return h('span', { class: 'ui-tag ui-stab ui-stab-' + st.tag, 'data-tip': st.tip, title: st.tip, text: short ? ({ stabil: st.k + '/' + st.n, meist: st.k + '/' + st.n, wechselt: '≠', neu: 'neu' }[st.tag]) : st.label });
+}
 function uiEventsBlock(m) {
   const c = m.code, by = {};
   m.events.forEach(e => (by[e.t] = by[e.t] || []).push(e));
@@ -45,7 +50,7 @@ function uiEventsBlock(m) {
     const L = by[t], gks = [...new Set(L.map(e => e.gk).filter(Boolean))];
     const vr = m.variants.find(v => v.t === t);
     return h('div', { class: 'ui-evtype' },
-      h('div', { class: 'ui-evtype-h' }, h('b', { text: t }), L.some(e => e.n && e.n !== m.name) ? h('span', { class: 'ui-meta ui-ellip', text: L[0].n }) : null),
+      h('div', { class: 'ui-evtype-h' }, h('b', { text: t }), uiStabTag((L.find(e => e.stab) || {}).stab), L.some(e => e.n && e.n !== m.name) ? h('span', { class: 'ui-meta ui-ellip', text: L[0].n }) : null),
       vr ? h('div', { class: 'ui-seg ui-seg-var', role: 'group', 'aria-label': 'Variante ' + t }, vr.options.map(o => h('button', { class: vr.chosen === o ? 'ui-on' : '', type: 'button', onclick: () => PL.setVariant(c, vr.chosen === o ? null : o, t) }, UI_VAR_LABEL[o] || o))) : null,
       gks.map(gk => { const G = m.groups[gk]; if (!G || G.names.length < 2) return null;
         return h('div', { class: 'ui-grp', role: 'radiogroup', 'aria-label': 'Gruppe' }, G.names.map(n => h('button', { class: 'ui-grp-o' + (G.chosen.includes(n) ? ' ui-on' : ''), type: 'button', role: 'radio', 'aria-checked': String(G.chosen.includes(n)),
@@ -57,7 +62,10 @@ function uiEventsBlock(m) {
         h('span', { class: 'ui-evrow-tags' }, e.vj ? h('span', { class: 'ui-tag', text: 'Vorjahr' }) : null, e.mand ? h('span', { title: 'Pflicht', text: '❗' }) : null,
           h('span', { class: 'ui-chip ui-chip-static ui-st-' + e.status + (e.status !== e.def ? ' ui-on' : ''), text: UI_ST_LABEL[e.status] || e.status })))));
   });
-  return h('div', { class: 'ui-events' }, m.vj ? h('p', { class: 'ui-meta' }, h('span', { class: 'ui-tag', text: 'Vorjahr' }), ' ' + m.termLabel + ' noch nicht veröffentlicht, Zeiten aus dem Vorjahr.') : null,
+  const hs = m.hist, both = hs && hs.W && hs.S, tu = (m.m && m.m.turnus) || '';
+  const histLine = hs ? h('p', { class: 'ui-meta ui-histline' }, 'Bisher angeboten: ' + [hs.W ? hs.W.join(', ') : '', hs.S ? hs.S.join(', ') : ''].filter(Boolean).join(' · '),
+    both && /^(Winter|Sommer)semester$/.test(tu) ? h('span', { class: 'ui-tag ui-tag-warn', 'data-tip': 'In TUMonline steht ' + tu + ', es gab aber Termine in beiden Semestern', text: 'läuft in beiden' }) : null) : null;
+  return h('div', { class: 'ui-events' }, histLine, m.vj ? h('p', { class: 'ui-meta' }, h('span', { class: 'ui-tag', text: 'Vorjahr' }), ' ' + m.termLabel + ' noch nicht veröffentlicht, Zeiten aus dem Vorjahr.') : null,
     blocks.length ? blocks : h('p', { class: 'ui-meta', text: 'Keine Termine bekannt.' }));
 }
 function uiLimBlock(m) {
