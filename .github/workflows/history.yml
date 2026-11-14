@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LIMIT: "12"
+  LIMIT: "0"
 
 jobs:
   scrape:
