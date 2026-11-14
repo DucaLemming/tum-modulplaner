@@ -1,10 +1,7 @@
 name: History scrape (one-off)
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths: [".github/workflows/history.yml"]
+  workflow_dispatch:   # manual only; already ran on 14.11.2026, result in data/history.json
 
 permissions:
   contents: write
