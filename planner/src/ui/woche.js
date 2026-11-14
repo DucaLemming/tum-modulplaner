@@ -36,14 +36,13 @@ function uiTimeGrid(days, o) {
 function uiEvNode(it, s) {
   if (it.kind === 'own') {
     /* work block: break required by law (ArbZG §4: more than 6 h -> 30 min, more than 9 h -> 45 min; gaps of 15 min or more between blocks count) */
-    const w = it.work, brk = w ? w.brk : 0, span = it.b - it.a;
+    const w = it.work, brk = w ? w.brk : 0;
     const why = brk >= 45 ? 'mehr als 9 h Arbeit: 45 min Pause' : brk >= 30 ? 'mehr als 6 h Arbeit: 30 min Pause' : 'mit 30 min Pause blieben weniger als 6 h, also höchstens 6 h arbeiten und ' + brk + ' min Pause';
     const tip = w ? (brk ? 'Pause in diesem Block: ' + brk + ' min (' + why + ', spätestens nach 6 h), netto ' + uiFmt.hm(w.net) + ' h'
       : w.day ? 'Pause des Tages liegt in einem anderen Block oder in der Lücke zwischen den Blöcken' : 'keine Pause nötig (bis 6 h am Tag)') + (w.cap ? '. Achtung: über 10 h Arbeit am Tag' : '') : '';
     return h('button', { class: 'ui-ev ui-ev-own' + (it.clash ? ' ui-ev-clash' : '') + (w && w.cap ? ' ui-ev-cap' : ''), type: 'button', onclick: () => uiBlockForm(it.bi), title: tip || null, 'data-tip': tip || null },
       h('b', { class: 'ui-ev-l1', text: it.title }), h('span', { class: 'ui-ev-l3', text: uiFmt.time(it.a) + '–' + uiFmt.time(it.b) }),
-      brk ? h('span', { class: 'ui-ev-l3 ui-ev-brk-t', text: '☕ Pause ' + brk + ' min · netto ' + uiFmt.hm(w.net) + ' h' }) : null,
-      brk && span > 0 ? h('i', { class: 'ui-ev-brk', 'aria-hidden': 'true', style: { top: (100 * Math.min(360, (span - brk) / 2) / span).toFixed(2) + '%', height: (100 * brk / span).toFixed(2) + '%' } }) : null);
+      brk ? h('span', { class: 'ui-ev-l3 ui-ev-brk-t', text: '☕ Pause ' + brk + ' min · netto ' + uiFmt.hm(w.net) + ' h' }) : null);
   }
   if (it.kind === 'travel') return h('div', { class: 'ui-ev-travel' + (it.clash ? ' ui-ev-clash' : ''), title: it.title + ' · ' + it.min + ' min' }, h('span', { text: it.min + "'" }));
   const st = { onl: 'online', rec: 'rec', skip: 'skip', done: 'done' }[it.status] || 'vor';

@@ -16,7 +16,6 @@ with sync_playwright() as p:
         check(W[str(wd)] and W[str(wd)]["brk"] == brk, f"{name} {v}-{b}: break {brk} min ({W[str(wd)]})")
     txt = pg.locator(".ui-ev-own").all_inner_texts()
     check(sum("Pause" in t for t in txt) == 3 and any("Pause 45 min" in t for t in txt), "blocks with a break show 'Pause N min'")
-    check(pg.locator(".ui-ev-own .ui-ev-brk").count() == 3, "hatched break strip inside those blocks")
     pg.evaluate("PL.addBlock({ l: 'Arbeit', wd: 3, v: '12:30', b: '17:30', sems: [1], loc: 'Arbeit' }); PL.editBlock(PL.settings().blocks.find(x => x.wd === 3).i, { l: 'Arbeit', wd: 3, v: '08:00', b: '12:00', sems: [1], loc: 'Arbeit' })")
     pg.wait_for_timeout(500)
     w3 = pg.evaluate("() => PL.week(1, 'sem').days.find(d => d.wd === 3).items.filter(i => i.kind === 'own').map(i => i.work.brk)")

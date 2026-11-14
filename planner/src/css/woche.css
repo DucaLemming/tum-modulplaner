@@ -67,7 +67,5 @@
 #ui .ui-wk-grid, #ui .ui-board-one { touch-action: pan-y; }
 #ui .ui-ev .ui-stab { position: absolute; right: 2px; bottom: 2px; }
 #ui .ui-histline { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
-#ui .ui-ev-brk { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(45deg, rgba(77,90,102,.22) 0 4px, transparent 4px 8px); border-top: 1px dashed #8a96a3; border-bottom: 1px dashed #8a96a3; pointer-events: none; }
 #ui .ui-ev-brk-t { color: var(--ink); position: relative; z-index: 1; }
 #ui .ui-ev-cap { border-color: var(--bad); }
-#ui .ui-agenda-row .ui-ev-brk { display: none; }
