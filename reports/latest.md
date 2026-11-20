@@ -1,10 +1,10 @@
-# Update 2026-11-19
+# Update 2026-11-20
 
 ```
 Baum: 60 Kategorien, 1208 Modulpositionen, 1191 Module
 Semester: veröffentlicht 2025S 2025W 2026S 2026W | Planungssemester 2026W echt, 2027S Vorjahr 2026S, 2027W Vorjahr 2026W, 2028S Vorjahr 2026S
 Module: abgerufen 1188, Fehler 0 (unverändert), Termine aktualisiert 1187, Termine unvollständig (unverändert) 0
-Angebot: möglicherweise eingestellt 295 (vorher 295; davon nicht mehr im Studienplan 4)
+Angebot: möglicherweise eingestellt 292 (vorher 295; davon nicht mehr im Studienplan 4)
 Beschreibungen: neu gefüllt 0, aktualisiert 0 Module, weiterhin ohne Beschreibung 43
 Neu: 0
 Neu, aber ohne Daten (Fehler): SZ0369
