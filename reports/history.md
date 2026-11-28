@@ -14,3 +14,4 @@
 - 2026-11-25: Module: abgerufen 1191, Fehler 0 (unverändert), Termine aktualisiert 1190, Termine unvollständig (unverändert) 0
 - 2026-11-26: Module: abgerufen 1191, Fehler 0 (unverändert), Termine aktualisiert 1190, Termine unvollständig (unverändert) 0
 - 2026-11-27: Module: abgerufen 1191, Fehler 0 (unverändert), Termine aktualisiert 1190, Termine unvollständig (unverändert) 0
+- 2026-11-28: Module: abgerufen 1191, Fehler 0 (unverändert), Termine aktualisiert 1190, Termine unvollständig (unverändert) 0
